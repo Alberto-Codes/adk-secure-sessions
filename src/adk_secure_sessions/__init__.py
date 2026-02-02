@@ -6,6 +6,9 @@ encryption backends that conform to the ``EncryptionBackend`` protocol.
 Attributes:
     EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
         contract.
+    FernetBackend: Fernet symmetric encryption backend.
+    SecureSessionError: Base exception for all library errors.
+    DecryptionError: Raised when decryption fails.
 
 Examples:
     Import and use the protocol for runtime validation::
@@ -19,6 +22,13 @@ See Also:
     Full protocol definition and known limitations.
 """
 
+from adk_secure_sessions.backends.fernet import FernetBackend
+from adk_secure_sessions.exceptions import DecryptionError, SecureSessionError
 from adk_secure_sessions.protocols import EncryptionBackend
 
-__all__ = ["EncryptionBackend"]
+__all__ = [
+    "DecryptionError",
+    "EncryptionBackend",
+    "FernetBackend",
+    "SecureSessionError",
+]
