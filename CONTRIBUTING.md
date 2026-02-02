@@ -51,14 +51,27 @@ This project follows standard open-source community guidelines. Be respectful, c
 ```
 adk-secure-sessions/
 ├── src/adk_secure_sessions/   # Source code
+│   ├── protocols.py           # EncryptionBackend protocol (PEP 544)
 │   ├── backends/              # Encryption backends (Fernet, SQLCipher, KMS)
 │   ├── services/              # Session service implementations
 │   └── migrations/            # Schema migration utilities
 ├── tests/                     # Test suite
 │   ├── unit/                  # Unit tests (fast, isolated)
 │   └── integration/           # Integration tests (real databases)
+├── scripts/                   # Development tooling
+│   ├── code_quality_check.sh  # 8-step quality pipeline
+│   ├── docstring_freshness.py # Detect stale docstrings
+│   ├── docstring_enrichment.py# Find enrichment opportunities
+│   ├── docstring_docs_coverage.py # Verify docs coverage
+│   ├── docstring_griffe_check.py  # Griffe docstring warnings
+│   └── gen_ref_pages.py       # MkDocs reference page generation
+├── specs/                     # Feature specifications (speckit workflow)
+│   └── 002-encryption-backend-protocol/
 ├── docs/                      # Documentation source
 │   └── contributing/          # Contributing guides and templates
+├── .claude/rules/             # Claude Code contextual rules
+│   ├── python.md              # Python style rules (all *.py)
+│   └── pytest.md              # Test rules (tests/**/*.py)
 └── .github/                   # GitHub templates and CI
 ```
 
@@ -86,6 +99,10 @@ Use descriptive branch names:
 
 3. Run quality checks before committing:
    ```bash
+   # Full 8-step quality pipeline (lint, format, docstrings, types, tests)
+   bash scripts/code_quality_check.sh --all --verbose
+
+   # Or run individual checks
    uv run ruff check .
    uv run ruff format .
    uv run pytest
@@ -237,6 +254,19 @@ We treat all warnings as errors. When CI fails due to a third-party warning:
 - Security-sensitive documentation should include threat model context
 
 ## Submitting Changes
+
+### Feature Specification Workflow
+
+New features follow the speckit workflow. Artifacts live under `specs/{number}-{feature-name}/`:
+
+| Artifact | Purpose |
+|----------|---------|
+| `spec.md` | User stories, functional requirements, success criteria |
+| `plan.md` | Implementation plan with technical context |
+| `tasks.md` | Dependency-ordered task list |
+| `research.md` | Technical research and decisions |
+| `quickstart.md` | Usage examples for the feature |
+| `checklists/` | Verification checklists |
 
 ### Commit Messages
 
