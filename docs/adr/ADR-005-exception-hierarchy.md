@@ -10,82 +10,85 @@ Encryption operations can fail in ways that are distinct from general session se
 
 - Wrong encryption key (decryption failure)
 - Corrupted or tampered ciphertext
-- Backend configuration errors (missing KMS permissions, invalid key format)
-- ADK compatibility issues (unsupported schema version)
+- Backend configuration errors
 
 Generic `Exception` or `ValueError` does not give users enough information to handle these cases. ADK's own session services raise their own exceptions, and we should not swallow or re-wrap those unnecessarily.
 
 ## Decision
 
-Define a focused exception hierarchy rooted at `SecureSessionError`.
+Start with a minimal exception hierarchy. Add subclasses when the code demands them, not before.
 
-### Hierarchy
+### Initial Hierarchy
 
 ```
 SecureSessionError                    # Base — catch-all for this library
 ├── EncryptionError                   # Encryption operation failed
-│   ├── EncryptionKeyError            # Invalid, missing, or wrong key
-│   └── EncryptionBackendError        # Backend-specific failure (KMS timeout, etc.)
-├── DecryptionError                   # Decryption operation failed
-│   ├── DecryptionKeyError            # Wrong key for this ciphertext
-│   └── TamperedDataError             # HMAC verification failed — data integrity compromised
-├── ConfigurationError                # Invalid service configuration
-└── CompatibilityError                # ADK version or schema incompatibility
+└── DecryptionError                   # Decryption operation failed (wrong key, tampered data, etc.)
 ```
+
+Three classes. That's it for v1.
 
 ### Rules
 
 1. **All library exceptions inherit from `SecureSessionError`**. Users can catch the base to handle any library error.
 
-2. **Never swallow ADK exceptions.** If ADK's session service raises (e.g., database connection error), let it propagate. We only wrap errors from our own encryption/decryption layer.
+2. **Never swallow ADK exceptions.** If ADK's base class raises (e.g., stale session in `append_event`), let it propagate. We only wrap errors from our own encryption/decryption layer.
 
-3. **Include context in exceptions.** Every exception includes a human-readable message. `DecryptionKeyError` and `TamperedDataError` intentionally do NOT include the ciphertext or key material in the message to avoid leaking sensitive data into logs.
+3. **`DecryptionError` covers multiple failure modes.** Wrong key, corrupted data, and tampered ciphertext all raise `DecryptionError` with a descriptive message. If we later find that callers need to distinguish these programmatically, we add subclasses then.
 
-4. **`TamperedDataError` is security-critical.** This indicates data integrity has been compromised. Applications should log this at ERROR/CRITICAL level and may want to alert. It means either:
-   - The encryption key changed without proper migration
-   - The database was modified outside the application
-   - An actual tampering attack
+4. **No sensitive data in exception messages.** Never include ciphertext, key material, or plaintext in error messages to avoid leaking into logs.
 
 ### Example Usage
 
 ```python
 from adk_secure_sessions.exceptions import (
-    DecryptionKeyError,
+    DecryptionError,
     SecureSessionError,
-    TamperedDataError,
 )
 
 try:
     session = await service.get_session(
         app_name="my_agent", user_id="user_123", session_id="abc"
     )
-except TamperedDataError:
-    logger.critical("Data integrity compromised for session abc")
-    # Alert security team
-except DecryptionKeyError:
-    logger.error("Wrong encryption key — check key configuration")
+except DecryptionError as e:
+    logger.error(f"Failed to decrypt session: {e}")
+    # Could be wrong key, corrupted data, or tampered ciphertext
 except SecureSessionError as e:
     logger.error(f"Session encryption error: {e}")
 ```
+
+### When to Add Subclasses
+
+Add a subclass when:
+- A caller has a concrete need to handle a failure mode differently in a `try/except` block
+- The distinction affects control flow, not just log messages
+
+Do not add a subclass for:
+- Categorization that only matters in log messages (use the message string)
+- Speculative "someone might need this" scenarios
 
 ## Consequences
 
 ### What becomes easier
 
-- **Error handling**: Users can catch at the granularity they need (specific or base)
-- **Debugging**: Exception type immediately tells you what category of failure occurred
-- **Security monitoring**: `TamperedDataError` is a distinct, monitorable signal
+- **Simplicity**: Three classes to understand, document, and test
+- **Stability**: Public exception API is small, less likely to need breaking changes
+- **Error handling**: Users catch `SecureSessionError` for everything, or `DecryptionError` for the most common failure mode
 
 ### What becomes harder
 
-- **Nothing significant.** The hierarchy is small and focused. Six exception classes is manageable.
+- **Granular handling**: A caller who needs to distinguish "wrong key" from "tampered data" programmatically would need to parse the message string until we add subclasses. This is acceptable for v1 — we add subclasses when real callers ask for them.
 
 ## Alternatives Considered
 
+### Six-Class Hierarchy (Original)
+
+**Deferred.** The original design had `EncryptionKeyError`, `EncryptionBackendError`, `DecryptionKeyError`, `TamperedDataError`, and `ConfigurationError`. This is speculative complexity before any code exists. The concepts are valid — `TamperedDataError` in particular is a useful security signal — but we'll add them when the implementation proves they're needed.
+
 ### Reuse ADK's Exceptions
 
-**Rejected.** ADK doesn't have encryption-related exceptions. Raising `ValueError` or generic exceptions would lose the semantic meaning.
+**Rejected.** ADK doesn't have encryption-related exceptions. Using generic `ValueError` loses semantic meaning.
 
-### Single Exception Class with Error Codes
+### Single Exception Class
 
-**Rejected.** `SecureSessionError(code=TAMPERED_DATA)` is less Pythonic than distinct exception classes and doesn't support typed `except` clauses.
+**Rejected.** Callers commonly need to distinguish "encryption failed on write" from "decryption failed on read" for error handling and monitoring. Two subclasses is the minimum useful granularity.
