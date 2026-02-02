@@ -93,6 +93,7 @@ async def decrypt_json(
         Original JSON string.
 
     Raises:
-        DecryptionError: If envelope is invalid, tampered, or backend fails.
+        DecryptionError: If envelope is invalid, tampered, backend fails,
+            or decrypted bytes are not valid UTF-8.
     """
     ...
