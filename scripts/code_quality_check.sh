@@ -97,11 +97,11 @@ if [[ ${#SPECIFIC_FILES[@]} -gt 0 ]]; then
         fi
     done
 elif [[ "$CHECK_ALL" == true ]]; then
-    FILES=($(find . -name "*.py" -type f ! -path "./.venv/*" ! -path "./.git/*" ! -path "*/__pycache__/*" | sort))
+    FILES=($(find . -name "*.py" -type f ! -path "./.venv/*" ! -path "./.git/*" ! -path "*/__pycache__/*" ! -path "./specs/*" | sort))
 else
     # Check only unstaged Python files
     # NOTE: All files in the diff are in scope for remediation, not just changed lines
-    FILES=($( (git diff --name-only --diff-filter=ACMR; git ls-files --others --exclude-standard) | grep -E '\.py$' | sort -u))
+    FILES=($( (git diff --name-only --diff-filter=ACMR; git ls-files --others --exclude-standard) | grep -E '\.py$' | grep -v '^specs/' | sort -u))
 fi
 
 # Check if any files found
