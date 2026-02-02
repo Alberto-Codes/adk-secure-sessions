@@ -22,11 +22,16 @@ Examples:
     Encrypt and decrypt session state::
 
         from adk_secure_sessions import (
-            FernetBackend, encrypt_session, decrypt_session, BACKEND_FERNET,
+            FernetBackend,
+            encrypt_session,
+            decrypt_session,
+            BACKEND_FERNET,
         )
 
         backend = FernetBackend("my-secret-passphrase")
-        envelope = await encrypt_session({"ssn": "123-45-6789"}, backend, BACKEND_FERNET)
+        envelope = await encrypt_session(
+            {"ssn": "123-45-6789"}, backend, BACKEND_FERNET
+        )
         state = await decrypt_session(envelope, backend)
 
 See Also:
