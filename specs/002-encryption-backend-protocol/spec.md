@@ -147,8 +147,8 @@ confirming it passes runtime and static type checks.
 
 ### Assumptions
 
-- Python 3.10+ is the minimum supported version (required for
-  stable `typing.Protocol` + `@runtime_checkable` behavior).
+- Python 3.12 is the minimum supported version (per pyproject.toml
+  `requires-python = ">=3.12,<3.13"`).
 - The protocol operates on raw `bytes` — serialization (JSON to
   bytes conversion) is handled by a separate serialization layer,
   not the backend.
