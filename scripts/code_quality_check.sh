@@ -101,7 +101,7 @@ elif [[ "$CHECK_ALL" == true ]]; then
 else
     # Check only unstaged Python files
     # NOTE: All files in the diff are in scope for remediation, not just changed lines
-    FILES=($((git diff --name-only --diff-filter=ACMR; git ls-files --others --exclude-standard) | grep -E '\.py$' | sort -u))
+    FILES=($( (git diff --name-only --diff-filter=ACMR; git ls-files --others --exclude-standard) | grep -E '\.py$' | sort -u))
 fi
 
 # Check if any files found
