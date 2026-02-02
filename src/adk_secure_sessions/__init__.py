@@ -10,13 +10,24 @@ Attributes:
     SecureSessionError: Base exception for all library errors.
     EncryptionError: Raised when encryption fails.
     DecryptionError: Raised when decryption fails.
+    SerializationError: Raised when data cannot be serialized to JSON.
+    encrypt_session: Serialize a dict to an encrypted envelope.
+    decrypt_session: Decrypt an envelope back to a dict.
+    encrypt_json: Encrypt a JSON string into an envelope.
+    decrypt_json: Decrypt an envelope back to a JSON string.
+    BACKEND_FERNET: Backend identifier for Fernet encryption.
+    ENVELOPE_VERSION_1: Current envelope format version byte.
 
 Examples:
-    Import and use the protocol for runtime validation::
+    Encrypt and decrypt session state::
 
-        from adk_secure_sessions import EncryptionBackend
+        from adk_secure_sessions import (
+            FernetBackend, encrypt_session, decrypt_session, BACKEND_FERNET,
+        )
 
-        assert isinstance(my_backend, EncryptionBackend)
+        backend = FernetBackend("my-secret-passphrase")
+        envelope = await encrypt_session({"ssn": "123-45-6789"}, backend, BACKEND_FERNET)
+        state = await decrypt_session(envelope, backend)
 
 See Also:
     [`adk_secure_sessions.protocols`][adk_secure_sessions.protocols]:
