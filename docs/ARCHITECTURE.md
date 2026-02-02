@@ -4,6 +4,10 @@
 
 adk-secure-sessions directly implements ADK's `BaseSessionService` ABC and adds encryption at the JSON serialization boundary. Encryption backends are pluggable via the `EncryptionBackend` protocol (PEP 544).
 
+!!! info "Color Legend"
+    - **Green** — Implemented and tested
+    - **Gray** — Planned (see [Roadmap](ROADMAP.md))
+
 ```mermaid
 graph TD
     UC[User Code] --> ESS[EncryptedSessionService]
@@ -12,6 +16,14 @@ graph TD
     EB --> FB[FernetBackend]
     EB --> CB[Custom Backend]
     ESS -->|reads/writes| DB[(SQLite / PostgreSQL)]
+
+    style EB fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style UC fill:#616161,stroke:#424242,color:#fff
+    style ESS fill:#616161,stroke:#424242,color:#fff
+    style BSS fill:#616161,stroke:#424242,color:#fff
+    style FB fill:#616161,stroke:#424242,color:#fff
+    style CB fill:#616161,stroke:#424242,color:#fff
+    style DB fill:#616161,stroke:#424242,color:#fff
 ```
 
 ## Data Flow
@@ -44,17 +56,6 @@ sequenceDiagram
 
 Field-level encryption protects sensitive data while keeping metadata queryable.
 
-```mermaid
-block-beta
-    columns 2
-    block:row1:2
-        columns 2
-        A["session_id, app_name, user_id, timestamps"] B["state values, events"]
-    end
-    C["Plaintext — queryable"]:1
-    D["Encrypted — protected"]:1
-```
-
 | Data | Encrypted | Rationale |
 |------|-----------|-----------|
 | `state` values (user_state, app_state, session_state) | Yes | Contains sensitive user/app data |
@@ -86,6 +87,11 @@ graph LR
     FB2 -->|implements| EB2
     ESS2 -->|uses| SER
     SER -->|delegates to| EB2
+
+    style EB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style ESS2 fill:#616161,stroke:#424242,color:#fff
+    style FB2 fill:#616161,stroke:#424242,color:#fff
+    style SER fill:#616161,stroke:#424242,color:#fff
 ```
 
 ### Layer Rules
@@ -97,12 +103,12 @@ graph LR
 
 ## Current State
 
-What exists today:
+**Implemented:**
 
 - **`protocols.py`** — `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`
 - **`__init__.py`** — Exports `EncryptionBackend` as public API
 
-What is planned (see [Roadmap](ROADMAP.md)):
+**Planned** (see [Roadmap](ROADMAP.md)):
 
 - `FernetBackend`, exception hierarchy, serialization layer, `EncryptedSessionService`
 
