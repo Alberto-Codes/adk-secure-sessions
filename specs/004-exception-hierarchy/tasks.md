@@ -81,6 +81,7 @@
 - [ ] T011 [P] [US3] Test all exception classes accept and store a message string in `tests/unit/test_exceptions.py`
 - [ ] T012 [P] [US3] Test exception chaining (`raise EncryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
 - [ ] T013 [P] [US3] Test exception chaining (`raise DecryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
+- [ ] T014 [P] [US3] Test existing raise sites (e.g., `fernet.py` DecryptionError) use safe messages without key material or ciphertext in `tests/unit/test_exceptions.py`
 
 **Checkpoint**: Message handling and chaining verified — US3 complete.
 
@@ -90,9 +91,9 @@
 
 **Purpose**: Final validation across all stories.
 
-- [ ] T014 Run `uv run ruff check .` and `uv run ruff format .` to verify code quality
-- [ ] T015 Run `uv run pytest` to verify all tests pass (existing + new)
-- [ ] T016 Run quickstart.md validation — verify all import examples work
+- [ ] T015 Run `uv run ruff check .` and `uv run ruff format .` to verify code quality
+- [ ] T016 Run `uv run pytest` to verify all tests pass (existing + new)
+- [ ] T017 Run quickstart.md validation — verify all import examples work
 
 ---
 
@@ -115,7 +116,7 @@
 ### Parallel Opportunities
 
 - T001 and T002 are sequential (T002 imports what T001 creates)
-- All test tasks within a phase (T003–T006, T007–T010, T011–T013) can run in parallel (same file, different test functions)
+- All test tasks within a phase (T003–T006, T007–T010, T011–T014) can run in parallel (same file, different test functions)
 - US1, US2, US3 test phases can run in parallel after Phase 2
 
 ---
@@ -126,7 +127,7 @@
 # After Phase 2 completes, all test tasks can be written in parallel:
 Task: "T003-T006 — US1 catch-all tests"
 Task: "T007-T010 — US2 sibling tests"
-Task: "T011-T013 — US3 message safety tests"
+Task: "T011-T014 — US3 message safety tests"
 ```
 
 ---
@@ -144,8 +145,8 @@ Task: "T011-T013 — US3 message safety tests"
 ### Full Delivery
 
 1. Complete MVP above
-2. Add Phase 5: US3 message safety tests (T011–T013)
-3. Complete Phase 6: Polish (T014–T016)
+2. Add Phase 5: US3 message safety tests (T011–T014)
+3. Complete Phase 6: Polish (T015–T017)
 4. All acceptance criteria verified
 
 ---
