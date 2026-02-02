@@ -91,7 +91,7 @@ graph LR
     style EB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
     style ESS2 fill:#616161,stroke:#424242,color:#fff
     style FB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
-    style SER fill:#616161,stroke:#424242,color:#fff
+    style SER fill:#2e7d32,stroke:#1b5e20,color:#fff
 ```
 
 ### Layer Rules
@@ -107,12 +107,13 @@ graph LR
 
 - **`protocols.py`** — `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`
 - **`backends/fernet.py`** — `FernetBackend` using Fernet symmetric encryption with PBKDF2 key derivation
-- **`exceptions.py`** — `SecureSessionError` base exception, `EncryptionError`, `DecryptionError`
-- **`__init__.py`** — Exports `EncryptionBackend`, `FernetBackend`, `SecureSessionError`, `EncryptionError`, `DecryptionError`
+- **`exceptions.py`** — `SecureSessionError` base, `EncryptionError`, `DecryptionError`, `SerializationError`
+- **`serialization.py`** — `encrypt_session`, `decrypt_session`, `encrypt_json`, `decrypt_json` with self-describing `[version][backend_id][ciphertext]` envelope format
+- **`__init__.py`** — Exports all public symbols (protocols, backends, exceptions, serialization functions, constants)
 
 **Planned** (see [Roadmap](ROADMAP.md)):
 
-- Serialization layer, `EncryptedSessionService`
+- `EncryptedSessionService`
 
 ## Design Decisions
 
