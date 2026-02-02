@@ -1,4 +1,4 @@
-# ADR-000: Strategy + Decorator Architecture
+# ADR-000: Strategy + Direct Implementation Architecture
 
 > **Status**: Accepted
 > **Date**: 2026-02-01
@@ -9,46 +9,44 @@
 adk-secure-sessions is a **library** that adds encryption to Google ADK's session storage. The architecture must:
 
 1. Be transparent — users should interact with ADK's session interface, not ours
-2. Support pluggable encryption backends (Fernet, SQLCipher, KMS providers)
+2. Support pluggable encryption backends (Fernet, and later KMS providers)
 3. Stay focused — this is not an application with complex domain logic
 4. Be easy to extend without modifying existing code
 
-We considered several architectural patterns used in the Python ecosystem for libraries with similar requirements.
+We investigated ADK's session internals to determine the right integration approach.
 
 ## Decision
 
-Adopt **Strategy + Decorator** as the core architectural pattern, composed of two well-understood GoF patterns:
+Adopt **Strategy + Direct Implementation** as the core architectural pattern.
 
-### Decorator Pattern (Transparency)
+### Direct Implementation of `BaseSessionService` (Integration)
 
-The `EncryptedSessionService` **wraps** ADK's session services (`DatabaseSessionService`, `SqliteSessionService`). It implements the same interface and delegates all operations to the wrapped service, intercepting reads and writes to encrypt/decrypt state values.
+The `EncryptedSessionService` **directly implements** ADK's `BaseSessionService` ABC. It owns its own database connection, schema, and serialization — with encryption at the serialization boundary.
+
+This is the same approach used by every community session service (`adk-extra-services` MongoDB/Redis, `google-adk-extras`, etc.). Nobody wraps `DatabaseSessionService`; they all implement `BaseSessionService` from scratch.
 
 ```
 User Code
     │
     ▼
-EncryptedSessionService  (Decorator)
-    │ encrypt on write
-    │ decrypt on read
+EncryptedSessionService  (implements BaseSessionService)
+    │ json.dumps → encrypt → write
+    │ read → decrypt → json.loads
     ▼
-DatabaseSessionService   (ADK's original)
-    │
-    ▼
-SQLite / PostgreSQL / etc.
+SQLite (aiosqlite) / PostgreSQL
 ```
 
-Users swap one line to get encryption:
+We model our implementation on ADK's own `SqliteSessionService`, which uses `aiosqlite` + JSON serialization. Our version is structurally identical but adds an encrypt/decrypt step around the JSON serialization boundary.
 
-```python
-# Before
-session_service = DatabaseSessionService(db_url="sqlite+aiosqlite:///./sessions.db")
+#### Why not wrap `DatabaseSessionService` (Decorator pattern)?
 
-# After
-session_service = EncryptedSessionService(
-    db_url="sqlite+aiosqlite:///./sessions.db",
-    encryption_key="your-key",
-)
-```
+We initially planned a decorator approach. Reading the actual ADK source revealed this doesn't work:
+
+1. **`append_event` has no interception point.** It reads state from the DB, merges deltas via `json_patch` SQL operations, writes the event, and commits — all in one internal transaction. There's no clean boundary to inject encryption.
+
+2. **State is split across 3 tables** (`app_states`, `user_states`, `sessions`). A decorator would need to understand this internal split to encrypt/decrypt correctly, coupling us to ADK internals.
+
+3. **No community precedent.** Every third-party session service (`adk-extra-services`, `google-adk-redis`) subclasses `BaseSessionService` directly. Nobody wraps the built-in services.
 
 ### Strategy Pattern (Extensibility)
 
@@ -57,10 +55,8 @@ Encryption backends are interchangeable strategies. Each implements the `Encrypt
 ```
 EncryptedSessionService
     │
-    ├── FernetBackend        (symmetric, simple)
-    ├── SQLCipherBackend     (full-database, transparent)
-    ├── AWSKMSBackend        (managed keys, compliance)
-    └── CustomBackend        (user-provided)
+    ├── FernetBackend        (symmetric, simple — v1)
+    └── CustomBackend        (user-provided, implement 2 methods)
 ```
 
 ### Project Structure
@@ -72,14 +68,11 @@ src/adk_secure_sessions/
 ├── exceptions.py                # Exception hierarchy
 ├── services/
 │   ├── __init__.py
-│   └── encrypted_session.py     # Decorator — wraps ADK session services
+│   └── encrypted_session.py     # Implements BaseSessionService
 ├── backends/
 │   ├── __init__.py
-│   ├── fernet.py                # Fernet symmetric encryption
-│   ├── sqlcipher.py             # Full-database SQLCipher
-│   └── kms.py                   # AWS/GCP KMS (future)
-├── serialization.py             # Encrypt/decrypt serialization layer
-└── _compat.py                   # ADK version detection + schema compat
+│   └── fernet.py                # Fernet symmetric encryption (v1)
+└── serialization.py             # Encrypt/decrypt at JSON boundary
 ```
 
 ### Layer Rules
@@ -87,7 +80,22 @@ src/adk_secure_sessions/
 1. **`services/`** depends on `protocols.py` (the contract), never on concrete backends
 2. **`backends/`** implements `protocols.py` — each backend is self-contained
 3. **`protocols.py`** has zero dependencies (stdlib `typing` only)
-4. **`_compat.py`** is the only module that inspects ADK internals for version/schema detection
+4. **`serialization.py`** handles the encrypt-on-write / decrypt-on-read boundary around `json.dumps` / `json.loads`
+
+### What We Inherit from `BaseSessionService`
+
+ADK's `BaseSessionService` provides two concrete helper methods we reuse:
+
+- `_trim_temp_delta_state(event)` — removes temporary state keys before persistence
+- `_update_session_state(session, event)` — applies state deltas to in-memory session
+
+We implement the four abstract methods and `append_event`:
+
+- `create_session()` — serialize state → encrypt → write to DB
+- `get_session()` — read from DB → decrypt → deserialize state
+- `list_sessions()` — read metadata (unencrypted) + decrypt state per session
+- `delete_session()` — delete rows
+- `append_event()` — encrypt state delta + event data → write, then call `super().append_event()` for in-memory update
 
 ## Consequences
 
@@ -95,28 +103,33 @@ src/adk_secure_sessions/
 
 - **Adding backends**: New backend = one file, implement 2 methods, done
 - **Testing**: Mock the protocol for unit tests, use real backends for integration
-- **Adoption**: One-line change for existing ADK users
-- **Maintenance**: Flat structure, no layer gymnastics
+- **Adoption**: Same interface as ADK's built-in services — one-line swap
+- **Maintenance**: We own our schema, no fragile coupling to ADK internals
 
 ### What becomes harder
 
-- **Cross-cutting concerns**: If we later need middleware chains (logging, metrics, retry around encryption), the flat structure doesn't have a natural place. We'd add a simple middleware list if needed.
+- **Feature parity**: We reimplement session storage rather than delegating. If ADK adds new session service features (e.g., new query filters), we need to add them too.
+- **State splitting logic**: We must replicate ADK's `app_state` / `user_state` / `session_state` prefix-based splitting (via `_session_util.extract_state_delta`). This is a public utility in ADK, so it's stable.
 
 ### Trade-offs
 
-- No domain layer — encryption is a behavior, not a business domain. We don't model "encrypted sessions" as entities; we intercept and transform data in transit.
-- No port/adapter separation — the protocol *is* the port, and backends *are* the adapters. The vocabulary is simpler without the hexagonal ceremony.
+- More code than a decorator, but it actually works. A decorator that can't intercept `append_event` is useless.
+- We depend on `BaseSessionService`'s interface stability, not internal implementation details. This is the correct dependency direction for a plugin.
 
 ## Alternatives Considered
+
+### Decorator Wrapping `DatabaseSessionService`
+
+**Rejected.** Investigated in detail — `append_event` does state reads, delta merges, event writes, and commits in a single internal transaction with no interception points. State split across 3 tables requires knowledge of internals. No community implementations use this approach.
 
 ### Hexagonal Architecture (Ports & Adapters)
 
 **Rejected.** Hexagonal is designed for applications with rich domain logic and multiple I/O boundaries. adk-secure-sessions has one job (encrypt/decrypt session data) and one boundary (ADK's session service interface). Three layers of indirection would add ceremony without value.
 
-### Simple Inheritance
+### Simple Inheritance of `DatabaseSessionService`
 
-**Rejected.** Subclassing ADK's `DatabaseSessionService` directly would couple us to their internal implementation. When ADK refactors (as they did in v1.22.0), our subclass breaks. The decorator pattern wraps the public interface, insulating us from internal changes.
+**Rejected.** Subclassing `DatabaseSessionService` couples us to its internal SQLAlchemy schema, `_SchemaClasses` version logic, and `StorageSession` / `StorageEvent` models. When ADK refactors internals (as they did in v1.22.0 with the V0→V1 schema migration), our subclass breaks.
 
 ### Middleware/Pipeline Pattern
 
-**Considered for future.** If we need composable transformations (encrypt → compress → sign), a middleware chain would fit. For now, single-backend encryption doesn't warrant the complexity. The architecture allows adding this later without breaking changes.
+**Considered for future.** If we need composable transformations (encrypt → compress → sign), a middleware chain would fit. For now, single-backend encryption doesn't warrant the complexity.
