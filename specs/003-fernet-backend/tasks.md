@@ -17,8 +17,8 @@
 
 **Purpose**: Create exception hierarchy and backends package structure
 
-- [ ] T001 Create exception module with `SecureSessionError` and `DecryptionError` in `src/adk_secure_sessions/exceptions.py`
-- [ ] T002 Create backends package with `__init__.py` in `src/adk_secure_sessions/backends/__init__.py`
+- [ ] T001 [P] Create exception module with `SecureSessionError` and `DecryptionError` in `src/adk_secure_sessions/exceptions.py`
+- [ ] T002 [P] Create backends package with `__init__.py` in `src/adk_secure_sessions/backends/__init__.py`
 
 ---
 
@@ -98,7 +98,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Validate key input and add `TypeError` for non-bytes plaintext in `FernetBackend.encrypt` in `src/adk_secure_sessions/backends/fernet.py`
+- [ ] T019 [US3] Add key type validation (str/bytes) and empty-key guard in `FernetBackend.__init__` in `src/adk_secure_sessions/backends/fernet.py`
 
 **Checkpoint**: All key input types work correctly. All US3 tests pass.
 
@@ -109,7 +109,7 @@
 **Purpose**: Protocol conformance, final validation, documentation
 
 - [ ] T020 [P] Write unit test for `isinstance(FernetBackend(...), EncryptionBackend)` protocol check in `tests/unit/test_fernet_backend.py`
-- [ ] T021 [P] Write unit test for non-bytes plaintext raises `TypeError` in `tests/unit/test_fernet_backend.py`
+- [ ] T021 [P] Write unit test and implement `TypeError` guard for non-bytes plaintext in `FernetBackend.encrypt` in `src/adk_secure_sessions/backends/fernet.py` and `tests/unit/test_fernet_backend.py`
 - [ ] T022 Run full test suite and verify all tests pass via `uv run pytest tests/unit/test_fernet_backend.py -v`
 - [ ] T023 Run code quality pipeline via `bash scripts/code_quality_check.sh --all --verbose`
 - [ ] T024 Validate quickstart.md examples work end-to-end
