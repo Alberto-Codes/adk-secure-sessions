@@ -17,8 +17,8 @@
 
 **Purpose**: Create exception hierarchy and backends package structure
 
-- [ ] T001 [P] Create exception module with `SecureSessionError` and `DecryptionError` in `src/adk_secure_sessions/exceptions.py`
-- [ ] T002 [P] Create backends package with `__init__.py` in `src/adk_secure_sessions/backends/__init__.py`
+- [x] T001 [P] Create exception module with `SecureSessionError` and `DecryptionError` in `src/adk_secure_sessions/exceptions.py`
+- [x] T002 [P] Create backends package with `__init__.py` in `src/adk_secure_sessions/backends/__init__.py`
 
 ---
 
@@ -28,8 +28,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Implement `FernetBackend.__init__` with PBKDF2 key derivation and direct Fernet key detection in `src/adk_secure_sessions/backends/fernet.py`
-- [ ] T004 Update public API exports to include `FernetBackend`, `SecureSessionError`, `DecryptionError` in `src/adk_secure_sessions/__init__.py`
+- [x] T003 Implement `FernetBackend.__init__` with PBKDF2 key derivation and direct Fernet key detection in `src/adk_secure_sessions/backends/fernet.py`
+- [x] T004 Update public API exports to include `FernetBackend`, `SecureSessionError`, `DecryptionError` in `src/adk_secure_sessions/__init__.py`
 
 **Checkpoint**: FernetBackend can be imported and initialized with string or bytes keys
 
@@ -45,14 +45,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T005 [P] [US1] Write unit test for encrypt/decrypt round-trip in `tests/unit/test_fernet_backend.py`
-- [ ] T006 [P] [US1] Write unit test for non-deterministic ciphertext (same plaintext produces different ciphertext) in `tests/unit/test_fernet_backend.py`
-- [ ] T007 [P] [US1] Write unit test for empty bytes round-trip in `tests/unit/test_fernet_backend.py`
+- [x] T005 [P] [US1] Write unit test for encrypt/decrypt round-trip in `tests/unit/test_fernet_backend.py`
+- [x] T006 [P] [US1] Write unit test for non-deterministic ciphertext (same plaintext produces different ciphertext) in `tests/unit/test_fernet_backend.py`
+- [x] T007 [P] [US1] Write unit test for empty bytes round-trip in `tests/unit/test_fernet_backend.py`
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement `FernetBackend.encrypt` async method using `asyncio.to_thread` in `src/adk_secure_sessions/backends/fernet.py`
-- [ ] T009 [US1] Implement `FernetBackend.decrypt` async method using `asyncio.to_thread` in `src/adk_secure_sessions/backends/fernet.py`
+- [x] T008 [US1] Implement `FernetBackend.encrypt` async method using `asyncio.to_thread` in `src/adk_secure_sessions/backends/fernet.py`
+- [x] T009 [US1] Implement `FernetBackend.decrypt` async method using `asyncio.to_thread` in `src/adk_secure_sessions/backends/fernet.py`
 
 **Checkpoint**: Encrypt/decrypt round-trip works for all valid inputs. All US1 tests pass.
 
@@ -68,14 +68,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US2] Write unit test for wrong key raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
-- [ ] T011 [P] [US2] Write unit test for tampered ciphertext raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
-- [ ] T012 [P] [US2] Write unit test for malformed/truncated ciphertext raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
-- [ ] T013 [P] [US2] Write unit test that error message does not contain key material in `tests/unit/test_fernet_backend.py`
+- [x] T010 [P] [US2] Write unit test for wrong key raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
+- [x] T011 [P] [US2] Write unit test for tampered ciphertext raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
+- [x] T012 [P] [US2] Write unit test for malformed/truncated ciphertext raises `DecryptionError` in `tests/unit/test_fernet_backend.py`
+- [x] T013 [P] [US2] Write unit test that error message does not contain key material in `tests/unit/test_fernet_backend.py`
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Add `DecryptionError` wrapping of `cryptography.fernet.InvalidToken` in `FernetBackend.decrypt` in `src/adk_secure_sessions/backends/fernet.py`
+- [x] T014 [US2] Add `DecryptionError` wrapping of `cryptography.fernet.InvalidToken` in `FernetBackend.decrypt` in `src/adk_secure_sessions/backends/fernet.py`
 
 **Checkpoint**: All decryption failure modes raise `DecryptionError` with safe messages. All US2 tests pass.
 
@@ -91,14 +91,14 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T015 [P] [US3] Write unit test for string key initialization and round-trip in `tests/unit/test_fernet_backend.py`
-- [ ] T016 [P] [US3] Write unit test for bytes key initialization and round-trip in `tests/unit/test_fernet_backend.py`
-- [ ] T017 [P] [US3] Write unit test for valid Fernet key passthrough (no derivation) in `tests/unit/test_fernet_backend.py`
-- [ ] T018 [P] [US3] Write unit test for empty key raises `ValueError` in `tests/unit/test_fernet_backend.py`
+- [x] T015 [P] [US3] Write unit test for string key initialization and round-trip in `tests/unit/test_fernet_backend.py`
+- [x] T016 [P] [US3] Write unit test for bytes key initialization and round-trip in `tests/unit/test_fernet_backend.py`
+- [x] T017 [P] [US3] Write unit test for valid Fernet key passthrough (no derivation) in `tests/unit/test_fernet_backend.py`
+- [x] T018 [P] [US3] Write unit test for empty key raises `ValueError` in `tests/unit/test_fernet_backend.py`
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Add key type validation (str/bytes) and empty-key guard in `FernetBackend.__init__` in `src/adk_secure_sessions/backends/fernet.py`
+- [x] T019 [US3] Add key type validation (str/bytes) and empty-key guard in `FernetBackend.__init__` in `src/adk_secure_sessions/backends/fernet.py`
 
 **Checkpoint**: All key input types work correctly. All US3 tests pass.
 
@@ -108,11 +108,11 @@
 
 **Purpose**: Protocol conformance, final validation, documentation
 
-- [ ] T020 [P] Write unit test for `isinstance(FernetBackend(...), EncryptionBackend)` protocol check in `tests/unit/test_fernet_backend.py`
-- [ ] T021 [P] Write unit test and implement `TypeError` guard for non-bytes plaintext in `FernetBackend.encrypt` in `src/adk_secure_sessions/backends/fernet.py` and `tests/unit/test_fernet_backend.py`
-- [ ] T022 Run full test suite and verify all tests pass via `uv run pytest tests/unit/test_fernet_backend.py -v`
-- [ ] T023 Run code quality pipeline via `bash scripts/code_quality_check.sh --all --verbose`
-- [ ] T024 Validate quickstart.md examples work end-to-end
+- [x] T020 [P] Write unit test for `isinstance(FernetBackend(...), EncryptionBackend)` protocol check in `tests/unit/test_fernet_backend.py`
+- [x] T021 [P] Write unit test and implement `TypeError` guard for non-bytes plaintext in `FernetBackend.encrypt` in `src/adk_secure_sessions/backends/fernet.py` and `tests/unit/test_fernet_backend.py`
+- [x] T022 Run full test suite and verify all tests pass via `uv run pytest tests/unit/test_fernet_backend.py -v`
+- [x] T023 Run code quality pipeline via `bash scripts/code_quality_check.sh --all --verbose`
+- [x] T024 Validate quickstart.md examples work end-to-end
 
 ---
 
