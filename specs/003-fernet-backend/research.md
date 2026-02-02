@@ -16,6 +16,8 @@
 
 **Implementation detail**: Use 480,000 iterations (OWASP 2023 recommendation for PBKDF2-HMAC-SHA256). Salt: `b"adk-secure-sessions-fernet-v1"` (constant, application-scoped).
 
+**Security tradeoff — fixed salt**: A fixed salt means identical passphrases produce the same derived key across all deployments. An attacker who knows the public salt can precompute PBKDF2 outputs for common passphrases and reuse that work across targets. This is a deliberate simplicity tradeoff: per-key random salts would require salt storage alongside session metadata, adding API complexity. Users concerned about this should use unique passphrases per application or pass pre-generated Fernet keys directly (bypassing PBKDF2 entirely). A future iteration may introduce per-key random salts if the session metadata layer supports salt storage.
+
 ## R2: Exception Hierarchy
 
 **Decision**: Create `SecureSessionError(Exception)` as base, with `DecryptionError(SecureSessionError)` as the only subclass for now.
