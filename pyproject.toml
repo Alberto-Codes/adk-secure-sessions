@@ -64,7 +64,7 @@ explicit = true
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-exclude = [".uv-cache", ".venv", "__pycache__", "*.egg-info"]
+exclude = [".uv-cache", ".venv", "__pycache__", "*.egg-info", "specs"]
 
 [tool.ruff.lint]
 extend-select = ["E501", "I", "D"]
