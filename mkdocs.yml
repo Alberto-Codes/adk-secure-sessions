@@ -139,6 +139,7 @@ nav:
       - Overview: reference/index.md
       - Full Module Index: reference/adk_secure_sessions/index.md
   - Architecture:
+      - Overview: ARCHITECTURE.md
       - adr/index.md
       - Direct Implementation: adr/ADR-000-strategy-decorator-architecture.md
       - Protocol Interfaces: adr/ADR-001-protocol-based-interfaces.md
