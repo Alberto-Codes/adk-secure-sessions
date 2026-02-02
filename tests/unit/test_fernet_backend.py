@@ -12,6 +12,8 @@ from adk_secure_sessions import (
     SecureSessionError,
 )
 
+pytestmark = pytest.mark.unit
+
 # ---------------------------------------------------------------------------
 # US1: Encrypt and Decrypt Round-Trip
 # ---------------------------------------------------------------------------
