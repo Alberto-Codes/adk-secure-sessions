@@ -2,7 +2,7 @@
 
 This script is executed by mkdocs-gen-files during the build process.
 It automatically creates API documentation pages for all Python modules
-in src/gepa_adk/ and generates the navigation structure.
+under src/ and generates the navigation structure.
 
 Note:
     This script runs at build time, not at runtime. The generated files
