@@ -174,6 +174,13 @@ class TestPolish:
         with pytest.raises(TypeError, match="plaintext must be bytes"):
             await backend.encrypt("not bytes")  # type: ignore[arg-type]
 
+    async def test_non_bytes_ciphertext_raises_type_error(self) -> None:
+        """Non-bytes ciphertext raises TypeError."""
+        backend = FernetBackend(key="test")
+
+        with pytest.raises(TypeError, match="ciphertext must be bytes"):
+            await backend.decrypt("not bytes")  # type: ignore[arg-type]
+
     def test_non_str_bytes_key_raises_type_error(self) -> None:
         """Key that is neither str nor bytes raises TypeError."""
         with pytest.raises(TypeError, match="key must be str or bytes"):
