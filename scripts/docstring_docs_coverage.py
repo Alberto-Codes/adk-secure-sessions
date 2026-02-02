@@ -3,7 +3,7 @@
 
 This script detects files that would be excluded from `make docs-build` due to
 missing `__init__.py` files in parent directories. Mirrors the logic in
-`docs/gen_ref_pages.py`.
+`scripts/gen_ref_pages.py`.
 
 Examples:
     Check specific files:
@@ -22,7 +22,6 @@ from pathlib import Path
 
 # Setup paths
 root = Path(__file__).resolve().parents[1]
-src = root / "src" / "adk_secure_sessions"
 
 
 @dataclass
