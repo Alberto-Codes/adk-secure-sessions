@@ -14,7 +14,7 @@ Ship a working `EncryptedSessionService` with Fernet encryption and SQLite stora
 - [x] Unit tests for protocol conformance (`tests/unit/test_protocols.py`)
 - [x] `FernetBackend` implementation (`backends/fernet.py`)
 - [x] Exception hierarchy (`exceptions.py`)
-- [ ] Serialization layer — encrypt/decrypt at JSON boundary (`serialization.py`)
+- [x] Serialization layer — encrypt/decrypt at JSON boundary (`serialization.py`)
 - [ ] `EncryptedSessionService` implementing `BaseSessionService` (`services/encrypted_session.py`)
   - [ ] `create_session` with encrypted state
   - [ ] `get_session` with decrypted state
