@@ -80,3 +80,23 @@ class DecryptionError(SecureSessionError):
             log.error("Decryption failed, check key")
         ```
     """
+
+
+class SerializationError(SecureSessionError):
+    """Raised when data cannot be serialized to JSON.
+
+    This indicates a caller bug — the input contains types that are not
+    JSON-serializable (e.g., ``datetime``, custom objects). This is
+    distinct from encryption/decryption failures which indicate
+    configuration or data integrity issues.
+
+    Examples:
+        Handle serialization failures:
+
+        ```python
+        try:
+            envelope = await encrypt_session(data, backend, backend_id)
+        except SerializationError:
+            log.error("Data contains non-JSON-serializable values")
+        ```
+    """
