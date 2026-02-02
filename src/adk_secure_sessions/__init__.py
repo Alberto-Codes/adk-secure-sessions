@@ -8,6 +8,7 @@ Attributes:
         contract.
     FernetBackend: Fernet symmetric encryption backend.
     SecureSessionError: Base exception for all library errors.
+    EncryptionError: Raised when encryption fails.
     DecryptionError: Raised when decryption fails.
 
 Examples:
@@ -23,12 +24,17 @@ See Also:
 """
 
 from adk_secure_sessions.backends.fernet import FernetBackend
-from adk_secure_sessions.exceptions import DecryptionError, SecureSessionError
+from adk_secure_sessions.exceptions import (
+    DecryptionError,
+    EncryptionError,
+    SecureSessionError,
+)
 from adk_secure_sessions.protocols import EncryptionBackend
 
 __all__ = [
     "DecryptionError",
     "EncryptionBackend",
+    "EncryptionError",
     "FernetBackend",
     "SecureSessionError",
 ]
