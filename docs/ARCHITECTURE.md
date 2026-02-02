@@ -21,7 +21,7 @@ graph TD
     style UC fill:#616161,stroke:#424242,color:#fff
     style ESS fill:#616161,stroke:#424242,color:#fff
     style BSS fill:#616161,stroke:#424242,color:#fff
-    style FB fill:#616161,stroke:#424242,color:#fff
+    style FB fill:#2e7d32,stroke:#1b5e20,color:#fff
     style CB fill:#616161,stroke:#424242,color:#fff
     style DB fill:#616161,stroke:#424242,color:#fff
 ```
@@ -90,7 +90,7 @@ graph LR
 
     style EB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
     style ESS2 fill:#616161,stroke:#424242,color:#fff
-    style FB2 fill:#616161,stroke:#424242,color:#fff
+    style FB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SER fill:#616161,stroke:#424242,color:#fff
 ```
 
@@ -106,11 +106,13 @@ graph LR
 **Implemented:**
 
 - **`protocols.py`** — `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`
-- **`__init__.py`** — Exports `EncryptionBackend` as public API
+- **`backends/fernet.py`** — `FernetBackend` using Fernet symmetric encryption with PBKDF2 key derivation
+- **`exceptions.py`** — `SecureSessionError` base exception, `DecryptionError`
+- **`__init__.py`** — Exports `EncryptionBackend`, `FernetBackend`, `SecureSessionError`, `DecryptionError`
 
 **Planned** (see [Roadmap](ROADMAP.md)):
 
-- `FernetBackend`, exception hierarchy, serialization layer, `EncryptedSessionService`
+- Serialization layer, `EncryptedSessionService`
 
 ## Design Decisions
 
