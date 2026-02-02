@@ -40,7 +40,7 @@ confirm it satisfies the protocol via static type checking
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Create `EncryptionBackend` protocol class in src/adk_secure_sessions/protocols.py — two `async def` methods (`encrypt(self, plaintext: bytes) -> bytes`, `decrypt(self, ciphertext: bytes) -> bytes`), `@runtime_checkable` decorator, module and class docstrings documenting contract + known limitations
+- [ ] T002 [US1] Create `EncryptionBackend` protocol class in src/adk_secure_sessions/protocols.py — two `async def` methods (`encrypt(self, plaintext: bytes) -> bytes`, `decrypt(self, ciphertext: bytes) -> bytes`), `@runtime_checkable` decorator, module and class docstrings documenting contract + known limitations. This MUST be a Protocol, not an ABC (FR-007). No alternative base class.
 - [ ] T003 [US1] Export `EncryptionBackend` from src/adk_secure_sessions/__init__.py
 
 **Checkpoint**: Protocol importable via `from adk_secure_sessions.protocols import EncryptionBackend`
