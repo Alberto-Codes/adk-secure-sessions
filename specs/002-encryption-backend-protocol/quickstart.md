@@ -27,15 +27,26 @@ backend = MyBackend()
 assert isinstance(backend, EncryptionBackend)  # True
 ```
 
-## Using with the Session Service
+## Using with a Session Service
 
 ```python
-from adk_secure_sessions import EncryptedSessionService
+from adk_secure_sessions.protocols import EncryptionBackend
 
-service = EncryptedSessionService(
-    db_url="sqlite+aiosqlite:///./sessions.db",
-    backend=MyBackend(),
-)
+
+class SessionService:
+    """Example of how a session service could depend on EncryptionBackend."""
+
+    def __init__(self, backend: EncryptionBackend) -> None:
+        self._backend = backend
+
+    async def create_session(self, data: bytes) -> bytes:
+        return await self._backend.encrypt(data)
+
+    async def read_session(self, token: bytes) -> bytes:
+        return await self._backend.decrypt(token)
+
+
+service = SessionService(backend=MyBackend())
 ```
 
 ## Known Limitations
