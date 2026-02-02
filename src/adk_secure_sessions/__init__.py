@@ -28,13 +28,29 @@ from adk_secure_sessions.exceptions import (
     DecryptionError,
     EncryptionError,
     SecureSessionError,
+    SerializationError,
 )
 from adk_secure_sessions.protocols import EncryptionBackend
+from adk_secure_sessions.serialization import (
+    BACKEND_FERNET,
+    ENVELOPE_VERSION_1,
+    decrypt_json,
+    decrypt_session,
+    encrypt_json,
+    encrypt_session,
+)
 
 __all__ = [
+    "BACKEND_FERNET",
     "DecryptionError",
+    "ENVELOPE_VERSION_1",
     "EncryptionBackend",
     "EncryptionError",
     "FernetBackend",
     "SecureSessionError",
+    "SerializationError",
+    "decrypt_json",
+    "decrypt_session",
+    "encrypt_json",
+    "encrypt_session",
 ]
