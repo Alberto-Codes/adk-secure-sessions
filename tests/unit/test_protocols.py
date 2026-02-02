@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import pytest
+
 from adk_secure_sessions.protocols import EncryptionBackend
+
+pytestmark = pytest.mark.unit
 
 # --- US2: Runtime Validation ---
 

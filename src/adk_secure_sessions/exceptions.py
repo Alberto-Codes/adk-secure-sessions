@@ -31,6 +31,35 @@ class SecureSessionError(Exception):
     All library-specific exceptions inherit from this class so callers
     can use a single ``except SecureSessionError`` clause to handle any
     failure originating from this package.
+
+    Examples:
+        Catch any library error regardless of type:
+
+        ```python
+        try:
+            await backend.encrypt(plaintext)
+        except SecureSessionError:
+            log.error("adk-secure-sessions operation failed")
+        ```
+    """
+
+
+class EncryptionError(SecureSessionError):
+    """Raised when encryption fails.
+
+    Possible causes include invalid plaintext input or backend-specific
+    errors. Error messages intentionally exclude key material, plaintext,
+    and ciphertext to prevent information leakage.
+
+    Examples:
+        Handle encryption failures specifically:
+
+        ```python
+        try:
+            ciphertext = await backend.encrypt(plaintext)
+        except EncryptionError:
+            log.error("Encryption failed")
+        ```
     """
 
 
@@ -40,4 +69,14 @@ class DecryptionError(SecureSessionError):
     Possible causes include a wrong key, tampered ciphertext, or
     malformed input. Error messages intentionally exclude key material,
     ciphertext, and plaintext to prevent information leakage.
+
+    Examples:
+        Handle decryption failures specifically:
+
+        ```python
+        try:
+            plaintext = await backend.decrypt(ciphertext)
+        except DecryptionError:
+            log.error("Decryption failed, check key")
+        ```
     """

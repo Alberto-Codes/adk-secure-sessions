@@ -107,8 +107,8 @@ graph LR
 
 - **`protocols.py`** — `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`
 - **`backends/fernet.py`** — `FernetBackend` using Fernet symmetric encryption with PBKDF2 key derivation
-- **`exceptions.py`** — `SecureSessionError` base exception, `DecryptionError`
-- **`__init__.py`** — Exports `EncryptionBackend`, `FernetBackend`, `SecureSessionError`, `DecryptionError`
+- **`exceptions.py`** — `SecureSessionError` base exception, `EncryptionError`, `DecryptionError`
+- **`__init__.py`** — Exports `EncryptionBackend`, `FernetBackend`, `SecureSessionError`, `EncryptionError`, `DecryptionError`
 
 **Planned** (see [Roadmap](ROADMAP.md)):
 

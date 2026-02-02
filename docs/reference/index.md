@@ -15,6 +15,7 @@ This reference documents all public APIs in adk-secure-sessions.
 ### Exceptions
 
 - **[`SecureSessionError`](adk_secure_sessions/exceptions.md#adk_secure_sessions.exceptions.SecureSessionError)** — Base exception for all library errors
+- **[`EncryptionError`](adk_secure_sessions/exceptions.md#adk_secure_sessions.exceptions.EncryptionError)** — Raised when encryption fails
 - **[`DecryptionError`](adk_secure_sessions/exceptions.md#adk_secure_sessions.exceptions.DecryptionError)** — Raised when decryption fails
 
 ---
