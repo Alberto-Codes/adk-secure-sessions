@@ -8,11 +8,11 @@ ADRs document significant architectural decisions made during the project's deve
 
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
-| [ADR-000](ADR-000-strategy-decorator-architecture.md) | Strategy + Decorator Architecture | Accepted | 2026-02-01 |
+| [ADR-000](ADR-000-strategy-decorator-architecture.md) | Strategy + Direct Implementation Architecture | Accepted | 2026-02-01 |
 | [ADR-001](ADR-001-protocol-based-interfaces.md) | Protocol-Based Interfaces | Accepted | 2026-02-01 |
 | [ADR-002](ADR-002-async-first.md) | Async-First Design | Accepted | 2026-02-01 |
 | [ADR-003](ADR-003-field-level-encryption.md) | Field-Level Encryption by Default | Accepted | 2026-02-01 |
-| [ADR-004](ADR-004-adk-schema-compatibility.md) | ADK Schema Compatibility Strategy | Accepted | 2026-02-01 |
+| [ADR-004](ADR-004-adk-schema-compatibility.md) | ADK Interface Compatibility Strategy | Accepted | 2026-02-01 |
 | [ADR-005](ADR-005-exception-hierarchy.md) | Exception Hierarchy | Accepted | 2026-02-01 |
 
 ## Format
