@@ -25,7 +25,7 @@ implementation and testing of each story.
 
 **Purpose**: Ensure test infrastructure is ready
 
-- [ ] T001 Create tests/unit/ directory and verify pytest + pytest-asyncio are in dev dependencies
+- [x] T001 Create tests/unit/ directory and verify pytest + pytest-asyncio are in dev dependencies
 
 **Checkpoint**: Test runner works with `uv run pytest`
 
@@ -40,8 +40,8 @@ confirm it satisfies the protocol via static type checking
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Create `EncryptionBackend` protocol class in src/adk_secure_sessions/protocols.py — two `async def` methods (`encrypt(self, plaintext: bytes) -> bytes`, `decrypt(self, ciphertext: bytes) -> bytes`), `@runtime_checkable` decorator, module and class docstrings documenting contract + known limitations. This MUST be a Protocol, not an ABC (FR-007). No alternative base class.
-- [ ] T003 [US1] Export `EncryptionBackend` from src/adk_secure_sessions/__init__.py
+- [x] T002 [US1] Create `EncryptionBackend` protocol class in src/adk_secure_sessions/protocols.py — two `async def` methods (`encrypt(self, plaintext: bytes) -> bytes`, `decrypt(self, ciphertext: bytes) -> bytes`), `@runtime_checkable` decorator, module and class docstrings documenting contract + known limitations. This MUST be a Protocol, not an ABC (FR-007). No alternative base class.
+- [x] T003 [US1] Export `EncryptionBackend` from src/adk_secure_sessions/__init__.py
 
 **Checkpoint**: Protocol importable via `from adk_secure_sessions.protocols import EncryptionBackend`
 
@@ -56,7 +56,7 @@ to `isinstance(obj, EncryptionBackend)` and assert expected results
 
 ### Implementation for User Story 2
 
-- [ ] T004 [US2] Write unit tests in tests/unit/test_protocols.py — test conforming class returns `True`, class missing `decrypt` returns `False`, class missing `encrypt` returns `False`, class with no methods returns `False`, sync methods return `True` (document known limitation)
+- [x] T004 [US2] Write unit tests in tests/unit/test_protocols.py — test conforming class returns `True`, class missing `decrypt` returns `False`, class missing `encrypt` returns `False`, class with no methods returns `False`, sync methods return `True` (document known limitation)
 
 **Checkpoint**: `uv run pytest tests/unit/test_protocols.py` passes
 
@@ -71,7 +71,7 @@ the protocol, then verify it passes `isinstance()` after importing
 
 ### Implementation for User Story 3
 
-- [ ] T005 [US3] Add extensibility test in tests/unit/test_protocols.py — define a standalone class (no imports from adk_secure_sessions for the class definition), then assert `isinstance(obj, EncryptionBackend)` returns `True`
+- [x] T005 [US3] Add extensibility test in tests/unit/test_protocols.py — define a standalone class (no imports from adk_secure_sessions for the class definition), then assert `isinstance(obj, EncryptionBackend)` returns `True`
 
 **Checkpoint**: Third-party extensibility verified without inheritance
 
@@ -81,9 +81,9 @@ the protocol, then verify it passes `isinstance()` after importing
 
 **Purpose**: Validation and cleanup
 
-- [ ] T006 Run `uv run ruff check src/adk_secure_sessions/protocols.py` and fix any issues
-- [ ] T007 Run type checker against src/adk_secure_sessions/protocols.py
-- [ ] T008 Validate quickstart.md examples match actual protocol API in specs/002-encryption-backend-protocol/quickstart.md
+- [x] T006 Run `uv run ruff check src/adk_secure_sessions/protocols.py` and fix any issues
+- [x] T007 Run type checker against src/adk_secure_sessions/protocols.py
+- [x] T008 Validate quickstart.md examples match actual protocol API in specs/002-encryption-backend-protocol/quickstart.md
 
 ---
 
