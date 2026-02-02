@@ -137,7 +137,7 @@ nav:
   - Home: index.md
   - API Reference:
       - Overview: reference/index.md
-      - Full Module Index: reference/adk_secure_sessions/
+      - Full Module Index: reference/adk_secure_sessions/index.md
   - Architecture:
       - adr/index.md
       - Direct Implementation: adr/ADR-000-strategy-decorator-architecture.md
