@@ -39,17 +39,13 @@ uv add adk-secure-sessions
 ## Basic Usage
 
 ```python
-from adk_secure_sessions import EncryptedSessionService
+from adk_secure_sessions import EncryptionBackend
 
-session_service = EncryptedSessionService(
-    db_url="sqlite+aiosqlite:///./sessions.db",
-    encryption_key="your-secret-key",
-)
+class MyBackend:
+    async def encrypt(self, plaintext: bytes) -> bytes: ...
+    async def decrypt(self, ciphertext: bytes) -> bytes: ...
 
-session = await session_service.create_session(
-    app_name="my_agent",
-    user_id="user_123",
-)
+assert isinstance(MyBackend(), EncryptionBackend)  # True
 ```
 
 ## Project Status
