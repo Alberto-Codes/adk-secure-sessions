@@ -1,0 +1,56 @@
+name: Feature Request
+description: Suggest a new feature or improvement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Feature Request
+
+        **Title Guidelines:**
+        - Imperative mood (e.g., "Add", "Support", not "Added")
+        - Example: `[Feature] Add AWS KMS encryption backend`
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: |
+        **As a** [role], **I want** [feature], **so that** [benefit].
+      placeholder: |
+        As a healthcare developer, I want to use AWS KMS for key management,
+        so that my ADK sessions meet HIPAA encryption requirements.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Key scenarios using Given/When/Then format.
+      placeholder: |
+        Scenario: Encrypt session with KMS
+          Given a KMS-backed EncryptedSessionService
+          When a session is created with sensitive state
+          Then state values are encrypted using KMS-managed keys
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical - Blocking current work
+        - High - Important for compliance
+        - Medium - Nice to have
+        - Low - Future consideration
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context, links, or references.
