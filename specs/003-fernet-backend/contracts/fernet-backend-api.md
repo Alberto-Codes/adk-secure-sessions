@@ -59,6 +59,10 @@ async def decrypt(self, ciphertext: bytes) -> bytes
 
 Base exception for all library errors.
 
+### Class: `EncryptionError(SecureSessionError)`
+
+Raised when encryption fails. Error messages must not contain key material, plaintext, or ciphertext.
+
 ### Class: `DecryptionError(SecureSessionError)`
 
 Raised when decryption fails. Error messages must not contain key material, ciphertext, or plaintext.
@@ -71,5 +75,6 @@ Raised when decryption fails. Error messages must not contain key material, ciph
 from adk_secure_sessions import EncryptionBackend   # existing
 from adk_secure_sessions import FernetBackend        # new
 from adk_secure_sessions import SecureSessionError   # new
+from adk_secure_sessions import EncryptionError      # new
 from adk_secure_sessions import DecryptionError      # new
 ```
