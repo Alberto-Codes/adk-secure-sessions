@@ -7,6 +7,13 @@ Implements the ``EncryptionBackend`` protocol using
 Keys can be provided as strings, bytes, or valid Fernet keys. Arbitrary
 input is derived into a valid Fernet key via PBKDF2-HMAC-SHA256.
 
+!!! warning "Fixed Salt"
+    Passphrase-based key derivation uses a fixed, application-scoped salt.
+    This means identical passphrases will always produce the same Fernet
+    key across all `FernetBackend` instances. For production use, prefer
+    unique passphrases per application/context or use pre-generated Fernet
+    keys via `cryptography.fernet.Fernet.generate_key()`.
+
 Examples:
     Basic usage::
 
@@ -114,6 +121,7 @@ class FernetBackend:
             Decrypted plaintext as bytes.
 
         Raises:
+            TypeError: If *ciphertext* is not ``bytes``.
             DecryptionError: If decryption fails due to wrong key,
                 tampered ciphertext, or malformed input.
 
@@ -122,6 +130,10 @@ class FernetBackend:
             plaintext = await backend.decrypt(ciphertext)
             ```
         """
+        if not isinstance(ciphertext, bytes):
+            msg = f"ciphertext must be bytes, got {type(ciphertext).__name__}"
+            raise TypeError(msg)
+
         try:
             return await asyncio.to_thread(self._fernet.decrypt, ciphertext)
         except InvalidToken:
@@ -144,7 +156,7 @@ class FernetBackend:
         try:
             Fernet(key_bytes)
             return key_bytes
-        except (ValueError, Exception):  # noqa: BLE001
+        except ValueError:
             derived = hashlib.pbkdf2_hmac(
                 "sha256",
                 key_bytes,
