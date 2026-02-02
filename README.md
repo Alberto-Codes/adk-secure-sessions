@@ -12,13 +12,10 @@ If you're building ADK agents that handle PHI (HIPAA), PII, financial data (SOC 
 
 ## What This Package Does
 
-- **Drop-in encrypted session service** that implements the same interface as ADK's session services
-- **Pluggable encryption backends** — choose what fits your compliance requirements:
-  - Field-level encryption via [Fernet](https://cryptography.io/en/latest/fernet/) (symmetric, from the `cryptography` library)
-  - Full-database encryption via [SQLCipher](https://www.zetetic.net/sqlcipher/) (transparent 256-bit AES)
-  - Bring your own backend (AWS KMS, GCP KMS, HashiCorp Vault, etc.)
-- **Schema tracking** — stays up to date with ADK's evolving database schema (which changed in v1.22.0 and continues to evolve)
-- **Async-first** — built for ADK's async runtime
+- **Drop-in encrypted session service** that implements `BaseSessionService` — the same ABC that ADK's built-in services implement
+- **Pluggable encryption backends** via a simple protocol (2 methods: `encrypt`, `decrypt`)
+- **Field-level encryption** — state values and conversation history are encrypted; session metadata (IDs, timestamps) stays queryable
+- **Async-first** — built on `aiosqlite`, matching ADK's async runtime
 
 ## Installation
 
@@ -37,7 +34,7 @@ uv add adk-secure-sessions
 ```python
 from adk_secure_sessions import EncryptedSessionService
 
-# Field-level encryption with auto-generated key
+# Field-level encryption with Fernet (symmetric)
 session_service = EncryptedSessionService(
     db_url="sqlite+aiosqlite:///./sessions.db",
     encryption_key="your-secret-key",
@@ -50,30 +47,51 @@ session = await session_service.create_session(
 )
 ```
 
-## Planned Encryption Backends
+## What Gets Encrypted
+
+| Data | Encrypted | Rationale |
+|------|-----------|-----------|
+| `state` values (user_state, app_state, session_state) | Yes | Contains sensitive user/app data |
+| `events` (conversation history) | Yes | Contains user messages, tool outputs, PII |
+| `session_id`, `app_name`, `user_id` | No | Needed for lookups and filtering |
+| `create_time`, `update_time` | No | Needed for expiration/cleanup |
+
+## Encryption Backends
+
+### v1 (Current)
 
 | Backend | Encryption Level | Use Case |
 |---------|-----------------|----------|
-| **Fernet** | Field-level (state values, events) | Simple deployment, single-key |
-| **SQLCipher** | Full database file | Maximum protection, transparent |
+| **Fernet** | Field-level (state values, events) | Simple deployment, single symmetric key |
+
+### Future
+
+| Backend | Encryption Level | Use Case |
+|---------|-----------------|----------|
+| **SQLCipher** | Full database file | Maximum at-rest protection |
 | **AWS KMS** | Field-level with managed keys | AWS-native compliance |
 | **GCP KMS** | Field-level with managed keys | GCP-native compliance |
 | **HashiCorp Vault** | Field-level with managed keys | Multi-cloud, enterprise |
 
-## Why Not Just Use SQLCipher Directly?
+Custom backends can be added by implementing the `EncryptionBackend` protocol (two async methods: `encrypt` and `decrypt`).
 
-You can pass a `sqlite+pysqlcipher://` URL to ADK's `DatabaseSessionService` and get full-database encryption. But:
+## How It Works
 
-1. **No async SQLCipher dialect exists** — ADK uses `aiosqlite`, and there's no `aiosqlcipher` equivalent out of the box
-2. **Field-level encryption is often preferred** for compliance — you may need to encrypt specific state values while keeping session metadata queryable
-3. **Key management matters** — production deployments need KMS integration, key rotation, and audit trails, not just a passphrase
-4. **Schema migrations** — when ADK updates its schema (as it did in v1.22.0), encrypted databases need careful migration handling
+Unlike a wrapper or decorator, `EncryptedSessionService` directly implements ADK's `BaseSessionService` ABC — the same base class that `DatabaseSessionService` and `SqliteSessionService` extend. It owns its own database schema and adds encryption at the JSON serialization boundary:
 
-This package handles all of that.
+```
+create_session / append_event:
+    state dict → json.dumps → encrypt → write to DB
+
+get_session:
+    read from DB → decrypt → json.loads → state dict
+```
+
+This is the same approach used by community session services like `adk-extra-services` (MongoDB, Redis). It avoids coupling to ADK's internal schema, which has changed across versions and will continue to evolve.
 
 ## Project Status
 
-**Alpha** — under active development. The core encryption service and Fernet backend are being built first, with additional backends to follow.
+**Alpha** — under active development. The core `EncryptedSessionService` and Fernet backend are being built first.
 
 ## Development
 
