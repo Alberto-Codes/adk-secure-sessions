@@ -12,6 +12,7 @@ from adk_secure_sessions.exceptions import (
     DecryptionError,
     EncryptionError,
     SecureSessionError,
+    SerializationError,
 )
 
 pytestmark = pytest.mark.unit
@@ -121,6 +122,19 @@ class TestSafeErrorMessages:
         except DecryptionError as exc:
             assert exc.__cause__ is original
 
+    @pytest.mark.parametrize(
+        "exc_cls",
+        [SecureSessionError, EncryptionError, DecryptionError, SerializationError],
+        ids=["base", "encryption", "decryption", "serialization"],
+    )
+    def test_exception_accepts_empty_message(
+        self,
+        exc_cls: type[SecureSessionError],
+    ) -> None:
+        """All exception classes accept an empty message."""
+        exc = exc_cls()
+        assert str(exc) == ""
+
     async def test_existing_raise_sites_use_safe_messages(self) -> None:
         """T014: Raise sites in fernet.py use safe messages.
 
@@ -137,3 +151,45 @@ class TestSafeErrorMessages:
         assert "test-key" not in message
         assert "not-valid-ciphertext" not in message
         assert "failed" in message or "invalid" in message
+
+
+# ---------------------------------------------------------------------------
+# SerializationError Hierarchy
+# ---------------------------------------------------------------------------
+
+
+class TestSerializationErrorHierarchy:
+    """SerializationError is a sibling of EncryptionError/DecryptionError."""
+
+    def test_serialization_error_inherits_from_base(self) -> None:
+        """SerializationError is a subclass of SecureSessionError."""
+        assert issubclass(SerializationError, SecureSessionError)
+
+    def test_serialization_error_caught_by_base(self) -> None:
+        """SerializationError is caught by except SecureSessionError."""
+        with pytest.raises(SecureSessionError):
+            raise SerializationError("bad data")
+
+    def test_serialization_error_not_subclass_of_encryption(self) -> None:
+        """SerializationError is not a subclass of EncryptionError."""
+        assert not issubclass(SerializationError, EncryptionError)
+
+    def test_serialization_error_not_subclass_of_decryption(self) -> None:
+        """SerializationError is not a subclass of DecryptionError."""
+        assert not issubclass(SerializationError, DecryptionError)
+
+    def test_serialization_error_not_caught_by_encryption_handler(self) -> None:
+        """SerializationError is not caught by except EncryptionError."""
+        with pytest.raises(SerializationError):
+            try:
+                raise SerializationError("bad json")
+            except EncryptionError:
+                pytest.fail("SerializationError caught by EncryptionError")
+
+    def test_serialization_error_chaining_preserves_cause(self) -> None:
+        """Raise SerializationError from original preserves __cause__."""
+        original = TypeError("datetime not serializable")
+        try:
+            raise SerializationError("serialization failed") from original
+        except SerializationError as exc:
+            assert exc.__cause__ is original
