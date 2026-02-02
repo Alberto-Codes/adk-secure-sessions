@@ -14,6 +14,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "google-adk" },
     { name = "interrogate" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -33,6 +34,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "google-adk", specifier = ">=1.23.0" },
     { name = "interrogate", specifier = ">=1.7.0" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },

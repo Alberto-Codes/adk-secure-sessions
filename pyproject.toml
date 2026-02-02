@@ -123,4 +123,5 @@ dev = [
     "ruff>=0.13.0",
     "ty>=0.0.1a20",
     "interrogate>=1.7.0",
+    "google-adk>=1.23.0",
 ]
