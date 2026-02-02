@@ -108,16 +108,18 @@ class TestSafeErrorMessages:
     def test_encryption_error_chaining_preserves_cause(self) -> None:
         """T012: raise EncryptionError from original preserves __cause__."""
         original = RuntimeError("low-level failure")
-        with pytest.raises(EncryptionError) as exc_info:
+        try:
             raise EncryptionError("encryption failed") from original
-        assert exc_info.value.__cause__ is original
+        except EncryptionError as exc:
+            assert exc.__cause__ is original
 
     def test_decryption_error_chaining_preserves_cause(self) -> None:
         """T013: raise DecryptionError from original preserves __cause__."""
         original = RuntimeError("low-level failure")
-        with pytest.raises(DecryptionError) as exc_info:
+        try:
             raise DecryptionError("decryption failed") from original
-        assert exc_info.value.__cause__ is original
+        except DecryptionError as exc:
+            assert exc.__cause__ is original
 
     async def test_existing_raise_sites_use_safe_messages(self) -> None:
         """T014: Raise sites in fernet.py use safe messages.
