@@ -88,7 +88,7 @@ As a session service implementor, I want ADK Event objects to be serialized and 
 - **FR-001**: System MUST serialize a Python dictionary into JSON and encrypt the resulting bytes using any `EncryptionBackend`-conformant backend.
 - **FR-002**: System MUST decrypt an encrypted blob and deserialize the JSON back into the original Python dictionary, preserving all JSON-compatible types.
 - **FR-003**: System MUST prepend a two-byte envelope (version byte + backend identifier byte) to all encrypted output.
-- **FR-004**: System MUST validate the envelope prefix on decryption and raise an error if the version or backend identifier is unrecognized.
+- **FR-004**: System MUST validate the envelope prefix on decryption and raise `DecryptionError` if the version or backend identifier is unrecognized.
 - **FR-005**: System MUST raise a serialization-specific error when the input cannot be serialized to JSON.
 - **FR-006**: System MUST accept raw JSON strings (e.g., from `model_dump_json()`) as input for encryption, in addition to dictionaries.
 - **FR-007**: System MUST expose all serialization operations as async functions, consistent with the library's async-first design.
