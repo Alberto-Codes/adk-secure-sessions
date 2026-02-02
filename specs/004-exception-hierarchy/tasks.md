@@ -29,8 +29,8 @@
 
 **⚠️ CRITICAL**: US1 and US2 both depend on `EncryptionError` existing.
 
-- [ ] T001 Add `EncryptionError(SecureSessionError)` class with Google-style docstring to `src/adk_secure_sessions/exceptions.py`
-- [ ] T002 Add `EncryptionError` import and `__all__` entry to `src/adk_secure_sessions/__init__.py`
+- [x] T001 Add `EncryptionError(SecureSessionError)` class with Google-style docstring to `src/adk_secure_sessions/exceptions.py`
+- [x] T002 Add `EncryptionError` import and `__all__` entry to `src/adk_secure_sessions/__init__.py`
 
 **Checkpoint**: `EncryptionError` importable from `adk_secure_sessions` — foundational code complete.
 
@@ -44,10 +44,10 @@
 
 ### Tests for User Story 1
 
-- [ ] T003 [P] [US1] Test `SecureSessionError` inherits from `Exception` in `tests/unit/test_exceptions.py`
-- [ ] T004 [P] [US1] Test `EncryptionError` is caught by `except SecureSessionError` in `tests/unit/test_exceptions.py`
-- [ ] T005 [P] [US1] Test `DecryptionError` is caught by `except SecureSessionError` in `tests/unit/test_exceptions.py`
-- [ ] T006 [P] [US1] Test `SecureSessionError` is not caught by unrelated handlers (e.g., `except ValueError`) in `tests/unit/test_exceptions.py`
+- [x] T003 [P] [US1] Test `SecureSessionError` inherits from `Exception` in `tests/unit/test_exceptions.py`
+- [x] T004 [P] [US1] Test `EncryptionError` is caught by `except SecureSessionError` in `tests/unit/test_exceptions.py`
+- [x] T005 [P] [US1] Test `DecryptionError` is caught by `except SecureSessionError` in `tests/unit/test_exceptions.py`
+- [x] T006 [P] [US1] Test `SecureSessionError` is not caught by unrelated handlers (e.g., `except ValueError`) in `tests/unit/test_exceptions.py`
 
 **Checkpoint**: All catch-all behavior verified — US1 complete.
 
@@ -61,10 +61,10 @@
 
 ### Tests for User Story 2
 
-- [ ] T007 [P] [US2] Test `EncryptionError` and `DecryptionError` are both subclasses of `SecureSessionError` (`issubclass`) in `tests/unit/test_exceptions.py`
-- [ ] T008 [P] [US2] Test `EncryptionError` is NOT a subclass of `DecryptionError` and vice versa in `tests/unit/test_exceptions.py`
-- [ ] T009 [P] [US2] Test raising `DecryptionError` is not caught by `except EncryptionError` in `tests/unit/test_exceptions.py`
-- [ ] T010 [P] [US2] Test raising `EncryptionError` is not caught by `except DecryptionError` in `tests/unit/test_exceptions.py`
+- [x] T007 [P] [US2] Test `EncryptionError` and `DecryptionError` are both subclasses of `SecureSessionError` (`issubclass`) in `tests/unit/test_exceptions.py`
+- [x] T008 [P] [US2] Test `EncryptionError` is NOT a subclass of `DecryptionError` and vice versa in `tests/unit/test_exceptions.py`
+- [x] T009 [P] [US2] Test raising `DecryptionError` is not caught by `except EncryptionError` in `tests/unit/test_exceptions.py`
+- [x] T010 [P] [US2] Test raising `EncryptionError` is not caught by `except DecryptionError` in `tests/unit/test_exceptions.py`
 
 **Checkpoint**: Sibling independence verified — US2 complete.
 
@@ -78,10 +78,10 @@
 
 ### Tests for User Story 3
 
-- [ ] T011 [P] [US3] Test all exception classes accept and store a message string in `tests/unit/test_exceptions.py`
-- [ ] T012 [P] [US3] Test exception chaining (`raise EncryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
-- [ ] T013 [P] [US3] Test exception chaining (`raise DecryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
-- [ ] T014 [P] [US3] Test existing raise sites (e.g., `fernet.py` DecryptionError) use safe messages without key material or ciphertext in `tests/unit/test_exceptions.py`
+- [x] T011 [P] [US3] Test all exception classes accept and store a message string in `tests/unit/test_exceptions.py`
+- [x] T012 [P] [US3] Test exception chaining (`raise EncryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
+- [x] T013 [P] [US3] Test exception chaining (`raise DecryptionError(...) from original`) preserves `__cause__` in `tests/unit/test_exceptions.py`
+- [x] T014 [P] [US3] Test existing raise sites (e.g., `fernet.py` DecryptionError) use safe messages without key material or ciphertext in `tests/unit/test_exceptions.py`
 
 **Checkpoint**: Message handling and chaining verified — US3 complete.
 
@@ -91,9 +91,9 @@
 
 **Purpose**: Final validation across all stories.
 
-- [ ] T015 Run `uv run ruff check .` and `uv run ruff format .` to verify code quality
-- [ ] T016 Run `uv run pytest` to verify all tests pass (existing + new)
-- [ ] T017 Run quickstart.md validation — verify all import examples work
+- [x] T015 Run `uv run ruff check .` and `uv run ruff format .` to verify code quality
+- [x] T016 Run `uv run pytest` to verify all tests pass (existing + new)
+- [x] T017 Run quickstart.md validation — verify all import examples work
 
 ---
 
