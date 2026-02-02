@@ -5,6 +5,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-01
 ## Active Technologies
 - Python 3.12 (per `requires-python`) + `cryptography>=44.0.0` (already in `pyproject.toml`) (003-fernet-backend)
 - N/A (in-memory encryption only) (003-fernet-backend)
+- Python 3.12 (per `requires-python` in pyproject.toml) + None — stdlib only (exceptions are plain Python classes) (004-exception-hierarchy)
 
 - Python 3.12 (per pyproject.toml `requires-python`)
 - stdlib `typing` only for protocol definitions
@@ -47,10 +48,10 @@ bash scripts/code_quality_check.sh --all --verbose  # Full quality pipeline
 - Async-first: all public APIs are `async def`
 
 ## Recent Changes
+- 004-exception-hierarchy: Added Python 3.12 (per `requires-python` in pyproject.toml) + None — stdlib only (exceptions are plain Python classes)
 - 003-fernet-backend: Added Python 3.12 (per `requires-python`) + `cryptography>=44.0.0` (already in `pyproject.toml`)
 
 - 002-encryption-backend-protocol: `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`, full test suite
-- Added `scripts/` directory with 8-step code quality pipeline
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
