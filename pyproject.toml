@@ -1,0 +1,126 @@
+[project]
+name = "adk-secure-sessions"
+version = "0.1.0"
+description = "Encrypted session storage for Google ADK — drop-in replacement for DatabaseSessionService with at-rest encryption"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }
+]
+maintainers = [
+    { name = "Alberto-Codes", email = "alberto.codes.dev@gmail.com" }
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "google-adk>=1.22.0",
+    "sqlalchemy>=2.0.0",
+    "cryptography>=44.0.0",
+]
+keywords = [
+    "ai",
+    "agents",
+    "adk",
+    "encryption",
+    "sessions",
+    "security",
+    "hipaa",
+    "compliance",
+    "sqlcipher",
+    "sqlite",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Healthcare Industry",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/Alberto-Codes/adk-secure-sessions"
+Documentation = "https://alberto-codes.github.io/adk-secure-sessions/"
+Repository = "https://github.com/Alberto-Codes/adk-secure-sessions"
+Issues = "https://github.com/Alberto-Codes/adk-secure-sessions/issues"
+Changelog = "https://github.com/Alberto-Codes/adk-secure-sessions/releases"
+
+[build-system]
+requires = ["uv_build>=0.9.28,<0.10.0"]
+build-backend = "uv_build"
+
+# TestPyPI publishing index (for `uv publish --index testpypi`)
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [".uv-cache", ".venv", "__pycache__", "*.egg-info"]
+
+[tool.ruff.lint]
+extend-select = ["E501", "I", "D"]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["adk_secure_sessions"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.interrogate]
+verbose = 1
+fail-under = 95
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-private = true
+exclude = ["tests", "scripts"]
+
+[tool.pytest.ini_options]
+markers = [
+    "unit: Unit tests - fast, isolated",
+    "integration: Integration tests with real databases",
+    "slow: Slow-running tests",
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore:.*PydanticDeprecatedSince20.*:DeprecationWarning",
+    "ignore:.*Pydantic.*serialization.*:UserWarning",
+    "ignore:.*Pydantic.*:UserWarning",
+    "ignore:^deprecated$:DeprecationWarning:pydantic.*",
+    "ignore:Inheritance class.*from ClientSession is discouraged:DeprecationWarning",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.1",
+    "pytest-timeout>=2.4.0",
+    "ruff>=0.13.0",
+    "ty>=0.0.1a20",
+    "interrogate>=1.7.0",
+]
