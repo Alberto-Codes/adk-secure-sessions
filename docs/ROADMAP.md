@@ -10,7 +10,8 @@ adk-secure-sessions provides the missing encryption layer for Google ADK's sessi
 
 Ship a working `EncryptedSessionService` with Fernet encryption and SQLite storage. This is the minimum viable product — enough for developers to use in local development, demos, and small deployments.
 
-- [ ] `EncryptionBackend` protocol (`protocols.py`)
+- [x] `EncryptionBackend` protocol (`protocols.py`) — structural subtyping via PEP 544
+- [x] Unit tests for protocol conformance (`tests/unit/test_protocols.py`)
 - [ ] `FernetBackend` implementation (`backends/fernet.py`)
 - [ ] Exception hierarchy (`exceptions.py`)
 - [ ] Serialization layer — encrypt/decrypt at JSON boundary (`serialization.py`)
@@ -20,7 +21,6 @@ Ship a working `EncryptedSessionService` with Fernet encryption and SQLite stora
   - [ ] `list_sessions` with decrypted state
   - [ ] `delete_session`
   - [ ] `append_event` with encrypted state delta + event data
-- [ ] Unit tests for all components
 - [ ] Integration test: full round-trip (create → append events → get → verify decryption)
 - [ ] CI: GitHub Actions (lint, type check, test)
 

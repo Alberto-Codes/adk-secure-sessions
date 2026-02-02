@@ -56,6 +56,22 @@ session = await session_service.create_session(
 | `session_id`, `app_name`, `user_id` | No | Needed for lookups and filtering |
 | `create_time`, `update_time` | No | Needed for expiration/cleanup |
 
+## EncryptionBackend Protocol
+
+All backends implement the `EncryptionBackend` protocol — two async methods (`encrypt` and `decrypt`) operating on raw bytes. No inheritance required; any class with matching signatures conforms via structural subtyping (PEP 544).
+
+```python
+from adk_secure_sessions import EncryptionBackend
+
+class MyBackend:
+    async def encrypt(self, plaintext: bytes) -> bytes: ...
+    async def decrypt(self, ciphertext: bytes) -> bytes: ...
+
+assert isinstance(MyBackend(), EncryptionBackend)  # True
+```
+
+See `src/adk_secure_sessions/protocols.py` for the full protocol definition and known limitations.
+
 ## Encryption Backends
 
 ### v1 (Current)
@@ -107,6 +123,9 @@ uv run pytest
 
 # Lint
 uv run ruff check .
+
+# Full quality check (lint, format, docstrings, types, tests)
+bash scripts/code_quality_check.sh --all --verbose
 ```
 
 ## License
