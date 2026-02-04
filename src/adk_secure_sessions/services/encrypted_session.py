@@ -669,16 +669,17 @@ class EncryptedSessionService(BaseSessionService):
         # Persist state deltas
         await self._extract_and_persist_state_delta(session, event)
 
+        # Generate event ID if not set (ADK Event auto-generates, but keep as fallback)
+        # Must happen before serialization so ID is included in encrypted payload
+        if not event.id:  # pragma: no cover
+            event.id = str(uuid.uuid4())
+
         # Encrypt and persist the event
         conn = await self._get_connection()
         event_json = event.model_dump_json(exclude_none=True)
         encrypted_event = await encrypt_json(
             event_json, self._backend, self._backend_id
         )
-
-        # Generate event ID if not set
-        if not event.id:
-            event.id = str(uuid.uuid4())
 
         await conn.execute(
             """

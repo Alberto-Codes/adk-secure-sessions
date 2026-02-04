@@ -369,3 +369,208 @@ class TestProtocolConformance:
             pass
 
         assert not isinstance(NotABackend(), EncryptionBackend)
+
+
+# =============================================================================
+# Additional Integration Tests for Issue #7 Completeness
+# =============================================================================
+
+
+class TestListSessionsIntegration:
+    """Integration tests for list_sessions functionality."""
+
+    async def test_list_sessions_with_multiple_users(
+        self, temp_db_path: str, backend: FernetBackend
+    ) -> None:
+        """Verify list_sessions returns all sessions across users."""
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            # Create sessions for multiple users
+            await service.create_session(
+                app_name="my-agent",
+                user_id="alice",
+                state={"name": "Alice"},
+            )
+            await service.create_session(
+                app_name="my-agent",
+                user_id="bob",
+                state={"name": "Bob"},
+            )
+            await service.create_session(
+                app_name="other-agent",
+                user_id="alice",
+                state={"name": "Other Alice"},
+            )
+
+            # List all sessions for my-agent
+            result = await service.list_sessions(app_name="my-agent")
+            assert len(result.sessions) == 2
+
+            # Verify state is decrypted correctly
+            names = {s.state.get("name") for s in result.sessions}
+            assert names == {"Alice", "Bob"}
+
+    async def test_list_sessions_filters_by_user(
+        self, temp_db_path: str, backend: FernetBackend
+    ) -> None:
+        """Verify list_sessions correctly filters by user_id."""
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            # Create multiple sessions for same user
+            for i in range(3):
+                await service.create_session(
+                    app_name="my-agent",
+                    user_id="alice",
+                    state={"session_num": i},
+                )
+
+            await service.create_session(
+                app_name="my-agent",
+                user_id="bob",
+                state={"session_num": 99},
+            )
+
+            # List only Alice's sessions
+            result = await service.list_sessions(
+                app_name="my-agent",
+                user_id="alice",
+            )
+            assert len(result.sessions) == 3
+            assert all(s.user_id == "alice" for s in result.sessions)
+
+
+class TestDeleteSessionIntegration:
+    """Integration tests for delete_session functionality."""
+
+    async def test_delete_session_cascades_to_events(
+        self, temp_db_path: str, backend: FernetBackend
+    ) -> None:
+        """Verify delete_session removes associated events."""
+        import aiosqlite
+        from google.adk.events.event import Event
+
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-1",
+            )
+
+            # Add events
+            for i in range(5):
+                event = Event(
+                    id=f"evt-{i}",
+                    author="agent",
+                    invocation_id=f"inv-{i}",
+                )
+                await service.append_event(session, event)
+
+            # Delete session
+            await service.delete_session(
+                app_name="my-agent",
+                user_id="user-1",
+                session_id=session.id,
+            )
+
+        # Verify events are gone from database
+        async with aiosqlite.connect(temp_db_path) as conn:
+            cursor = await conn.execute("SELECT COUNT(*) FROM events")
+            row = await cursor.fetchone()
+            assert row is not None
+            assert row[0] == 0
+
+    async def test_delete_nonexistent_session_is_safe(
+        self, temp_db_path: str, backend: FernetBackend
+    ) -> None:
+        """Verify deleting a non-existent session doesn't raise."""
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            # Should not raise
+            await service.delete_session(
+                app_name="my-agent",
+                user_id="user-1",
+                session_id="does-not-exist",
+            )
+
+
+class TestWrongKeyIntegration:
+    """Integration tests for wrong encryption key scenarios."""
+
+    async def test_wrong_key_raises_decryption_error_on_get(
+        self, temp_db_path: str
+    ) -> None:
+        """Verify wrong key raises DecryptionError when retrieving session."""
+        from adk_secure_sessions import DecryptionError
+
+        # Create session with key1
+        backend1 = FernetBackend("secret-key-one")
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend1,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-1",
+                state={"secret": "classified-data"},
+            )
+            session_id = session.id
+
+        # Try to read with key2
+        backend2 = FernetBackend("different-key-two")
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend2,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            import pytest
+
+            with pytest.raises(DecryptionError):
+                await service.get_session(
+                    app_name="my-agent",
+                    user_id="user-1",
+                    session_id=session_id,
+                )
+
+    async def test_wrong_key_raises_decryption_error_on_list(
+        self, temp_db_path: str
+    ) -> None:
+        """Verify wrong key raises DecryptionError when listing sessions."""
+        from adk_secure_sessions import DecryptionError
+
+        # Create session with key1
+        backend1 = FernetBackend("secret-key-one")
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend1,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            await service.create_session(
+                app_name="my-agent",
+                user_id="user-1",
+                state={"secret": "classified-data"},
+            )
+
+        # Try to list with key2
+        backend2 = FernetBackend("different-key-two")
+        async with EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend2,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            import pytest
+
+            with pytest.raises(DecryptionError):
+                await service.list_sessions(app_name="my-agent")
