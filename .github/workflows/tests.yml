@@ -15,6 +15,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.12"]
+        adk-version: ["1.22.0", "latest"]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +28,10 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --dev
+
+      - name: Pin google-adk to minimum version
+        if: matrix.adk-version != 'latest'
+        run: uv pip install google-adk==${{ matrix.adk-version }}
 
       - name: Lint
         run: uv run ruff check .
