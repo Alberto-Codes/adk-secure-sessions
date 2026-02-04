@@ -676,8 +676,8 @@ class EncryptedSessionService(BaseSessionService):
             event_json, self._backend, self._backend_id
         )
 
-        # Generate event ID if not set
-        if not event.id:
+        # Generate event ID if not set (ADK Event auto-generates, but keep as fallback)
+        if not event.id:  # pragma: no cover
             event.id = str(uuid.uuid4())
 
         await conn.execute(
