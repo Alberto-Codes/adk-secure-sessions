@@ -152,11 +152,12 @@
 - [ ] T045 [P] [US1] Integration test for BaseSessionService interface conformance in tests/integration/test_adk_integration.py
 - [ ] T046 [P] [US1] Integration test for round-trip session workflow (create, append events, get, delete) in tests/integration/test_adk_integration.py
 - [ ] T047 [P] [US1] Integration test verifying database contains only encrypted data in tests/integration/test_adk_integration.py
+- [ ] T048 [P] [US1] Integration test with mock EncryptionBackend to verify protocol conformance (FR-014) in tests/integration/test_adk_integration.py
 
 ### Implementation for User Story 1
 
-- [ ] T048 [US1] Add docstring with usage examples to EncryptedSessionService class in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T049 [US1] Add type annotations for all public methods in src/adk_secure_sessions/services/encrypted_session.py
+- [ ] T049 [US1] Add docstring with usage examples to EncryptedSessionService class in src/adk_secure_sessions/services/encrypted_session.py
+- [ ] T050 [US1] Add type annotations for all public methods in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 1 should be complete - service is verified drop-in replacement
 
@@ -166,12 +167,20 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T050 [P] Add edge case tests for wrong encryption key in tests/unit/test_encrypted_session_service.py
-- [ ] T051 [P] Add edge case tests for corrupted encrypted data in tests/unit/test_encrypted_session_service.py
-- [ ] T052 [P] Add edge case tests for empty state dictionary in tests/unit/test_encrypted_session_service.py
-- [ ] T053 Run code quality check (ruff check, ruff format, pytest)
-- [ ] T054 Update CLAUDE.md with feature summary via update-agent-context.sh
-- [ ] T055 Run quickstart.md examples as validation
+### Edge Case Tests
+
+- [ ] T051 [P] Add edge case tests for wrong encryption key in tests/unit/test_encrypted_session_service.py
+- [ ] T052 [P] Add edge case tests for corrupted encrypted data in tests/unit/test_encrypted_session_service.py
+- [ ] T053 [P] Add edge case tests for empty state dictionary in tests/unit/test_encrypted_session_service.py
+- [ ] T054 [P] Add edge case tests for database connection errors (verify aiosqlite exceptions propagate) in tests/unit/test_encrypted_session_service.py
+- [ ] T055 [P] Add edge case tests for concurrent session access (SQLite locking behavior) in tests/unit/test_encrypted_session_service.py
+- [ ] T056 [P] Add edge case tests for large state objects (verify handling near size limits) in tests/unit/test_encrypted_session_service.py
+
+### Validation
+
+- [ ] T057 Run code quality check (ruff check, ruff format, pytest)
+- [ ] T058 Update CLAUDE.md with feature summary via update-agent-context.sh
+- [ ] T059 Run quickstart.md examples as validation
 
 ---
 
@@ -252,9 +261,9 @@ Task: "Unit test for get_session with GetSessionConfig filters events"
 | Phase 4: US3 Events | 11 | 6 parallel (tests) |
 | Phase 5: US4 List/Delete | 7 | 5 parallel (tests) |
 | Phase 6: US5 Context Mgr | 7 | 4 parallel (tests) |
-| Phase 7: US1 Integration | 5 | 3 parallel (tests) |
-| Phase 8: Polish | 6 | 3 parallel |
-| **Total** | **55** | **29 parallel opportunities** |
+| Phase 7: US1 Integration | 6 | 4 parallel (tests) |
+| Phase 8: Polish | 9 | 6 parallel |
+| **Total** | **59** | **33 parallel opportunities** |
 
 ---
 
