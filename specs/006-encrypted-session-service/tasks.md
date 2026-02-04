@@ -19,10 +19,10 @@
 
 **Purpose**: Project initialization and services directory structure
 
-- [ ] T001 Create services package directory at src/adk_secure_sessions/services/
-- [ ] T002 Create services/__init__.py with EncryptedSessionService export at src/adk_secure_sessions/services/__init__.py
-- [ ] T003 [P] Add aiosqlite>=0.19.0 dependency to pyproject.toml
-- [ ] T004 [P] Create integration tests directory at tests/integration/
+- [x] T001 Create services package directory at src/adk_secure_sessions/services/
+- [x] T002 Create services/__init__.py with EncryptedSessionService export at src/adk_secure_sessions/services/__init__.py
+- [x] T003 [P] Add aiosqlite>=0.19.0 dependency to pyproject.toml
+- [x] T004 [P] Create integration tests directory at tests/integration/
 
 ---
 
