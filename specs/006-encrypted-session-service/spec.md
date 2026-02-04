@@ -140,3 +140,6 @@ As a developer, I want the session service to properly manage database connectio
 - Encryption occurs at the JSON serialization boundary (after serialization, before database write)
 - The service will be compatible with Google ADK's `BaseSessionService` interface
 - Users will provide a valid `EncryptionBackend` instance at service construction
+- Database connection errors (e.g., connection lost) propagate directly as aiosqlite exceptions (per Constitution Principle V - no wrapping)
+- Concurrent session access relies on SQLite's file-level locking; no application-level locking is provided
+- State size is limited by SQLite BLOB capacity; recommended maximum ~100MB per session state
