@@ -32,10 +32,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create EncryptedSessionService class skeleton with constructor (db_path, backend, backend_id) in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T006 Implement database initialization method (_init_db) with schema from data-model.md in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T007 Add BaseSessionService inheritance and required imports from google.adk in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T008 Export EncryptedSessionService from package __init__.py at src/adk_secure_sessions/__init__.py
+- [x] T005 Create EncryptedSessionService class skeleton with constructor (db_path, backend, backend_id) in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T006 Implement database initialization method (_init_db) with schema from data-model.md in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T007 Add BaseSessionService inheritance and required imports from google.adk in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T008 Export EncryptedSessionService from package __init__.py at src/adk_secure_sessions/__init__.py
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
