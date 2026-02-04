@@ -506,6 +506,7 @@ class EncryptedSessionService(BaseSessionService):
             """,
             (app_name, encrypted, now, encrypted, now),
         )
+        await conn.commit()
 
     async def _upsert_user_state(
         self,
@@ -542,6 +543,7 @@ class EncryptedSessionService(BaseSessionService):
             """,
             (app_name, user_id, encrypted, now, encrypted, now),
         )
+        await conn.commit()
 
     async def _update_session_state_in_db(
         self,
@@ -587,6 +589,7 @@ class EncryptedSessionService(BaseSessionService):
             """,
             (encrypted, now, app_name, user_id, session_id),
         )
+        await conn.commit()
 
     async def _extract_and_persist_state_delta(
         self,
