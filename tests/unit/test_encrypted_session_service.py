@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import time
 import uuid
+from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
 import pytest
@@ -41,7 +42,9 @@ def temp_db_path(tmp_path: Path) -> str:
 
 
 @pytest.fixture
-async def service(temp_db_path: str, backend: FernetBackend) -> EncryptedSessionService:
+async def service(
+    temp_db_path: str, backend: FernetBackend
+) -> AsyncGenerator[EncryptedSessionService, None]:
     """Create an EncryptedSessionService for testing."""
     svc = EncryptedSessionService(
         db_path=temp_db_path,
@@ -351,6 +354,7 @@ class TestAppendEvent:
                 (session.id,),
             )
             row = await cursor.fetchone()
+            assert row is not None
             assert row[0] == 0
 
     async def test_append_event_discards_temp_prefixed_keys(
@@ -484,6 +488,7 @@ class TestDeleteSession:
                 (session.id,),
             )
             row = await cursor.fetchone()
+            assert row is not None
             assert row[0] == 0
 
     async def test_delete_session_is_idempotent(
