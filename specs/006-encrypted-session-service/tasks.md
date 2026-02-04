@@ -49,20 +49,20 @@
 
 ### Tests for User Story 2
 
-- [ ] T009 [P] [US2] Unit test for create_session encrypts state in tests/unit/test_encrypted_session_service.py
-- [ ] T010 [P] [US2] Unit test for create_session generates UUID when session_id not provided in tests/unit/test_encrypted_session_service.py
-- [ ] T011 [P] [US2] Unit test for create_session raises AlreadyExistsError for duplicate ID in tests/unit/test_encrypted_session_service.py
-- [ ] T012 [P] [US2] Unit test for get_session returns decrypted state in tests/unit/test_encrypted_session_service.py
-- [ ] T013 [P] [US2] Unit test for get_session returns None for non-existent session in tests/unit/test_encrypted_session_service.py
-- [ ] T014 [P] [US2] Unit test for get_session with GetSessionConfig filters events in tests/unit/test_encrypted_session_service.py
+- [x] T009 [P] [US2] Unit test for create_session encrypts state in tests/unit/test_encrypted_session_service.py
+- [x] T010 [P] [US2] Unit test for create_session generates UUID when session_id not provided in tests/unit/test_encrypted_session_service.py
+- [x] T011 [P] [US2] Unit test for create_session raises AlreadyExistsError for duplicate ID in tests/unit/test_encrypted_session_service.py
+- [x] T012 [P] [US2] Unit test for get_session returns decrypted state in tests/unit/test_encrypted_session_service.py
+- [x] T013 [P] [US2] Unit test for get_session returns None for non-existent session in tests/unit/test_encrypted_session_service.py
+- [x] T014 [P] [US2] Unit test for get_session with GetSessionConfig filters events in tests/unit/test_encrypted_session_service.py
 
 ### Implementation for User Story 2
 
-- [ ] T015 [US2] Implement create_session method with state encryption in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T016 [US2] Implement get_session method with state decryption in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T017 [US2] Implement _get_app_state helper for app-level state merging in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T018 [US2] Implement _get_user_state helper for user-level state merging in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T019 [US2] Implement _get_events helper for event retrieval with filtering in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T015 [US2] Implement create_session method with state encryption in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T016 [US2] Implement get_session method with state decryption in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T017 [US2] Implement _get_app_state helper for app-level state merging in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T018 [US2] Implement _get_user_state helper for user-level state merging in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T019 [US2] Implement _get_events helper for event retrieval with filtering in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 2 should be fully functional - sessions can be created and retrieved with encryption/decryption
 
@@ -76,20 +76,20 @@
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Unit test for append_event encrypts event data in tests/unit/test_encrypted_session_service.py
-- [ ] T021 [P] [US3] Unit test for append_event extracts and persists app state delta in tests/unit/test_encrypted_session_service.py
-- [ ] T022 [P] [US3] Unit test for append_event extracts and persists user state delta in tests/unit/test_encrypted_session_service.py
-- [ ] T023 [P] [US3] Unit test for append_event updates session state in tests/unit/test_encrypted_session_service.py
-- [ ] T024 [P] [US3] Unit test for append_event skips persistence for partial events in tests/unit/test_encrypted_session_service.py
-- [ ] T025 [P] [US3] Unit test for append_event discards temp: prefixed keys in tests/unit/test_encrypted_session_service.py
+- [x] T020 [P] [US3] Unit test for append_event encrypts event data in tests/unit/test_encrypted_session_service.py
+- [x] T021 [P] [US3] Unit test for append_event extracts and persists app state delta in tests/unit/test_encrypted_session_service.py
+- [x] T022 [P] [US3] Unit test for append_event extracts and persists user state delta in tests/unit/test_encrypted_session_service.py
+- [x] T023 [P] [US3] Unit test for append_event updates session state in tests/unit/test_encrypted_session_service.py
+- [x] T024 [P] [US3] Unit test for append_event skips persistence for partial events in tests/unit/test_encrypted_session_service.py
+- [x] T025 [P] [US3] Unit test for append_event discards temp: prefixed keys in tests/unit/test_encrypted_session_service.py
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Override append_event method with database persistence in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T027 [US3] Implement _extract_and_persist_state_delta helper in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T028 [US3] Implement _upsert_app_state helper for app state updates in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T029 [US3] Implement _upsert_user_state helper for user state updates in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T030 [US3] Implement _update_session_state_in_db helper in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T026 [US3] Override append_event method with database persistence in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T027 [US3] Implement _extract_and_persist_state_delta helper in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T028 [US3] Implement _upsert_app_state helper for app state updates in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T029 [US3] Implement _upsert_user_state helper for user state updates in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T030 [US3] Implement _update_session_state_in_db helper in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 3 should be fully functional - events can be appended with encrypted storage
 
@@ -103,16 +103,16 @@
 
 ### Tests for User Story 4
 
-- [ ] T031 [P] [US4] Unit test for list_sessions returns all sessions for app in tests/unit/test_encrypted_session_service.py
-- [ ] T032 [P] [US4] Unit test for list_sessions filters by user_id when provided in tests/unit/test_encrypted_session_service.py
-- [ ] T033 [P] [US4] Unit test for list_sessions returns decrypted state in tests/unit/test_encrypted_session_service.py
-- [ ] T034 [P] [US4] Unit test for delete_session removes session and events in tests/unit/test_encrypted_session_service.py
-- [ ] T035 [P] [US4] Unit test for delete_session is idempotent (no error if not exists) in tests/unit/test_encrypted_session_service.py
+- [x] T031 [P] [US4] Unit test for list_sessions returns all sessions for app in tests/unit/test_encrypted_session_service.py
+- [x] T032 [P] [US4] Unit test for list_sessions filters by user_id when provided in tests/unit/test_encrypted_session_service.py
+- [x] T033 [P] [US4] Unit test for list_sessions returns decrypted state in tests/unit/test_encrypted_session_service.py
+- [x] T034 [P] [US4] Unit test for delete_session removes session and events in tests/unit/test_encrypted_session_service.py
+- [x] T035 [P] [US4] Unit test for delete_session is idempotent (no error if not exists) in tests/unit/test_encrypted_session_service.py
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement list_sessions method with state decryption in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T037 [US4] Implement delete_session method with cascade delete in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T036 [US4] Implement list_sessions method with state decryption in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T037 [US4] Implement delete_session method with cascade delete in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 4 should be fully functional - sessions can be listed and deleted
 
@@ -126,16 +126,16 @@
 
 ### Tests for User Story 5
 
-- [ ] T038 [P] [US5] Unit test for __aenter__ returns service instance in tests/unit/test_encrypted_session_service.py
-- [ ] T039 [P] [US5] Unit test for __aexit__ calls close in tests/unit/test_encrypted_session_service.py
-- [ ] T040 [P] [US5] Unit test for close properly closes database connection in tests/unit/test_encrypted_session_service.py
-- [ ] T041 [P] [US5] Unit test for close is idempotent (no error if called twice) in tests/unit/test_encrypted_session_service.py
+- [x] T038 [P] [US5] Unit test for __aenter__ returns service instance in tests/unit/test_encrypted_session_service.py
+- [x] T039 [P] [US5] Unit test for __aexit__ calls close in tests/unit/test_encrypted_session_service.py
+- [x] T040 [P] [US5] Unit test for close properly closes database connection in tests/unit/test_encrypted_session_service.py
+- [x] T041 [P] [US5] Unit test for close is idempotent (no error if called twice) in tests/unit/test_encrypted_session_service.py
 
 ### Implementation for User Story 5
 
-- [ ] T042 [US5] Implement close method in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T043 [US5] Implement __aenter__ method in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T044 [US5] Implement __aexit__ method in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T042 [US5] Implement close method in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T043 [US5] Implement __aenter__ method in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T044 [US5] Implement __aexit__ method in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 5 should be fully functional - service can be used as async context manager
 
@@ -149,15 +149,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T045 [P] [US1] Integration test for BaseSessionService interface conformance in tests/integration/test_adk_integration.py
-- [ ] T046 [P] [US1] Integration test for round-trip session workflow (create, append events, get, delete) in tests/integration/test_adk_integration.py
-- [ ] T047 [P] [US1] Integration test verifying database contains only encrypted data in tests/integration/test_adk_integration.py
-- [ ] T048 [P] [US1] Integration test with mock EncryptionBackend to verify protocol conformance (FR-014) in tests/integration/test_adk_integration.py
+- [x] T045 [P] [US1] Integration test for BaseSessionService interface conformance in tests/integration/test_adk_integration.py
+- [x] T046 [P] [US1] Integration test for round-trip session workflow (create, append events, get, delete) in tests/integration/test_adk_integration.py
+- [x] T047 [P] [US1] Integration test verifying database contains only encrypted data in tests/integration/test_adk_integration.py
+- [x] T048 [P] [US1] Integration test with mock EncryptionBackend to verify protocol conformance (FR-014) in tests/integration/test_adk_integration.py
 
 ### Implementation for User Story 1
 
-- [ ] T049 [US1] Add docstring with usage examples to EncryptedSessionService class in src/adk_secure_sessions/services/encrypted_session.py
-- [ ] T050 [US1] Add type annotations for all public methods in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T049 [US1] Add docstring with usage examples to EncryptedSessionService class in src/adk_secure_sessions/services/encrypted_session.py
+- [x] T050 [US1] Add type annotations for all public methods in src/adk_secure_sessions/services/encrypted_session.py
 
 **Checkpoint**: User Story 1 should be complete - service is verified drop-in replacement
 
@@ -169,18 +169,18 @@
 
 ### Edge Case Tests
 
-- [ ] T051 [P] Add edge case tests for wrong encryption key in tests/unit/test_encrypted_session_service.py
-- [ ] T052 [P] Add edge case tests for corrupted encrypted data in tests/unit/test_encrypted_session_service.py
-- [ ] T053 [P] Add edge case tests for empty state dictionary in tests/unit/test_encrypted_session_service.py
-- [ ] T054 [P] Add edge case tests for database connection errors (verify aiosqlite exceptions propagate) in tests/unit/test_encrypted_session_service.py
-- [ ] T055 [P] Add edge case tests for concurrent session access (SQLite locking behavior) in tests/unit/test_encrypted_session_service.py
-- [ ] T056 [P] Add edge case tests for large state objects (verify handling near size limits) in tests/unit/test_encrypted_session_service.py
+- [x] T051 [P] Add edge case tests for wrong encryption key in tests/unit/test_encrypted_session_service.py
+- [x] T052 [P] Add edge case tests for corrupted encrypted data in tests/unit/test_encrypted_session_service.py
+- [x] T053 [P] Add edge case tests for empty state dictionary in tests/unit/test_encrypted_session_service.py
+- [x] T054 [P] Add edge case tests for database connection errors (verify aiosqlite exceptions propagate) in tests/unit/test_encrypted_session_service.py
+- [x] T055 [P] Add edge case tests for concurrent session access (SQLite locking behavior) in tests/unit/test_encrypted_session_service.py
+- [x] T056 [P] Add edge case tests for large state objects (verify handling near size limits) in tests/unit/test_encrypted_session_service.py
 
 ### Validation
 
-- [ ] T057 Run code quality check (ruff check, ruff format, pytest)
-- [ ] T058 Update CLAUDE.md with feature summary via update-agent-context.sh
-- [ ] T059 Run quickstart.md examples as validation
+- [x] T057 Run code quality check (ruff check, ruff format, pytest)
+- [x] T058 Update CLAUDE.md with feature summary via update-agent-context.sh
+- [x] T059 Run quickstart.md examples as validation
 
 ---
 
