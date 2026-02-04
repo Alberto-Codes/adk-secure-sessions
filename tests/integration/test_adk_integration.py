@@ -117,7 +117,7 @@ class TestRoundTripWorkflow:
             session_id = session.id
 
             # 2. Append multiple events (simulating agent conversation)
-            events_data = [
+            events_data: list[dict[str, str | dict[str, str]]] = [
                 {"author": "user", "content": "Hello"},
                 {"author": "agent", "content": "Hi there!"},
                 {"author": "user", "content": "What's the weather?"},
@@ -129,12 +129,16 @@ class TestRoundTripWorkflow:
             ]
 
             for i, data in enumerate(events_data):
-                state_delta = data.get("state_delta", {})
+                state_delta_raw = data.get("state_delta")
+                state_delta: dict[str, object] = (
+                    dict(state_delta_raw) if isinstance(state_delta_raw, dict) else {}
+                )
                 actions = EventActions(state_delta=state_delta)
 
+                author = data["author"]
                 event = Event(
                     id=f"event-{i}",
-                    author=data["author"],
+                    author=str(author),
                     invocation_id=f"inv-{i // 2}",
                     actions=actions,
                 )
@@ -203,6 +207,7 @@ class TestDatabaseEncryption:
         async with aiosqlite.connect(temp_db_path) as conn:
             cursor = await conn.execute("SELECT state FROM sessions")
             row = await cursor.fetchone()
+            assert row is not None, "Expected session row to exist"
             raw_state = row[0]
 
             # Verify it's bytes (encrypted envelope)
@@ -243,6 +248,7 @@ class TestDatabaseEncryption:
         async with aiosqlite.connect(temp_db_path) as conn:
             cursor = await conn.execute("SELECT event_data FROM events")
             row = await cursor.fetchone()
+            assert row is not None, "Expected event row to exist"
             raw_event = row[0]
 
             # Verify it's bytes (encrypted envelope)
@@ -285,6 +291,7 @@ class TestDatabaseEncryption:
         async with aiosqlite.connect(temp_db_path) as conn:
             cursor = await conn.execute("SELECT state FROM app_states")
             row = await cursor.fetchone()
+            assert row is not None, "Expected app_states row to exist"
             raw_state = row[0]
 
             # Verify sensitive data is NOT in plaintext
