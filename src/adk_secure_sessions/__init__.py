@@ -7,6 +7,8 @@ Attributes:
     EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
         contract.
     FernetBackend: Fernet symmetric encryption backend.
+    EncryptedSessionService: Drop-in replacement for ADK's
+        ``DatabaseSessionService`` with transparent encryption.
     SecureSessionError: Base exception for all library errors.
     EncryptionError: Raised when encryption fails.
     DecryptionError: Raised when decryption fails.
@@ -55,10 +57,12 @@ from adk_secure_sessions.serialization import (
     encrypt_json,
     encrypt_session,
 )
+from adk_secure_sessions.services.encrypted_session import EncryptedSessionService
 
 __all__ = [
     "BACKEND_FERNET",
     "DecryptionError",
+    "EncryptedSessionService",
     "ENVELOPE_VERSION_1",
     "EncryptionBackend",
     "EncryptionError",

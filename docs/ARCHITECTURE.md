@@ -19,11 +19,11 @@ graph TD
 
     style EB fill:#2e7d32,stroke:#1b5e20,color:#fff
     style UC fill:#616161,stroke:#424242,color:#fff
-    style ESS fill:#616161,stroke:#424242,color:#fff
+    style ESS fill:#2e7d32,stroke:#1b5e20,color:#fff
     style BSS fill:#616161,stroke:#424242,color:#fff
     style FB fill:#2e7d32,stroke:#1b5e20,color:#fff
     style CB fill:#616161,stroke:#424242,color:#fff
-    style DB fill:#616161,stroke:#424242,color:#fff
+    style DB fill:#2e7d32,stroke:#1b5e20,color:#fff
 ```
 
 ## Data Flow
@@ -89,7 +89,7 @@ graph LR
     SER -->|delegates to| EB2
 
     style EB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
-    style ESS2 fill:#616161,stroke:#424242,color:#fff
+    style ESS2 fill:#2e7d32,stroke:#1b5e20,color:#fff
     style FB2 fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SER fill:#2e7d32,stroke:#1b5e20,color:#fff
 ```
@@ -109,11 +109,20 @@ graph LR
 - **`backends/fernet.py`** — `FernetBackend` using Fernet symmetric encryption with PBKDF2 key derivation
 - **`exceptions.py`** — `SecureSessionError` base, `EncryptionError`, `DecryptionError`, `SerializationError`
 - **`serialization.py`** — `encrypt_session`, `decrypt_session`, `encrypt_json`, `decrypt_json` with self-describing `[version][backend_id][ciphertext]` envelope format
-- **`__init__.py`** — Exports all public symbols (protocols, backends, exceptions, serialization functions, constants)
+- **`services/encrypted_session.py`** — `EncryptedSessionService` implementing ADK's `BaseSessionService` with:
+  - `create_session` with encrypted state
+  - `get_session` with automatic decryption
+  - `list_sessions` with decrypted state
+  - `delete_session` with cascade delete
+  - `append_event` with encrypted event data and state delta handling
+  - Async context manager (`__aenter__`/`__aexit__`) for connection lifecycle
+- **`__init__.py`** — Exports all public symbols (protocols, backends, exceptions, serialization functions, services, constants)
 
 **Planned** (see [Roadmap](ROADMAP.md)):
 
-- `EncryptedSessionService`
+- Key rotation support
+- PostgreSQL backend
+- KMS backends (AWS, GCP, HashiCorp Vault)
 
 ## Design Decisions
 

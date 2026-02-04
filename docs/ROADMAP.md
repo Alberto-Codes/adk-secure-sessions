@@ -15,14 +15,14 @@ Ship a working `EncryptedSessionService` with Fernet encryption and SQLite stora
 - [x] `FernetBackend` implementation (`backends/fernet.py`)
 - [x] Exception hierarchy (`exceptions.py`)
 - [x] Serialization layer — encrypt/decrypt at JSON boundary (`serialization.py`)
-- [ ] `EncryptedSessionService` implementing `BaseSessionService` (`services/encrypted_session.py`)
-  - [ ] `create_session` with encrypted state
-  - [ ] `get_session` with decrypted state
-  - [ ] `list_sessions` with decrypted state
-  - [ ] `delete_session`
-  - [ ] `append_event` with encrypted state delta + event data
-- [ ] Integration test: full round-trip (create → append events → get → verify decryption)
-- [ ] CI: GitHub Actions (lint, type check, test)
+- [x] `EncryptedSessionService` implementing `BaseSessionService` (`services/encrypted_session.py`)
+  - [x] `create_session` with encrypted state
+  - [x] `get_session` with decrypted state
+  - [x] `list_sessions` with decrypted state
+  - [x] `delete_session`
+  - [x] `append_event` with encrypted state delta + event data
+- [x] Integration test: full round-trip (create → append events → get → verify decryption)
+- [x] CI: GitHub Actions (lint, type check, test)
 
 ### Phase 2: Hardening + PostgreSQL
 
@@ -30,7 +30,7 @@ Production readiness. Key rotation, Postgres support, better error handling, per
 
 - [ ] Key rotation support (decrypt with old key, re-encrypt with new key)
 - [ ] PostgreSQL backend (async SQLAlchemy)
-- [ ] Connection pooling and cleanup (`close()`, `__aenter__`/`__aexit__`)
+- [x] Connection pooling and cleanup (`close()`, `__aenter__`/`__aexit__`)
 - [ ] Stale session detection (match ADK's staleness check in `append_event`)
 - [ ] Performance benchmarks (encryption overhead vs plaintext ADK services)
 - [ ] CI matrix: test against `google-adk` min + latest

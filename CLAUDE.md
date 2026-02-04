@@ -7,6 +7,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-02
 - stdlib `json`, `asyncio`, `typing` — no additional runtime dependencies beyond `cryptography`
 - Dev tooling: ruff (lint/format), ty (type checking), pytest + pytest-asyncio + pytest-mock
 - Docs tooling: griffe, mkdocs-gen-files (future MkDocs site)
+- Python 3.12 (per `requires-python` in pyproject.toml) + google-adk (BaseSessionService, Session, Event), aiosqlite, cryptography (006-encrypted-session-service)
+- SQLite via aiosqlite (async), own schema independent of ADK (006-encrypted-session-service)
 
 ## Project Structure
 
@@ -54,9 +56,9 @@ bash scripts/code_quality_check.sh --all --verbose  # Full quality pipeline
 - Async-first: all public APIs are `async def`
 
 ## Recent Changes
+- 006-encrypted-session-service: Added Python 3.12 (per `requires-python` in pyproject.toml) + google-adk (BaseSessionService, Session, Event), aiosqlite, cryptography
 - 005-serialization-layer: Implemented serialization module — `encrypt_session`, `decrypt_session`, `encrypt_json`, `decrypt_json` with self-describing envelope format; added `SerializationError` exception
 - 004-exception-hierarchy: Exception hierarchy — `SecureSessionError`, `EncryptionError`, `DecryptionError`, `SerializationError`
-- 003-fernet-backend: `FernetBackend` — Fernet symmetric encryption conforming to `EncryptionBackend` protocol
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -32,19 +32,27 @@ uv add adk-secure-sessions
 ## Quick Start
 
 ```python
-from adk_secure_sessions import EncryptedSessionService
-
-# Field-level encryption with Fernet (symmetric)
-session_service = EncryptedSessionService(
-    db_url="sqlite+aiosqlite:///./sessions.db",
-    encryption_key="your-secret-key",
+from adk_secure_sessions import (
+    EncryptedSessionService,
+    FernetBackend,
+    BACKEND_FERNET,
 )
 
-# Use it exactly like ADK's DatabaseSessionService
-session = await session_service.create_session(
-    app_name="my_agent",
-    user_id="user_123",
-)
+# Create encryption backend
+backend = FernetBackend("your-secret-passphrase")
+
+# Use as async context manager
+async with EncryptedSessionService(
+    db_path="sessions.db",
+    backend=backend,
+    backend_id=BACKEND_FERNET,
+) as session_service:
+    # Use it exactly like ADK's DatabaseSessionService
+    session = await session_service.create_session(
+        app_name="my_agent",
+        user_id="user_123",
+        state={"api_key": "sk-secret", "preferences": {}},
+    )
 ```
 
 ## What Gets Encrypted
@@ -107,7 +115,7 @@ This is the same approach used by community session services like `adk-extra-ser
 
 ## Project Status
 
-**Alpha** — under active development. The core `EncryptedSessionService` and Fernet backend are being built first.
+**Alpha** — core functionality complete. The `EncryptedSessionService` and `FernetBackend` are implemented and tested. See [ROADMAP](docs/ROADMAP.md) for planned features (PostgreSQL, KMS backends, key rotation).
 
 ## Development
 
