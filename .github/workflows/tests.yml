@@ -29,9 +29,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
-      - name: Pin google-adk to minimum version
+      - name: Pin google-adk to specific version
         if: matrix.adk-version != 'latest'
-        run: uv pip install google-adk==${{ matrix.adk-version }}
+        run: uv pip install --force-reinstall google-adk==${{ matrix.adk-version }}
 
       - name: Lint
         run: uv run ruff check .
