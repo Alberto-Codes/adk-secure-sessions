@@ -393,6 +393,45 @@ class TestAppendEvent:
         assert "scratch" not in retrieved.state
         assert retrieved.state.get("persistent") == "saved"
 
+    async def test_append_event_discards_only_temp_keys(
+        self, service: EncryptedSessionService
+    ) -> None:
+        """Test event with only temp: keys results in no state changes."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        session = await service.create_session(
+            app_name="test-app",
+            user_id="user-1",
+            state={"original": "value"},
+        )
+
+        # Event with ONLY temp keys
+        event = Event(
+            id="event-temp-only",
+            author="agent",
+            invocation_id="inv-1",
+            actions=EventActions(
+                state_delta={
+                    "temp:key1": "ignored1",
+                    "temp:key2": "ignored2",
+                    "temp:key3": "ignored3",
+                }
+            ),
+        )
+        await service.append_event(session, event)
+
+        # Verify no temp keys were saved
+        retrieved = await service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id=session.id,
+        )
+        assert retrieved is not None
+        assert retrieved.state == {"original": "value"}
+        assert "temp:key1" not in retrieved.state
+        assert "key1" not in retrieved.state
+
 
 # =============================================================================
 # Phase 5: User Story 4 - List and Delete Sessions
@@ -696,3 +735,156 @@ class TestEdgeCases:
 
         assert retrieved is not None
         assert retrieved.state["large_key"] == large_value
+
+
+# =============================================================================
+# Additional Coverage Tests
+# =============================================================================
+
+
+class TestGetSessionConfigFiltering:
+    """Tests for GetSessionConfig event filtering options."""
+
+    async def test_get_session_filters_by_after_timestamp(
+        self, service: EncryptedSessionService
+    ) -> None:
+        """Test after_timestamp config filters events correctly."""
+        from google.adk.events.event import Event
+        from google.adk.sessions.base_session_service import GetSessionConfig
+
+        session = await service.create_session(
+            app_name="test-app",
+            user_id="user-1",
+        )
+
+        # Add events with specific timestamps
+        base_time = 1000.0
+        for i in range(5):
+            event = Event(
+                id=f"event-{i}",
+                author="user",
+                invocation_id="inv-1",
+                timestamp=base_time + i,
+            )
+            await service.append_event(session, event)
+
+        # Get events after timestamp 1002 (should get events 3 and 4)
+        config = GetSessionConfig(after_timestamp=base_time + 2)
+        result = await service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id=session.id,
+            config=config,
+        )
+
+        assert result is not None
+        assert len(result.events) == 2
+        assert result.events[0].id == "event-3"
+        assert result.events[1].id == "event-4"
+
+    async def test_get_session_combines_after_timestamp_and_num_recent(
+        self, service: EncryptedSessionService
+    ) -> None:
+        """Test after_timestamp combined with num_recent_events."""
+        from google.adk.events.event import Event
+        from google.adk.sessions.base_session_service import GetSessionConfig
+
+        session = await service.create_session(
+            app_name="test-app",
+            user_id="user-1",
+        )
+
+        # Add 10 events
+        base_time = 1000.0
+        for i in range(10):
+            event = Event(
+                id=f"event-{i}",
+                author="user",
+                invocation_id="inv-1",
+                timestamp=base_time + i,
+            )
+            await service.append_event(session, event)
+
+        # Get last 2 events after timestamp 1005
+        # Events after 1005: 6, 7, 8, 9 (4 events)
+        # Last 2 of those: 8, 9
+        config = GetSessionConfig(after_timestamp=base_time + 5, num_recent_events=2)
+        result = await service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id=session.id,
+            config=config,
+        )
+
+        assert result is not None
+        assert len(result.events) == 2
+        assert result.events[0].id == "event-8"
+        assert result.events[1].id == "event-9"
+
+
+class TestStateDeltaEdgeCases:
+    """Tests for state delta handling edge cases."""
+
+    async def test_update_session_state_on_nonexistent_session(
+        self, service: EncryptedSessionService
+    ) -> None:
+        """Test _update_session_state_in_db returns early for non-existent session."""
+        # This should not raise - just return early
+        await service._update_session_state_in_db(
+            app_name="test-app",
+            user_id="user-1",
+            session_id="nonexistent-session",
+            state_delta={"key": "value"},
+        )
+
+        # Verify no session was created
+        result = await service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id="nonexistent-session",
+        )
+        assert result is None
+
+    async def test_event_id_is_auto_generated_by_adk(
+        self, service: EncryptedSessionService
+    ) -> None:
+        """Verify ADK Event model auto-generates IDs.
+
+        Note: The Event model from google-adk auto-generates UUIDs,
+        so the fallback ID generation in append_event (line 681) is
+        unreachable with the current ADK version. This test documents
+        that behavior.
+        """
+        from google.adk.events.event import Event
+
+        # Event auto-generates ID even without providing one
+        event = Event(
+            author="user",
+            invocation_id="inv-1",
+        )
+
+        # ADK Event always has an ID
+        assert event.id is not None
+        uuid.UUID(event.id)  # Should be valid UUID
+
+    async def test_get_connection_initializes_db_lazily(
+        self, temp_db_path: str, backend: FernetBackend
+    ) -> None:
+        """Test _get_connection initializes database when not yet connected."""
+        service = EncryptedSessionService(
+            db_path=temp_db_path,
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        )
+
+        # Connection should be None initially
+        assert service._connection is None
+
+        # Call _get_connection directly (not through context manager)
+        conn = await service._get_connection()
+
+        # Should have initialized the connection
+        assert conn is not None
+        assert service._connection is not None
+
+        await service.close()
