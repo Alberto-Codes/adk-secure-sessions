@@ -851,9 +851,9 @@ class TestStateDeltaEdgeCases:
         """Verify ADK Event model auto-generates IDs.
 
         Note: The Event model from google-adk auto-generates UUIDs,
-        so the fallback ID generation in append_event (line 681) is
-        unreachable with the current ADK version. This test documents
-        that behavior.
+        so the fallback ID generation branch in
+        EncryptedSessionService.append_event is unreachable with the
+        current ADK version. This test documents that behavior.
         """
         from google.adk.events.event import Event
 
