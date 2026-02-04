@@ -39,6 +39,41 @@ uv add adk-secure-sessions
 ## Basic Usage
 
 ```python
+from adk_secure_sessions import (
+    EncryptedSessionService,
+    FernetBackend,
+    BACKEND_FERNET,
+)
+
+# Create encryption backend
+backend = FernetBackend("your-secret-passphrase")
+
+# Use as async context manager
+async with EncryptedSessionService(
+    db_path="sessions.db",
+    backend=backend,
+    backend_id=BACKEND_FERNET,
+) as service:
+    # Create encrypted session
+    session = await service.create_session(
+        app_name="my-agent",
+        user_id="user-123",
+        state={"api_key": "sk-secret"},
+    )
+
+    # Retrieve with automatic decryption
+    session = await service.get_session(
+        app_name="my-agent",
+        user_id="user-123",
+        session_id=session.id,
+    )
+```
+
+## Custom Encryption Backend
+
+Any class with `encrypt` and `decrypt` methods conforms to the protocol:
+
+```python
 from adk_secure_sessions import EncryptionBackend
 
 class MyBackend:
@@ -50,7 +85,7 @@ assert isinstance(MyBackend(), EncryptionBackend)  # True
 
 ## Project Status
 
-Alpha — under active development. See the [Architecture Decision Records](adr/index.md) for design rationale.
+Alpha — core functionality complete. `EncryptedSessionService` and `FernetBackend` are implemented and tested. See the [Roadmap](ROADMAP.md) for planned features and [Architecture Decision Records](adr/index.md) for design rationale.
 
 ## License
 
