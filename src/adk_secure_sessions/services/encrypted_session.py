@@ -194,7 +194,7 @@ class EncryptedSessionService(BaseSessionService):
             EncryptionError: If state encryption fails.
             SerializationError: If state contains non-JSON-serializable values.
         """
-        from google.adk.errors import AlreadyExistsError
+        from google.adk.errors.already_exists_error import AlreadyExistsError
 
         conn = await self._get_connection()
         session_id = session_id or str(uuid.uuid4())
