@@ -94,6 +94,24 @@
       5. **Test Quality**: Are tests real assertions or placeholders?
     </action>
 
+    <!-- SonarQube static analysis integration -->
+    <action>For each modified file under src/ in the comprehensive review list:
+      1. Read the complete file content
+      2. Run analyze_code_snippet via SonarQube MCP tool with:
+         - projectKey: "adk-secure-sessions"
+         - fileContent: complete file content
+         - language: ["python"]
+      3. Categorize findings:
+         - HIGH or BLOCKER severity → report as HIGH review finding
+         - Cognitive complexity above 15 (rule python:S3776) → report as MEDIUM review finding
+         - Other findings → report as LOW review finding
+    </action>
+
+    <check if="SonarQube MCP tools are unavailable or return connection errors">
+      <output>ℹ️ SonarQube analysis skipped — server unreachable (off-LAN or server down)</output>
+      <action>Continue review without SonarQube findings — do not block the review</action>
+    </check>
+
     <check if="total_issues_found lt 3">
       <critical>NOT LOOKING HARD ENOUGH - Find more problems!</critical>
       <action>Re-examine code for:
