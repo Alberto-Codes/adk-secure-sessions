@@ -2,6 +2,10 @@
 stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish']
 lastStep: 'step-11-polish'
 lastSaved: '2026-02-28'
+lastEdited: '2026-02-28'
+editHistory:
+  - date: '2026-02-28'
+    changes: 'Post-validation fixes: resolved 2 phase contradictions in journey table, strengthened FR15/FR33 measurability, added FR56 (published roadmap), improved 7 NFRs (NFR1/11/12/14/25/26/27), added audit & key compromise sections to domain requirements'
 classification:
   projectType: 'developer_tool'
   domain: 'security_encryption'
@@ -276,8 +280,8 @@ The following five personas represent the full adoption lifecycle — from disco
 | Encryption algorithm documentation | Priya, Marcus, Diane | Critical | MVP |
 | Envelope protocol specification in docs | Marcus, Tomás, Kenji | Critical | MVP |
 | Published roadmap with backend upgrade timeline | Diane | High | MVP |
-| Operations/deployment guide | Kenji | High | MVP |
-| Monitoring guidance for encryption errors | Kenji | High | MVP |
+| Operations/deployment guide | Kenji | High | Growth |
+| Monitoring guidance for encryption errors | Kenji | High | Growth |
 | Error message design (key mismatch vs. data corruption) | Kenji | High | MVP |
 | Contribution guide for new backends | Tomás | Medium | Growth |
 | Example backend implementations | Tomás | Medium | Growth |
@@ -316,13 +320,15 @@ The user journeys above reveal that compliance is a first-class adoption driver,
 
 **Encryption keys must never be logged, serialized to persistence, or included in error context.** This is a first-class security constraint. No key material — raw keys, derived keys, or key identifiers that could enable key recovery — may appear in log output, exception messages, database records, or any observable channel. This applies to all phases, all backends, all error paths. Violation of this constraint is a security defect of the highest severity.
 
-**Key management boundary.** The library accepts encryption keys — it does not store, rotate, or manage key lifecycle. Key provisioning, rotation scheduling, and secure storage are the deploying team's responsibility. The library's contract is: "give me a key, I'll encrypt with it." Phase 3 may provide key rotation *utilities* (decrypt-with-old, encrypt-with-new), but key *management* (where keys live, who has access, rotation policy) remains external. This boundary is deliberate — a library that manages keys becomes a key management system, which is a fundamentally different product with different threat models.
+**Key management boundary.** The library accepts encryption keys — it does not store, rotate, or manage key lifecycle. Key provisioning, rotation scheduling, and secure storage are the deploying team's responsibility. The library's contract is: "give me a key, I'll encrypt with it." Phase 3 may provide key rotation *utilities* (decrypt-with-old, encrypt-with-new), but key *management* (where keys live, who has access, rotation policy) remains external. This boundary is deliberate — a library that manages keys becomes a key management system, which is a fundamentally different product with different threat models. Key compromise response (revocation, re-encryption of existing sessions) is the deployer's responsibility — the library provides the rotation utilities, the deployer provides the incident response process.
 
 **Envelope protocol integrity.** The `[version_byte][backend_id_byte][ciphertext]` envelope is a wire protocol, not an implementation detail. It must never be stripped, shortcutted, or optional — even for "simple" cases. The envelope enables key rotation, backend migration, and operational debugging. See ADR-000.
 
 **Async-first enforcement.** All public APIs must be `async def`. CPU-bound cryptographic operations (Fernet encrypt/decrypt, PBKDF2 key derivation) must be wrapped in `asyncio.to_thread()` to avoid blocking the event loop. This is a concurrency safety requirement, not a style preference. See ADR-002.
 
 **Fail loud, never silent.** Wrong-key decryption must raise `DecryptionError`, never return garbage data. Malformed envelopes must raise `SerializationError`, never silently truncate. Truncated or corrupted ciphertext (from partial writes due to power loss, disk full, or killed processes) must be caught by envelope header validation before decryption is attempted, raising `SerializationError` with context about what was expected vs. received. Silent failures in encryption libraries lead to data corruption discovered days or weeks later — this is unacceptable in a compliance context.
+
+**Audit & Observability.** MVP provides error-level observability: `DecryptionError` and `SerializationError` exceptions surface encryption failures for operator monitoring (Kenji's journey). Structured audit logging of encryption operations (who encrypted what, when, with which backend) is planned for Phase 4 (FR55). MVP audit capability is limited to exception monitoring and envelope metadata inspection — sufficient for initial compliance reviews but not for formal audit trail requirements.
 
 ### Integration Requirements
 
@@ -668,7 +674,7 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 - **FR13** `[MVP]`: Developer can configure the session service with an encryption key and database URL
 - **FR14** `[MVP]`: System initializes the database schema on first service instantiation
-- **FR15** `[MVP]`: System validates configuration at startup and raises clear errors for invalid key format or unreachable database
+- **FR15** `[MVP]`: System validates configuration at startup and raises `ConfigurationError` for invalid key format (specifying expected format) or `DatabaseConnectionError` for unreachable database (including file path and OS error)
 - **FR16** `[MVP]`: Developer can gracefully close database connections via the service's close method
 
 ### Backend Extensibility
@@ -698,7 +704,7 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ### Documentation & Discoverability
 
-- **FR33** `[MVP]`: Developer can find the library by searching PyPI for ADK encryption-related terms
+- **FR33** `[MVP]`: Developer can find the library on the first page of PyPI search results for the terms "adk encryption", "adk encrypted sessions", and "google adk security" — achieved through PyPI classifiers, keywords in pyproject.toml, and package description
 - **FR34** `[MVP]`: Developer can read a quick-start code example in the README that demonstrates the integration swap
 - **FR35** `[MVP]`: Developer can access auto-generated API reference documentation for all public symbols
 - **FR36** `[MVP]`: Developer can read architecture decision records explaining design choices
@@ -707,6 +713,7 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 - **FR39** `[MVP]`: Compliance reviewer can read a SECURITY.md with responsible disclosure policy and supported versions
 - **FR40** `[MVP]`: Compliance reviewer can verify the library's license, dependency tree, and test coverage
 - **FR41** `[MVP]`: Developer can read docstring examples with fenced code blocks for all public API functions and classes
+- **FR56** `[MVP]`: Developer can read a published roadmap on the documentation site with phase timeline, planned capabilities per phase, and backend upgrade schedule
 
 ### Release & Distribution
 
@@ -734,7 +741,7 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ### Performance
 
-- **NFR1** `[MVP]`: Encryption/decryption overhead is less than 20% of the total session operation time for typical session sizes (state dict ≤ 10KB serialized), verified by a lightweight benchmark test comparing encrypted vs. unencrypted round-trip
+- **NFR1** `[MVP]`: Encryption/decryption overhead is less than 20% of the total session operation time for typical session sizes (state dict ≤ 10KB serialized), verified by a benchmark test under single-threaded sequential operation on localhost comparing encrypted vs. unencrypted round-trip
 - **NFR2** `[MVP]`: All cryptography library operations execute via `asyncio.to_thread()` — zero direct blocking of the event loop
 - **NFR3** `[MVP]`: Database operations use async I/O exclusively (aiosqlite) — no synchronous SQLite calls in any code path
 - **NFR4** `[Phase 3]`: Published benchmarks document actual overhead per operation (encrypt, decrypt, round-trip) across representative payload sizes (1KB, 10KB, 100KB, 1MB)
@@ -747,13 +754,13 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 - **NFR8** `[MVP]`: The library has zero known unpatched CVEs in its direct dependency tree at time of each release (verified via `pip-audit` or equivalent)
 - **NFR9** `[MVP]`: All cryptographic operations use well-established, peer-reviewed algorithms (Fernet: AES-128-CBC + HMAC-SHA256, per NIST SP 800-38A and FIPS 198-1)
 - **NFR10** `[MVP]`: The library never persists, caches, or logs encryption keys; key lifecycle management (generation, storage, rotation scheduling) is the operator's responsibility
-- **NFR11** `[Phase 3]`: Per-key random salt (PBKDF2) eliminates fixed-salt weakness for key derivation
-- **NFR12** `[Phase 4]`: FIPS 140-2 compliance documented with guidance for validated environments
+- **NFR11** `[Phase 3]`: Each key derivation uses a unique cryptographically random salt of ≥16 bytes — verified by test asserting no two derived keys share the same salt across 100 derivations
+- **NFR12** `[Phase 4]`: Documentation includes a FIPS 140-2 deployment guide covering: OpenSSL FIPS module configuration, backend selection for FIPS mode, and verification steps to confirm FIPS-validated operation
 
 ### Reliability
 
 - **NFR13** `[MVP]`: Corrupted or truncated ciphertext raises `SerializationError` or `DecryptionError` — never silent data loss
-- **NFR14** `[MVP]`: Database connection failures surface as clear exceptions with actionable context (file path, permission issue), not generic errors
+- **NFR14** `[MVP]`: Database connection failures raise exceptions that include the database file path, OS error code, and suggested remediation — not generic errors
 - **NFR15** `[MVP]`: The library handles empty session state (`{}`) and empty event lists (`[]`) without error — round-trip preservation verified
 - **NFR16** `[MVP]`: Test suite passes with zero warnings on `uv run pytest`
 - **NFR17** `[MVP]`: No flaky tests across 5 consecutive CI runs on the same commit
@@ -770,9 +777,9 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ### Scalability
 
-- **NFR25** `[MVP]`: Concurrent async session operations on the same database do not corrupt data — verified by test with N coroutines performing simultaneous writes to different sessions
-- **NFR26** `[Phase 3]`: PostgreSQL backend supports multi-instance deployments with concurrent writers
-- **NFR27** `[Phase 3]`: Stale session detection provides optimistic concurrency control for multi-instance scenarios
+- **NFR25** `[MVP]`: Concurrent async session operations on the same database do not corrupt data — verified by test with 50 coroutines performing simultaneous writes to different sessions, all data recoverable with correct values after completion
+- **NFR26** `[Phase 3]`: PostgreSQL backend supports ≥10 concurrent writer instances without data loss — verified by integration test with parallel session writes from separate connections, all sessions recoverable with correct state
+- **NFR27** `[Phase 3]`: Stale session updates are detected and rejected — when two instances read the same session and both write back, the second write raises a concurrency conflict error rather than silently overwriting the first
 
 ### Developer Experience
 
