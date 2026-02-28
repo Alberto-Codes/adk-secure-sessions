@@ -221,8 +221,10 @@
     </check>
   </step>
 
+  <!-- Step 4b executes between 4 and 5 by document position; the BMAD workflow engine processes steps in document order, not by numeric sort -->
   <step n="4b" goal="Create and switch to story feature branch">
     <action>Read Branch field from story header</action>
+    <action>Set {{story_branch}} = value from Branch field</action>
 
     <check if="Branch field is empty or missing">
       <output>🚫 HALT: Story file has no Branch field set.

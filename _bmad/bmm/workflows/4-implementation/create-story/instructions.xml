@@ -288,7 +288,7 @@
     <!-- GitHub issue creation (conditional on tracking_system) -->
     <check if="{tracking_system} == 'github' OR {tracking_system} == 'both'">
       <action>Search for existing GitHub issue:
-        gh search issues "Story {{epic_num}}.{{story_num}}:" --repo {github_repository} --json number,title
+        gh search issues "Story {{epic_num}}.{{story_num}}:" --repo {github_repository} --json number,title,url
       </action>
 
       <check if="no existing issue found">
