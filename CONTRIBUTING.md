@@ -40,7 +40,12 @@ This project follows standard open-source community guidelines. Be respectful, c
    uv sync --dev
    ```
 
-3. **Verify the setup**:
+3. **Install pre-commit hooks**:
+   ```bash
+   pre-commit install
+   ```
+
+4. **Verify the setup**:
    ```bash
    uv run pytest           # Run tests
    uv run ruff check .     # Check code style
@@ -74,6 +79,28 @@ adk-secure-sessions/
 │   └── pytest.md              # Test rules (tests/**/*.py)
 └── .github/                   # GitHub templates and CI
 ```
+
+## Pre-Commit Hooks
+
+This project uses pre-commit hooks to catch issues before they reach CI. Pre-commit is not a project dependency — if you don't have it yet, see the [install guide](https://pre-commit.com/#install). Then activate the hooks:
+
+```bash
+pre-commit install
+```
+
+Seven hooks run automatically on each commit:
+
+| Hook | What it checks |
+|------|---------------|
+| yamllint | YAML syntax and formatting |
+| actionlint | GitHub Actions workflow validity |
+| ruff-check | Python linting |
+| ruff-format | Python code formatting |
+| ty | Type checking (`src/` only) |
+| pytest | Full test suite |
+| docvet | Docstring quality on staged files |
+
+All hooks must pass before the commit succeeds.
 
 ## Development Workflow
 

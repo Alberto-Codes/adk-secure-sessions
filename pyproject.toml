@@ -141,4 +141,5 @@ dev = [
     "cairosvg>=2.8.2",
     "griffe-warnings-deprecated>=1.1.0",
     "griffe-inherited-docstrings>=1.1.2",
+    "docvet>=1.6.0",
 ]
