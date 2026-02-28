@@ -6,9 +6,11 @@ adk-secure-sessions provides the missing encryption layer for Google ADK's sessi
 
 ## Phases
 
-### Phase 1: Core Encryption + Fernet MVP
+### Phase 1: Core — Encryption Engine
 
-Ship a working `EncryptedSessionService` with Fernet encryption and SQLite storage. This is the minimum viable product — enough for developers to use in local development, demos, and small deployments.
+Build the core encryption engine: `EncryptedSessionService` with Fernet encryption and SQLite storage.
+
+**Status:** Complete
 
 - [x] `EncryptionBackend` protocol (`protocols.py`) — structural subtyping via PEP 544
 - [x] Unit tests for protocol conformance (`tests/unit/test_protocols.py`)
@@ -23,36 +25,49 @@ Ship a working `EncryptedSessionService` with Fernet encryption and SQLite stora
   - [x] `append_event` with encrypted state delta + event data
 - [x] Integration test: full round-trip (create → append events → get → verify decryption)
 - [x] CI: GitHub Actions (lint, type check, test)
-
-### Phase 2: Hardening + PostgreSQL
-
-Production readiness. Key rotation, Postgres support, better error handling, performance validation.
-
-- [ ] Key rotation support (decrypt with old key, re-encrypt with new key)
-- [ ] PostgreSQL backend (async SQLAlchemy)
 - [x] Connection pooling and cleanup (`close()`, `__aenter__`/`__aexit__`)
-- [ ] Stale session detection (match ADK's staleness check in `append_event`)
-- [ ] Performance benchmarks (encryption overhead vs plaintext ADK services)
+
+### Phase 2: Ship — PyPI Launch
+
+The code is done; the product isn't. Ship the existing tested core as a credible, findable, documented package. The urgent work is market presence, not more features.
+
+**Status:** In Progress
+
+- [ ] Trunk-based migration to main (#35)
+- [ ] PyPI/TestPyPI publish pipeline (#36)
+- [ ] SECURITY.md with responsible disclosure policy
+- [ ] README rewrite (compliance gateway positioning, quick-start, badges)
+- [ ] py.typed marker + pyproject.toml extras skeleton
+- [ ] Clean test suite output (zero warnings)
+- [ ] Docstring Examples sections on public API
+- [ ] MkDocs documentation site (API ref + ADRs + envelope spec + FAQ) (#11)
+- [ ] Community announcement (GitHub Discussion post)
+
+### Phase 3: Expand — Growth Features
+
+Features that make the library competitive and enterprise-ready.
+
+- [ ] AES-256-GCM encryption backend (#16)
+- [ ] Per-key random salt replacing fixed PBKDF2 salt (#17)
+- [ ] Key rotation support with envelope-based backend migration (#9)
+- [ ] PostgreSQL persistence backend (#9)
+- [ ] Performance benchmarks and optimization (#9)
+- [ ] SQLAlchemy ORM migration (#20)
+- [ ] Stale session detection with optimistic concurrency (#22)
 - [ ] CI matrix: test against `google-adk` min + latest
+- [ ] Backend authoring documentation and contribution guide
+- [ ] Operations guide (key configuration, rotation runbook, monitoring)
+- [ ] Test file refactoring (#38, #39)
+- [ ] Python 3.13+ support (track google-adk version matrix)
 
-### Phase 3: KMS Backends + Compliance
+### Phase 4: Enterprise — KMS Backends + Compliance
 
-Enterprise encryption backends for regulated industries.
+Enterprise-grade credibility for regulated industries.
 
-- [ ] AWS KMS backend
-- [ ] GCP KMS backend
-- [ ] HashiCorp Vault backend
-- [ ] SQLCipher full-database encryption backend
-- [ ] Audit logging (which keys were used, when rotation occurred)
-- [ ] Compliance documentation (HIPAA, SOC 2, PCI-DSS mapping)
-
-### Phase 4: Documentation, Examples, PyPI Release
-
-Polish and publish.
-
-- [ ] MkDocs documentation site
-- [ ] Quick start guide with ADK agent example
-- [ ] Backend comparison guide (Fernet vs KMS vs SQLCipher)
-- [ ] Migration guide (from plaintext ADK sessions to encrypted)
-- [ ] Publish to PyPI
-- [ ] Publish to TestPyPI for pre-release testing
+- [ ] AWS KMS backend (#10)
+- [ ] GCP Cloud KMS backend (#10)
+- [ ] HashiCorp Vault integration (#10)
+- [ ] SQLCipher full-database encryption option (#10)
+- [ ] Audit logging and compliance reporting (#10)
+- [ ] FIPS 140-2 deployment documentation
+- [ ] Multiple backend examples and migration guides (#10)

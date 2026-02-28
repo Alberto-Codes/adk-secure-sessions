@@ -6,6 +6,8 @@ lastEdited: '2026-02-28'
 editHistory:
   - date: '2026-02-28'
     changes: 'Post-validation fixes: resolved 2 phase contradictions in journey table, strengthened FR15/FR33 measurability, added FR56 (published roadmap), improved 7 NFRs (NFR1/11/12/14/25/26/27), added audit & key compromise sections to domain requirements'
+  - date: '2026-02-28'
+    changes: 'Re-validation fixes: reframed FR33 for controllable measurability (metadata quality vs search ranking), added FR Summary Index table for LLM navigation, synced docs/ROADMAP.md with PRD phase definitions'
 classification:
   projectType: 'developer_tool'
   domain: 'security_encryption'
@@ -91,7 +93,7 @@ Phase 1 (core encryption engine) is code-complete and tested: Fernet backend, as
 | Innovation & Novel Patterns | Market positioning, competitive landscape, validation |
 | Developer Tool Specific Requirements | Platform matrix, API surface, documentation architecture |
 | Project Scoping & Phased Development | Execution sequence, phase details, decision log, risk mitigation |
-| Functional Requirements | 55 FRs across 9 capability areas |
+| Functional Requirements | 56 FRs across 9 capability areas |
 | Non-Functional Requirements | 28 NFRs across 6 quality categories |
 
 ### Glossary
@@ -650,7 +652,68 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ## Functional Requirements
 
-55 capabilities across 9 areas. Each FR specifies what the system must do, phase-tagged `[MVP]`, `[Phase 3]`, or `[Phase 4]`. These are the capability contract — downstream architecture, epics, and stories trace back to these.
+56 capabilities across 9 areas. Each FR specifies what the system must do, phase-tagged `[MVP]`, `[Phase 3]`, or `[Phase 4]`. These are the capability contract — downstream architecture, epics, and stories trace back to these.
+
+### FR Summary Index
+
+| FR | Phase | Capability Area | Description |
+|----|-------|----------------|-------------|
+| FR1 | MVP | Session Encryption | Encrypt session state at rest |
+| FR2 | MVP | Session Encryption | Decrypt session state on retrieval |
+| FR3 | MVP | Session Encryption | Encrypt/decrypt arbitrary JSON data |
+| FR4 | MVP | Session Encryption | Self-describing binary envelope |
+| FR5 | MVP | Session Encryption | Fernet backend (AES-128-CBC + HMAC-SHA256) |
+| FR6 | MVP | Session Persistence | Create encrypted sessions |
+| FR7 | MVP | Session Persistence | Retrieve session by ID |
+| FR8 | MVP | Session Persistence | List sessions by app + user |
+| FR9 | MVP | Session Persistence | Delete session by ID |
+| FR10 | MVP | Session Persistence | Append events to session |
+| FR11 | MVP | Session Persistence | SQLite persistence via async ops |
+| FR12 | MVP | Session Persistence | Own database schema |
+| FR13 | MVP | Configuration | Configure with key + database URL |
+| FR14 | MVP | Configuration | Auto-initialize schema |
+| FR15 | MVP | Configuration | Validate config at startup |
+| FR16 | MVP | Configuration | Graceful connection close |
+| FR17 | MVP | Backend Extensibility | Custom backend via protocol |
+| FR18 | MVP | Backend Extensibility | Runtime conformance validation |
+| FR19 | MVP | Backend Extensibility | Register custom backend |
+| FR20 | MVP | Backend Extensibility | Dispatch by envelope backend ID |
+| FR21 | Phase 3 | Backend Extensibility | Multiple simultaneous backends |
+| FR22 | MVP | Error Handling | DecryptionError on wrong key |
+| FR23 | MVP | Error Handling | SerializationError on malformed envelope |
+| FR24 | MVP | Error Handling | EncryptionError on encrypt failure |
+| FR25 | MVP | Error Handling | No keys in error messages |
+| FR26 | MVP | Error Handling | Envelope metadata in error context |
+| FR27 | MVP | Developer Integration | pip install from PyPI |
+| FR28 | MVP | Developer Integration | Drop-in BaseSessionService impl |
+| FR29 | MVP | Developer Integration | Same public method signatures |
+| FR30 | MVP | Developer Integration | IDE autocomplete + type checking |
+| FR31 | MVP | Developer Integration | ADK 1.22.0–latest compatibility |
+| FR32 | MVP | Developer Integration | Zero-warning test suite |
+| FR33 | MVP | Documentation | PyPI discoverability metadata |
+| FR34 | MVP | Documentation | README quick-start example |
+| FR35 | MVP | Documentation | Auto-generated API reference |
+| FR36 | MVP | Documentation | Published ADRs |
+| FR37 | MVP | Documentation | Envelope protocol spec |
+| FR38 | MVP | Documentation | Algorithm docs with NIST refs |
+| FR39 | MVP | Documentation | SECURITY.md |
+| FR40 | MVP | Documentation | License, deps, coverage verifiable |
+| FR41 | MVP | Documentation | Docstring examples |
+| FR56 | MVP | Documentation | Published roadmap |
+| FR42 | MVP | Release | CI/CD publish to PyPI |
+| FR43 | MVP | Release | TestPyPI pre-release |
+| FR44 | MVP | Release | Auto-generated changelog |
+| FR45 | MVP | Release | Optional dependency extras |
+| FR46 | Phase 3 | Future | AES-256-GCM backend |
+| FR47 | Phase 3 | Future | Per-key random salt |
+| FR48 | Phase 3 | Future | Zero-downtime key rotation |
+| FR49 | Phase 3 | Future | PostgreSQL persistence |
+| FR50 | Phase 3 | Future | Backend authoring docs |
+| FR51 | Phase 3 | Future | Operations guide |
+| FR52 | Phase 4 | Future | AWS KMS backend |
+| FR53 | Phase 4 | Future | GCP Cloud KMS backend |
+| FR54 | Phase 4 | Future | HashiCorp Vault backend |
+| FR55 | Phase 4 | Future | Audit logging |
 
 ### Session Encryption
 
@@ -704,7 +767,7 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ### Documentation & Discoverability
 
-- **FR33** `[MVP]`: Developer can find the library on the first page of PyPI search results for the terms "adk encryption", "adk encrypted sessions", and "google adk security" — achieved through PyPI classifiers, keywords in pyproject.toml, and package description
+- **FR33** `[MVP]`: Developer can discover the library through PyPI search — package metadata includes relevant classifiers (`Topic :: Security :: Cryptography`, `Framework :: Google ADK` if available), keywords (`adk`, `encryption`, `encrypted sessions`, `google adk security`), and a package description optimized for discoverability
 - **FR34** `[MVP]`: Developer can read a quick-start code example in the README that demonstrates the integration swap
 - **FR35** `[MVP]`: Developer can access auto-generated API reference documentation for all public symbols
 - **FR36** `[MVP]`: Developer can read architecture decision records explaining design choices
@@ -789,4 +852,4 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 
 ## Closing Statement
 
-The measure of success for adk-secure-sessions is simple: a developer with an existing ADK agent adds encrypted sessions in under 5 minutes, and their compliance reviewer approves without follow-up questions. Everything in this document — 55 functional requirements, 28 non-functional requirements, 5 user journeys, and a 4-phase roadmap — serves that outcome. The core encryption engine is built and tested. The competitive window is open. The next step is shipping.
+The measure of success for adk-secure-sessions is simple: a developer with an existing ADK agent adds encrypted sessions in under 5 minutes, and their compliance reviewer approves without follow-up questions. Everything in this document — 56 functional requirements, 28 non-functional requirements, 5 user journeys, and a 4-phase roadmap — serves that outcome. The core encryption engine is built and tested. The competitive window is open. The next step is shipping.
