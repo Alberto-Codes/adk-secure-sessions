@@ -112,6 +112,7 @@ filterwarnings = [
     "ignore:.*Pydantic.*:UserWarning",
     "ignore:^deprecated$:DeprecationWarning:pydantic.*",
     "ignore:Inheritance class.*from ClientSession is discouraged:DeprecationWarning",
+    "ignore:Exception in thread.*_connection_worker_thread.*:pytest.PytestUnhandledThreadExceptionWarning",
 ]
 
 [dependency-groups]
