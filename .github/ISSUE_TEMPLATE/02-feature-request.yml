@@ -54,3 +54,12 @@ body:
     attributes:
       label: Additional Context
       description: Any other context, links, or references.
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### BMAD Workflow
+        When ready to implement, run in a fresh context:
+        - **Quick approach:** `/bmad-bmm-quick-spec` → `/bmad-bmm-quick-dev`
+        - **Full approach:** `/bmad-bmm-create-prd` → architecture → stories
