@@ -3,8 +3,8 @@
   <critical>You MUST have already loaded and processed: {installed_path}/workflow.yaml</critical>
   <critical>Communicate all responses in {communication_language} and language MUST be tailored to {user_skill_level}</critical>
   <critical>Generate all documents in {document_output_language}</critical>
-  <critical>Only modify the story file in these areas: Tasks/Subtasks checkboxes, Dev Agent Record (Debug Log, Completion Notes), File List,
-    Change Log, and Status</critical>
+  <critical>Only modify the story file in these areas: Tasks/Subtasks checkboxes, AC-to-Test Mapping, Quality Gates,
+    Documentation Impact, Dev Agent Record (Debug Log, Completion Notes), File List, Change Log, and Status</critical>
   <critical>Execute ALL steps in exact order; do NOT skip steps</critical>
   <critical>Absolutely DO NOT stop because of "milestones", "significant progress", or "session boundaries". Continue in a single execution
     until the story is COMPLETE (all ACs satisfied and all tasks/subtasks checked) UNLESS a HALT condition is triggered or the USER gives
@@ -221,6 +221,39 @@
     </check>
   </step>
 
+  <step n="4b" goal="Create and switch to story feature branch">
+    <action>Read Branch field from story header</action>
+
+    <check if="Branch field is empty or missing">
+      <output>🚫 HALT: Story file has no Branch field set.
+        The create-story workflow should have populated this field.
+        Please set the Branch field in the story header before continuing.
+        Expected format: feat/{{scope}}-{{epic_num}}-{{story_num}}-{{description}}
+      </output>
+      <action>HALT - Cannot proceed without branch name</action>
+    </check>
+
+    <action>Check current branch: git branch --show-current</action>
+
+    <check if="current branch matches story Branch field">
+      <output>✅ Already on story branch: {{story_branch}}</output>
+    </check>
+
+    <check if="current branch does NOT match story Branch field">
+      <action>Check if story branch already exists: git branch --list {{story_branch}}</action>
+
+      <check if="branch exists locally">
+        <action>Switch to existing branch: git checkout {{story_branch}}</action>
+        <output>✅ Switched to existing story branch: {{story_branch}}</output>
+      </check>
+
+      <check if="branch does NOT exist locally">
+        <action>Create and switch to new branch: git checkout -b {{story_branch}}</action>
+        <output>✅ Created and switched to new story branch: {{story_branch}}</output>
+      </check>
+    </check>
+  </step>
+
   <step n="5" goal="Implement task following red-green-refactor cycle">
     <critical>FOLLOW THE STORY FILE TASKS/SUBTASKS SEQUENCE EXACTLY AS WRITTEN - NO DEVIATION</critical>
 
@@ -341,6 +374,33 @@
       - Change Log includes summary of changes
       - Only permitted story sections were modified
     </action>
+
+    <!-- AC-to-Test Mapping validation -->
+    <action>Verify AC-to-Test Mapping table in story file:
+      - Every AC number must have at least one test listed
+      - Every test listed must actually exist and pass
+      - Status column must be "pass" for all rows
+    </action>
+    <check if="AC-to-Test Mapping table is empty or has rows with no tests listed">
+      <output>🚫 HALT: AC-to-Test Mapping is incomplete.
+        Every Acceptance Criterion must have at least one test mapped to it.
+        Fill in the AC-to-Test Mapping table before marking story done.
+      </output>
+      <action>HALT - AC-to-Test Mapping incomplete</action>
+    </check>
+
+    <!-- Documentation Impact validation -->
+    <action>Verify Documentation Impact section in story file:
+      - Table must be filled in (not empty placeholder)
+      - If pages are listed, verify they were actually updated or created
+      - "None — no user-facing changes" is valid for internal-only stories
+    </action>
+    <check if="Documentation Impact table is empty or has unfilled placeholders">
+      <output>🚫 HALT: Documentation Impact not addressed.
+        Confirm which docs were updated or mark as "None — no user-facing changes" if internal-only.
+      </output>
+      <action>HALT - Documentation Impact not assessed</action>
+    </check>
 
     <!-- Mark story ready for review - sprint status conditional -->
     <check if="{sprint_status} file exists AND {{current_sprint_status}} != 'no-sprint-tracking'">

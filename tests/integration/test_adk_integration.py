@@ -9,8 +9,6 @@ Tests verify:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import pytest
 
 from adk_secure_sessions import (
@@ -20,21 +18,7 @@ from adk_secure_sessions import (
 )
 from adk_secure_sessions.protocols import EncryptionBackend
 
-if TYPE_CHECKING:
-    from pathlib import Path
-
-
-@pytest.fixture
-def backend() -> FernetBackend:
-    """Create a FernetBackend for testing."""
-    return FernetBackend("integration-test-passphrase")
-
-
-@pytest.fixture
-def temp_db_path(tmp_path: Path) -> str:
-    """Create a temporary database path."""
-    return str(tmp_path / "integration_sessions.db")
-
+pytestmark = pytest.mark.integration
 
 # =============================================================================
 # Phase 7: User Story 1 - Drop-in Replacement Integration
@@ -51,12 +35,12 @@ class TestBaseSessionServiceInterface:
         assert issubclass(EncryptedSessionService, BaseSessionService)
 
     async def test_has_required_abstract_methods(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify all required abstract methods are implemented."""
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # All these methods should exist and be callable
@@ -67,15 +51,15 @@ class TestBaseSessionServiceInterface:
             assert callable(service.append_event)
 
     async def test_returns_correct_types(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify methods return ADK-compatible types."""
         from google.adk.sessions.base_session_service import ListSessionsResponse
         from google.adk.sessions.session import Session
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # create_session returns Session
@@ -97,15 +81,15 @@ class TestRoundTripWorkflow:
     """T046: Tests for complete session workflow."""
 
     async def test_full_session_lifecycle(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Test create -> append events -> get -> delete workflow."""
         from google.adk.events.event import Event
         from google.adk.events.event_actions import EventActions
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # 1. Create session with initial state
@@ -182,14 +166,14 @@ class TestDatabaseEncryption:
     """T047: Tests verifying database contains only encrypted data."""
 
     async def test_state_is_encrypted_in_database(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify session state is encrypted in raw database."""
         import aiosqlite
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # Create session with sensitive data
@@ -204,7 +188,7 @@ class TestDatabaseEncryption:
             )
 
         # Read raw database content
-        async with aiosqlite.connect(temp_db_path) as conn:
+        async with aiosqlite.connect(db_path) as conn:
             cursor = await conn.execute("SELECT state FROM sessions")
             row = await cursor.fetchone()
             assert row is not None, "Expected session row to exist"
@@ -221,15 +205,15 @@ class TestDatabaseEncryption:
             assert "api_key" not in raw_str
 
     async def test_events_are_encrypted_in_database(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify event data is encrypted in raw database."""
         import aiosqlite
         from google.adk.events.event import Event
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             session = await service.create_session(
@@ -245,7 +229,7 @@ class TestDatabaseEncryption:
             await service.append_event(session, event)
 
         # Read raw database content
-        async with aiosqlite.connect(temp_db_path) as conn:
+        async with aiosqlite.connect(db_path) as conn:
             cursor = await conn.execute("SELECT event_data FROM events")
             row = await cursor.fetchone()
             assert row is not None, "Expected event row to exist"
@@ -260,7 +244,7 @@ class TestDatabaseEncryption:
             assert '"invocation_id"' not in raw_str
 
     async def test_app_state_is_encrypted_in_database(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify app-level state is encrypted in raw database."""
         import aiosqlite
@@ -268,8 +252,8 @@ class TestDatabaseEncryption:
         from google.adk.events.event_actions import EventActions
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             session = await service.create_session(
@@ -288,7 +272,7 @@ class TestDatabaseEncryption:
             await service.append_event(session, event)
 
         # Read raw database content
-        async with aiosqlite.connect(temp_db_path) as conn:
+        async with aiosqlite.connect(db_path) as conn:
             cursor = await conn.execute("SELECT state FROM app_states")
             row = await cursor.fetchone()
             assert row is not None, "Expected app_states row to exist"
@@ -303,7 +287,7 @@ class TestDatabaseEncryption:
 class TestProtocolConformance:
     """T048: Tests with mock EncryptionBackend to verify protocol."""
 
-    async def test_works_with_custom_backend(self, temp_db_path: str) -> None:
+    async def test_works_with_custom_backend(self, db_path: str) -> None:
         """Verify service works with any EncryptionBackend-conformant object."""
 
         class MockBackend:
@@ -334,7 +318,7 @@ class TestProtocolConformance:
 
         try:
             async with EncryptedSessionService(
-                db_path=temp_db_path,
+                db_path=db_path,
                 backend=mock_backend,
                 backend_id=mock_backend_id,
             ) as service:
@@ -380,12 +364,12 @@ class TestListSessionsIntegration:
     """Integration tests for list_sessions functionality."""
 
     async def test_list_sessions_with_multiple_users(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify list_sessions returns all sessions across users."""
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # Create sessions for multiple users
@@ -414,12 +398,12 @@ class TestListSessionsIntegration:
             assert names == {"Alice", "Bob"}
 
     async def test_list_sessions_filters_by_user(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify list_sessions correctly filters by user_id."""
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # Create multiple sessions for same user
@@ -449,15 +433,15 @@ class TestDeleteSessionIntegration:
     """Integration tests for delete_session functionality."""
 
     async def test_delete_session_cascades_to_events(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify delete_session removes associated events."""
         import aiosqlite
         from google.adk.events.event import Event
 
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             session = await service.create_session(
@@ -482,19 +466,19 @@ class TestDeleteSessionIntegration:
             )
 
         # Verify events are gone from database
-        async with aiosqlite.connect(temp_db_path) as conn:
+        async with aiosqlite.connect(db_path) as conn:
             cursor = await conn.execute("SELECT COUNT(*) FROM events")
             row = await cursor.fetchone()
             assert row is not None
             assert row[0] == 0
 
     async def test_delete_nonexistent_session_is_safe(
-        self, temp_db_path: str, backend: FernetBackend
+        self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
         """Verify deleting a non-existent session doesn't raise."""
         async with EncryptedSessionService(
-            db_path=temp_db_path,
-            backend=backend,
+            db_path=db_path,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service:
             # Should not raise
@@ -508,16 +492,14 @@ class TestDeleteSessionIntegration:
 class TestWrongKeyIntegration:
     """Integration tests for wrong encryption key scenarios."""
 
-    async def test_wrong_key_raises_decryption_error_on_get(
-        self, temp_db_path: str
-    ) -> None:
+    async def test_wrong_key_raises_decryption_error_on_get(self, db_path: str) -> None:
         """Verify wrong key raises DecryptionError when retrieving session."""
         from adk_secure_sessions import DecryptionError
 
         # Create session with key1
         backend1 = FernetBackend("secret-key-one")
         async with EncryptedSessionService(
-            db_path=temp_db_path,
+            db_path=db_path,
             backend=backend1,
             backend_id=BACKEND_FERNET,
         ) as service:
@@ -531,12 +513,10 @@ class TestWrongKeyIntegration:
         # Try to read with key2
         backend2 = FernetBackend("different-key-two")
         async with EncryptedSessionService(
-            db_path=temp_db_path,
+            db_path=db_path,
             backend=backend2,
             backend_id=BACKEND_FERNET,
         ) as service:
-            import pytest
-
             with pytest.raises(DecryptionError):
                 await service.get_session(
                     app_name="my-agent",
@@ -545,7 +525,7 @@ class TestWrongKeyIntegration:
                 )
 
     async def test_wrong_key_raises_decryption_error_on_list(
-        self, temp_db_path: str
+        self, db_path: str
     ) -> None:
         """Verify wrong key raises DecryptionError when listing sessions."""
         from adk_secure_sessions import DecryptionError
@@ -553,7 +533,7 @@ class TestWrongKeyIntegration:
         # Create session with key1
         backend1 = FernetBackend("secret-key-one")
         async with EncryptedSessionService(
-            db_path=temp_db_path,
+            db_path=db_path,
             backend=backend1,
             backend_id=BACKEND_FERNET,
         ) as service:
@@ -566,11 +546,9 @@ class TestWrongKeyIntegration:
         # Try to list with key2
         backend2 = FernetBackend("different-key-two")
         async with EncryptedSessionService(
-            db_path=temp_db_path,
+            db_path=db_path,
             backend=backend2,
             backend_id=BACKEND_FERNET,
         ) as service:
-            import pytest
-
             with pytest.raises(DecryptionError):
                 await service.list_sessions(app_name="my-agent")
