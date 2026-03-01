@@ -52,7 +52,7 @@ development_status:
   1-7-package-metadata-type-safety: done
   1-8-security-md: done
   1-9-readme-rewrite: done
-  1-10-trunk-based-migration-to-main: in-progress
+  1-10-trunk-based-migration-to-main: done
   1-11-ci-cd-publish-pipeline: backlog
   1-12-v010-release-community-announcement: backlog
   epic-1-retrospective: optional

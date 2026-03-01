@@ -1,6 +1,6 @@
 # Story 1.10: Trunk-Based Migration to Main
 
-Status: in-progress
+Status: done
 Branch: chore/ci-1-10-trunk-migration
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/67
 
