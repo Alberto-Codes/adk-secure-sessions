@@ -144,7 +144,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 ### Development Workflow Rules
 
 #### Git & Branching
-- **Base branch** — `develop` (not `main`); all PRs target `develop`
+- **Base branch** — `main`; all PRs target `main`
 - **Branch naming** — `type/description` format matching conventional commit types (e.g., `feat/add-key-rotation`, `fix/connection-leak`)
 - **Conventional commits** — `type(scope): description`
   - Types: `feat | fix | docs | refactor | test | chore | perf`
@@ -158,7 +158,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 #### Pull Requests
 - **Always draft** — use `gh pr create --draft`; ready PRs trigger automated review
 - **Follow PR template** — read `.github/PULL_REQUEST_TEMPLATE.md`; remove HTML comments, keep visible content
-- **Diff before PR** — always run `git diff develop..HEAD` and `git log --oneline develop..HEAD` to understand full scope
+- **Diff before PR** — always run `git diff main..HEAD` and `git log --oneline main..HEAD` to understand full scope
 - **Push before PR** — `git push -u origin <branch>` before `gh pr create`
 - **Squash and merge** — `--subject` = PR title, `--body` = only content above the `---` separator (Why paragraph + What changed bullets). Never include the PR Review section (checklist, review focus, related) in the commit body.
 
@@ -166,7 +166,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Use issue templates** — bug report, feature request, tech debt, story, retro action (`.github/ISSUE_TEMPLATE/`). Never create blank issues.
 
 #### CI Pipeline
-- Triggered on push to `main`/`develop` and all PRs to those branches
+- Triggered on push to `main` and all PRs to `main`
 - Must pass: lint → format check → type check (`src/` only) → tests (90% coverage)
 - `ty check` runs on `src/` only — type errors in tests won't fail CI (intentional)
 - google-adk version matrix ensures backward compatibility
