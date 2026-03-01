@@ -1,0 +1,162 @@
+name: Publish to PyPI
+
+# Triggered when release-please (or manual) creates a version tag.
+# Requires RELEASE_PLEASE_TOKEN (PAT with repo scope) in release-please.yml —
+# tags created by GITHUB_TOKEN do NOT trigger other workflows.
+on:
+  push:
+    tags:
+      - "v*"
+
+# Least-privilege: read-only by default; publish jobs escalate per-job.
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref_name }}
+  cancel-in-progress: false # never cancel an in-flight publish
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Quality gate — runs the FULL test/lint/audit suite independently.
+  # This deliberately duplicates ci.yml. A security library must not trust
+  # branch-protection alone; the artifact we ship to PyPI is verified here.
+  # See: Architecture doc "publish pipeline must be independently verified"
+  # ---------------------------------------------------------------------------
+  quality-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Format check
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run ty check src/
+
+      - name: Tests with coverage
+        run: uv run pytest --tb=short --cov=adk_secure_sessions --cov-report=term-missing --cov-fail-under=90
+
+      - name: Docstring coverage
+        run: uv run interrogate -v .
+
+      - name: Dependency audit (runtime only)
+        run: |
+          uv pip compile pyproject.toml -o /tmp/requirements.txt
+          uv run pip-audit -r /tmp/requirements.txt
+
+      - run: uv cache prune --ci
+        if: always()
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Build — produce sdist + wheel, upload as artifact for publish jobs.
+  # ---------------------------------------------------------------------------
+  build:
+    needs: [quality-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Publish to TestPyPI — validates the package on the staging index first.
+  # Uses OIDC trusted publishing (no stored tokens).
+  # ---------------------------------------------------------------------------
+  publish-testpypi:
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: testpypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: astral-sh/setup-uv@v7
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        run: uv publish --trusted-publishing always
+        env:
+          UV_PUBLISH_URL: "https://test.pypi.org/legacy/"
+
+  # ---------------------------------------------------------------------------
+  # Smoke test — install from TestPyPI and verify the package works.
+  # Catches packaging mistakes before they reach production PyPI.
+  # ---------------------------------------------------------------------------
+  smoke-test:
+    needs: [publish-testpypi]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: astral-sh/setup-uv@v7
+      - run: uv python install 3.12
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for TestPyPI index
+        run: sleep 30
+
+      - name: Install from TestPyPI
+        run: |
+          uv pip install \
+            --index-url https://test.pypi.org/simple/ \
+            --extra-index-url https://pypi.org/simple/ \
+            "adk-secure-sessions==${{ steps.version.outputs.version }}"
+
+      - name: Verify import
+        run: uv run python -c "from adk_secure_sessions import EncryptedSessionService, FernetBackend; print('Smoke test passed')"
+
+  # ---------------------------------------------------------------------------
+  # Publish to PyPI — production release.
+  # Uses OIDC trusted publishing (no stored tokens).
+  # ---------------------------------------------------------------------------
+  publish-pypi:
+    needs: [smoke-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: astral-sh/setup-uv@v7
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        run: uv publish --trusted-publishing always
