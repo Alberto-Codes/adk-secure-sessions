@@ -1,23 +1,17 @@
+<!-- PyPI badges activate on first publish (Story 1.11) -->
+[![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/adk-secure-sessions/ci.yml?branch=develop&label=tests)](https://github.com/Alberto-Codes/adk-secure-sessions/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/Alberto-Codes/adk-secure-sessions)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
+[![Python](https://img.shields.io/pypi/pyversions/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
+[![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)](#)
+
 # adk-secure-sessions
 
-Encrypted session storage for [Google ADK](https://github.com/google/adk-python) — a drop-in replacement for `DatabaseSessionService` and `SqliteSessionService` that encrypts session data at rest.
+The compliance gateway for [Google ADK](https://github.com/google/adk-python) — add encrypted sessions in 5 minutes.
 
-ADK stores agent session state, conversation history, and metadata in plaintext SQLite or database files. For applications in healthcare, finance, and other regulated industries, this is a compliance gap. **adk-secure-sessions** closes it.
+ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is a drop-in replacement for `DatabaseSessionService` that encrypts state and conversation history at rest, so you can close the encryption-at-rest gap without changing your agent code.
 
-## The Problem
-
-Google ADK's built-in session services (`InMemorySessionService`, `DatabaseSessionService`, `SqliteSessionService`) store all session data — including potentially sensitive user state, conversation history, and tool outputs — **unencrypted**. ADK's own docs acknowledge this risk for credentials and tokens but leave encryption as an exercise for the developer.
-
-If you're building ADK agents that handle PHI (HIPAA), PII, financial data (SOC 2, PCI-DSS), or any regulated information, you need encryption at rest. There is currently no package in the ADK ecosystem that provides this.
-
-## What This Package Does
-
-- **Drop-in encrypted session service** that implements `BaseSessionService` — the same ABC that ADK's built-in services implement
-- **Pluggable encryption backends** via a simple protocol (2 methods: `encrypt`, `decrypt`)
-- **Field-level encryption** — state values and conversation history are encrypted; session metadata (IDs, timestamps) stays queryable
-- **Async-first** — built on `aiosqlite`, matching ADK's async runtime
-
-## Installation
+## Install
 
 ```bash
 pip install adk-secure-sessions
@@ -29,31 +23,23 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add adk-secure-sessions
 ```
 
+**3 direct runtime dependencies**: google-adk, cryptography, aiosqlite.
+
 ## Quick Start
 
 ```python
-from adk_secure_sessions import (
-    EncryptedSessionService,
-    FernetBackend,
-    BACKEND_FERNET,
+# Before (ADK default — unencrypted):
+from google.adk.sessions import DatabaseSessionService
+session_service = DatabaseSessionService(db_url="sqlite:///sessions.db")
+
+# After (encrypted — swap the import and constructor):
+from adk_secure_sessions import EncryptedSessionService, FernetBackend, BACKEND_FERNET
+session_service = EncryptedSessionService(
+    db_path="sessions.db", backend=FernetBackend("your-secret-key"), backend_id=BACKEND_FERNET
 )
-
-# Create encryption backend
-backend = FernetBackend("your-secret-passphrase")
-
-# Use as async context manager
-async with EncryptedSessionService(
-    db_path="sessions.db",
-    backend=backend,
-    backend_id=BACKEND_FERNET,
-) as session_service:
-    # Use it exactly like ADK's DatabaseSessionService
-    session = await session_service.create_session(
-        app_name="my_agent",
-        user_id="user_123",
-        state={"api_key": "sk-secret", "preferences": {}},
-    )
 ```
+
+Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/develop/docs) for details.
 
 ## What Gets Encrypted
 
@@ -64,78 +50,11 @@ async with EncryptedSessionService(
 | `session_id`, `app_name`, `user_id` | No | Needed for lookups and filtering |
 | `create_time`, `update_time` | No | Needed for expiration/cleanup |
 
-## EncryptionBackend Protocol
+## Links
 
-All backends implement the `EncryptionBackend` protocol — two async methods (`encrypt` and `decrypt`) operating on raw bytes. No inheritance required; any class with matching signatures conforms via structural subtyping (PEP 544).
-
-```python
-from adk_secure_sessions import EncryptionBackend
-
-class MyBackend:
-    async def encrypt(self, plaintext: bytes) -> bytes: ...
-    async def decrypt(self, ciphertext: bytes) -> bytes: ...
-
-assert isinstance(MyBackend(), EncryptionBackend)  # True
-```
-
-See `src/adk_secure_sessions/protocols.py` for the full protocol definition and known limitations.
-
-## Encryption Backends
-
-### v1 (Current)
-
-| Backend | Encryption Level | Use Case |
-|---------|-----------------|----------|
-| **Fernet** | Field-level (state values, events) | Simple deployment, single symmetric key |
-
-### Future
-
-| Backend | Encryption Level | Use Case |
-|---------|-----------------|----------|
-| **SQLCipher** | Full database file | Maximum at-rest protection |
-| **AWS KMS** | Field-level with managed keys | AWS-native compliance |
-| **GCP KMS** | Field-level with managed keys | GCP-native compliance |
-| **HashiCorp Vault** | Field-level with managed keys | Multi-cloud, enterprise |
-
-Custom backends can be added by implementing the `EncryptionBackend` protocol (two async methods: `encrypt` and `decrypt`).
-
-## How It Works
-
-Unlike a wrapper or decorator, `EncryptedSessionService` directly implements ADK's `BaseSessionService` ABC — the same base class that `DatabaseSessionService` and `SqliteSessionService` extend. It owns its own database schema and adds encryption at the JSON serialization boundary:
-
-```
-create_session / append_event:
-    state dict → json.dumps → encrypt → write to DB
-
-get_session:
-    read from DB → decrypt → json.loads → state dict
-```
-
-This is the same approach used by community session services like `adk-extra-services` (MongoDB, Redis). It avoids coupling to ADK's internal schema, which has changed across versions and will continue to evolve.
-
-## Project Status
-
-**Alpha** — core functionality complete. The `EncryptedSessionService` and `FernetBackend` are implemented and tested. See [ROADMAP](docs/ROADMAP.md) for planned features (PostgreSQL, KMS backends, key rotation).
-
-## Development
-
-```bash
-# Clone and install
-git clone https://github.com/Alberto-Codes/adk-secure-sessions.git
-cd adk-secure-sessions
-git checkout develop
-uv sync --dev
-
-# Run tests
-uv run pytest
-
-# Lint
-uv run ruff check .
-
-# Full quality check (lint, format, types, tests, docvet)
-pre-commit run --all-files
-```
-
-## License
-
-[Apache-2.0](LICENSE)
+<!-- Update to https://alberto-codes.github.io/adk-secure-sessions/ when MkDocs deploys (Story 2.2) -->
+- [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/develop/docs)
+- [Security Policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+- [Roadmap](docs/ROADMAP.md)
+- [License (Apache-2.0)](LICENSE)
