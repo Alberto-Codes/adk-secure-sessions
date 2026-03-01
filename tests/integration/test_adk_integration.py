@@ -10,6 +10,7 @@ Tests verify:
 from __future__ import annotations
 
 import pytest
+from cryptography.fernet import Fernet
 
 from adk_secure_sessions import (
     BACKEND_FERNET,
@@ -17,6 +18,11 @@ from adk_secure_sessions import (
     FernetBackend,
 )
 from adk_secure_sessions.protocols import EncryptionBackend
+
+# Pre-generated Fernet keys — skip PBKDF2 in wrong-key tests that validate
+# decryption isolation, not passphrase derivation.
+_KEY_A = Fernet.generate_key()
+_KEY_B = Fernet.generate_key()
 
 pytestmark = pytest.mark.integration
 
@@ -345,7 +351,7 @@ class TestProtocolConformance:
     async def test_backend_protocol_is_runtime_checkable(self) -> None:
         """Verify EncryptionBackend protocol is runtime checkable."""
         # FernetBackend should pass isinstance check
-        backend = FernetBackend("test")
+        backend = FernetBackend(_KEY_A)
         assert isinstance(backend, EncryptionBackend)
 
         # Non-conforming object should fail
@@ -497,7 +503,7 @@ class TestWrongKeyIntegration:
         from adk_secure_sessions import DecryptionError
 
         # Create session with key1
-        backend1 = FernetBackend("secret-key-one")
+        backend1 = FernetBackend(_KEY_A)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend1,
@@ -511,7 +517,7 @@ class TestWrongKeyIntegration:
             session_id = session.id
 
         # Try to read with key2
-        backend2 = FernetBackend("different-key-two")
+        backend2 = FernetBackend(_KEY_B)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend2,
@@ -531,7 +537,7 @@ class TestWrongKeyIntegration:
         from adk_secure_sessions import DecryptionError
 
         # Create session with key1
-        backend1 = FernetBackend("secret-key-one")
+        backend1 = FernetBackend(_KEY_A)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend1,
@@ -544,7 +550,7 @@ class TestWrongKeyIntegration:
             )
 
         # Try to list with key2
-        backend2 = FernetBackend("different-key-two")
+        backend2 = FernetBackend(_KEY_B)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend2,
@@ -704,7 +710,7 @@ class TestWrongKeyOnStateTables:
         from adk_secure_sessions import DecryptionError
 
         # Create session and app state with key1
-        backend1 = FernetBackend("key-one")
+        backend1 = FernetBackend(_KEY_A)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend1,
@@ -727,7 +733,7 @@ class TestWrongKeyOnStateTables:
             await service.append_event(session, event)
 
         # Try to read with key2 — should fail on app_state decryption
-        backend2 = FernetBackend("key-two")
+        backend2 = FernetBackend(_KEY_B)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend2,
@@ -748,7 +754,7 @@ class TestWrongKeyOnStateTables:
         from adk_secure_sessions import DecryptionError
 
         # Create session and user state with key1
-        backend1 = FernetBackend("key-one")
+        backend1 = FernetBackend(_KEY_A)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend1,
@@ -771,7 +777,7 @@ class TestWrongKeyOnStateTables:
             await service.append_event(session, event)
 
         # Try to read with key2 — should fail on user_state decryption
-        backend2 = FernetBackend("key-two")
+        backend2 = FernetBackend(_KEY_B)
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend2,

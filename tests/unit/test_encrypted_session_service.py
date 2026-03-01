@@ -692,14 +692,16 @@ class TestEdgeCases:
     """Edge case tests for error handling."""
 
     async def test_wrong_encryption_key_raises_decryption_error(
-        self, db_path: str
+        self,
+        db_path: str,
+        fernet_backend: FernetBackend,
+        alt_fernet_backend: FernetBackend,
     ) -> None:
         """T051: Wrong encryption key raises DecryptionError."""
         # Create session with one key
-        backend1 = FernetBackend("key-one")
         async with EncryptedSessionService(
             db_path=db_path,
-            backend=backend1,
+            backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         ) as service1:
             session = await service1.create_session(
@@ -710,7 +712,7 @@ class TestEdgeCases:
             session_id = session.id
 
         # Try to read with different key
-        backend2 = FernetBackend("key-two")
+        backend2 = alt_fernet_backend
         async with EncryptedSessionService(
             db_path=db_path,
             backend=backend2,

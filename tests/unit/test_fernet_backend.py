@@ -13,6 +13,12 @@ from adk_secure_sessions import (
     SecureSessionError,
 )
 
+# Pre-generated Fernet keys — skip PBKDF2 derivation in tests that don't
+# need to validate passphrase-to-key conversion. Tests in TestFlexibleKeyInput
+# intentionally use string/bytes passphrases to exercise the derivation path.
+_KEY_A = Fernet.generate_key()
+_KEY_B = Fernet.generate_key()
+
 pytestmark = pytest.mark.unit
 
 # ---------------------------------------------------------------------------
@@ -25,7 +31,7 @@ class TestEncryptDecryptRoundTrip:
 
     async def test_round_trip(self) -> None:
         """T005: Encrypt then decrypt returns original plaintext."""
-        backend = FernetBackend(key="test-passphrase")
+        backend = FernetBackend(key=_KEY_A)
         plaintext = b"hello, world"
 
         ciphertext = await backend.encrypt(plaintext)
@@ -35,7 +41,7 @@ class TestEncryptDecryptRoundTrip:
 
     async def test_non_deterministic_ciphertext(self) -> None:
         """T006: Same plaintext produces different ciphertext each time."""
-        backend = FernetBackend(key="test-passphrase")
+        backend = FernetBackend(key=_KEY_A)
         plaintext = b"same input"
 
         ct1 = await backend.encrypt(plaintext)
@@ -45,7 +51,7 @@ class TestEncryptDecryptRoundTrip:
 
     async def test_empty_bytes_round_trip(self) -> None:
         """T007: Empty bytes can be encrypted and decrypted."""
-        backend = FernetBackend(key="test-passphrase")
+        backend = FernetBackend(key=_KEY_A)
 
         ciphertext = await backend.encrypt(b"")
         result = await backend.decrypt(ciphertext)
@@ -63,8 +69,8 @@ class TestWrongKeyDecryption:
 
     async def test_wrong_key_raises_decryption_error(self) -> None:
         """T010: Decrypting with wrong key raises DecryptionError."""
-        backend_a = FernetBackend(key="key-a")
-        backend_b = FernetBackend(key="key-b")
+        backend_a = FernetBackend(key=_KEY_A)
+        backend_b = FernetBackend(key=_KEY_B)
 
         ciphertext = await backend_a.encrypt(b"secret")
 
@@ -73,7 +79,7 @@ class TestWrongKeyDecryption:
 
     async def test_tampered_ciphertext_raises_decryption_error(self) -> None:
         """T011: Tampered ciphertext raises DecryptionError."""
-        backend = FernetBackend(key="test-key")
+        backend = FernetBackend(key=_KEY_A)
         ciphertext = await backend.encrypt(b"data")
 
         tampered = ciphertext[:-1] + bytes([ciphertext[-1] ^ 0xFF])
@@ -83,16 +89,15 @@ class TestWrongKeyDecryption:
 
     async def test_malformed_ciphertext_raises_decryption_error(self) -> None:
         """T012: Malformed/truncated ciphertext raises DecryptionError."""
-        backend = FernetBackend(key="test-key")
+        backend = FernetBackend(key=_KEY_A)
 
         with pytest.raises(DecryptionError):
             await backend.decrypt(b"not-valid-fernet-token")
 
     async def test_error_message_excludes_key_material(self) -> None:
         """T013: Error message does not contain key material."""
-        key = "my-secret-key-value"
-        backend_a = FernetBackend(key=key)
-        backend_b = FernetBackend(key="different-key")
+        backend_a = FernetBackend(key=_KEY_A)
+        backend_b = FernetBackend(key=_KEY_B)
 
         ciphertext = await backend_a.encrypt(b"data")
 
@@ -100,8 +105,8 @@ class TestWrongKeyDecryption:
             await backend_b.decrypt(ciphertext)
 
         error_msg = str(exc_info.value)
-        assert key not in error_msg
-        assert "my-secret" not in error_msg
+        assert _KEY_A.decode() not in error_msg
+        assert _KEY_B.decode() not in error_msg
 
 
 # ---------------------------------------------------------------------------
@@ -167,19 +172,19 @@ class TestPolish:
 
     def test_protocol_conformance(self) -> None:
         """T020: FernetBackend passes EncryptionBackend isinstance check."""
-        backend = FernetBackend(key="test")
+        backend = FernetBackend(key=_KEY_A)
         assert isinstance(backend, EncryptionBackend)
 
     async def test_non_bytes_plaintext_raises_type_error(self) -> None:
         """T021: Non-bytes plaintext raises TypeError."""
-        backend = FernetBackend(key="test")
+        backend = FernetBackend(key=_KEY_A)
 
         with pytest.raises(TypeError, match="plaintext must be bytes"):
             await backend.encrypt("not bytes")  # type: ignore[arg-type]
 
     async def test_non_bytes_ciphertext_raises_type_error(self) -> None:
         """Non-bytes ciphertext raises TypeError."""
-        backend = FernetBackend(key="test")
+        backend = FernetBackend(key=_KEY_A)
 
         with pytest.raises(TypeError, match="ciphertext must be bytes"):
             await backend.decrypt("not bytes")  # type: ignore[arg-type]

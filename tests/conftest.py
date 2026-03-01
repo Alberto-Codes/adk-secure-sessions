@@ -3,6 +3,11 @@
 Provides common fixtures used across unit and integration test suites,
 including encryption backends, database paths, and service instances.
 
+Performance note:
+    Key fixtures use pre-generated Fernet keys to skip PBKDF2 derivation
+    (480K iterations, ~0.5s per call). Only tests that explicitly validate
+    passphrase-to-key derivation should construct FernetBackend from strings.
+
 Typical usage::
 
     async def test_encrypt_decrypt(fernet_backend, db_path):
@@ -21,33 +26,54 @@ from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
 import pytest
+from cryptography.fernet import Fernet
 
 from adk_secure_sessions import BACKEND_FERNET, EncryptedSessionService, FernetBackend
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+# Pre-generated Fernet keys — valid base64url-encoded 32-byte keys that
+# skip PBKDF2 derivation entirely in FernetBackend._resolve_key().
+# Two distinct keys are provided for wrong-key / key-isolation tests.
+TEST_FERNET_KEY_A: bytes = Fernet.generate_key()
+TEST_FERNET_KEY_B: bytes = Fernet.generate_key()
+assert TEST_FERNET_KEY_A != TEST_FERNET_KEY_B  # 2^-256 collision guard
 
-@pytest.fixture
-def encryption_key() -> str:
-    """A valid encryption key string for testing.
 
-    Returns a consistent test passphrase suitable for creating
-    encryption backends in tests.
+@pytest.fixture(scope="session")
+def fernet_key_bytes() -> bytes:
+    """A pre-generated Fernet key for the entire test session.
+
+    Returns a valid Fernet key (base64url-encoded 32-byte key) that
+    bypasses PBKDF2 derivation in FernetBackend. This fixture is
+    session-scoped — the key is generated once and reused across all
+    tests.
 
     Examples:
         ```python
-        async def test_with_key(encryption_key):
-            backend = FernetBackend(encryption_key)
+        def test_with_key(fernet_key_bytes):
+            backend = FernetBackend(key=fernet_key_bytes)
             assert backend is not None
         ```
     """
-    return "test-passphrase-for-unit-tests"
+    return TEST_FERNET_KEY_A
+
+
+@pytest.fixture(scope="session")
+def alt_fernet_key_bytes() -> bytes:
+    """A second pre-generated Fernet key for wrong-key tests.
+
+    Guaranteed different from ``fernet_key_bytes``. Session-scoped.
+    """
+    return TEST_FERNET_KEY_B
 
 
 @pytest.fixture
-def fernet_backend(encryption_key: str) -> FernetBackend:
-    """A fresh FernetBackend instance with a test passphrase.
+def fernet_backend(fernet_key_bytes: bytes) -> FernetBackend:
+    """A fresh FernetBackend instance with a pre-generated Fernet key.
+
+    Uses a session-scoped pre-generated key to skip PBKDF2 derivation.
 
     Examples:
         ```python
@@ -56,7 +82,17 @@ def fernet_backend(encryption_key: str) -> FernetBackend:
             assert ciphertext != b"hello"
         ```
     """
-    return FernetBackend(encryption_key)
+    return FernetBackend(fernet_key_bytes)
+
+
+@pytest.fixture
+def alt_fernet_backend(alt_fernet_key_bytes: bytes) -> FernetBackend:
+    """A FernetBackend with a different key for wrong-key tests.
+
+    Uses ``alt_fernet_key_bytes`` — guaranteed different from
+    ``fernet_backend``.
+    """
+    return FernetBackend(alt_fernet_key_bytes)
 
 
 @pytest.fixture
