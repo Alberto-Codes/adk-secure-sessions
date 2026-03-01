@@ -41,7 +41,7 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Ship to PyPI
-  epic-1: in-progress
+  epic-1: done
   1-1-test-infrastructure-foundation: done
   1-2-schema-reservation-for-optimistic-concurrency: done
   1-3-configurationerror-startup-validation: done
@@ -54,7 +54,7 @@ development_status:
   1-9-readme-rewrite: done
   1-10-trunk-based-migration-to-main: done
   1-11-ci-cd-publish-pipeline: done
-  1-12-v010-release-community-announcement: backlog
+  1-12-v010-release-community-announcement: done
   epic-1-retrospective: optional
 
   # Epic 2: Documentation & Compliance Credibility
