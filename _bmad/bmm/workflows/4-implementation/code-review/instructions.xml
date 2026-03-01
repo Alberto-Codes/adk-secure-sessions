@@ -12,7 +12,7 @@
   <critical>Read EVERY file in the File List - verify implementation against story requirements</critical>
   <critical>Tasks marked complete but not done = CRITICAL finding</critical>
   <critical>Acceptance Criteria not implemented = HIGH severity finding</critical>
-  <critical>Do not review files that are not part of the application's source code. Always exclude the _bmad/ and _bmad-output/ folders from the review. Always exclude IDE and CLI configuration folders like .cursor/ and .windsurf/ and .claude/</critical>
+  <critical>Exclude BMAD workflow files (_bmad/, _bmad-output/) and IDE/CLI configuration folders (.cursor/, .windsurf/, .claude/) from the review. DO review all project documentation (README, SECURITY.md, CHANGELOG, docs/) and all docstrings in source files — these are in-scope for code review and claims verification.</critical>
 
 
   <step n="1" goal="Load story and discover changes">
@@ -83,6 +83,14 @@
       2. Search files for evidence it was actually done
       3. **CRITICAL**: If marked [x] but NOT DONE → CRITICAL finding
       4. Record specific proof (file:line)
+    </action>
+
+    <!-- Claims Verification -->
+    <action>For EACH documentation file, docstring, comment, or README change in the review:
+      1. Identify all factual claims (e.g., "all operations use X", "N dependencies", "supports Y")
+      2. Cross-reference each claim against actual code, imports, and configuration
+      3. If claim is inaccurate or unsubstantiated → MEDIUM finding (factual claim not verified)
+      4. Pay special attention to: dependency counts, algorithm attributions, feature completeness assertions
     </action>
 
     <!-- Code Quality Deep Dive -->

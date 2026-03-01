@@ -177,6 +177,20 @@
     processes - **Integration Patterns:** External service integrations, data flows <action>Extract any story-specific requirements that the
     developer MUST follow</action>
     <action>Identify any architectural decisions that override previous patterns</action>
+
+    <!-- Blast Radius: Peripheral Config Files -->
+    <action>Analyze blast radius beyond source and test files. Explicitly check for peripheral config files affected by this story:
+      - `.github/workflows/*.yml` (CI/CD pipelines)
+      - `.github/dependabot.yml` (dependency management)
+      - `.github/*.yml` (other GitHub config)
+      - `release-please-config.json` / `.release-please-manifest.json` (release automation)
+      - `sonar-project.properties` (code quality config)
+      - `pyproject.toml` (packaging, tool config)
+      - `.pre-commit-config.yaml` (pre-commit hooks)
+      - `mkdocs.yml` (documentation site config)
+      - Any other tooling configs relevant to the change scope
+    </action>
+    <action>Document in Dev Notes which peripheral files are affected and why, or explicitly state "No peripheral config impact" if none</action>
   </step>
 
   <step n="4" goal="Web research for latest technical specifics">

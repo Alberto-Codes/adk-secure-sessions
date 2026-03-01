@@ -55,7 +55,7 @@ development_status:
   1-10-trunk-based-migration-to-main: done
   1-11-ci-cd-publish-pipeline: done
   1-12-v010-release-community-announcement: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Documentation & Compliance Credibility
   epic-2: backlog
