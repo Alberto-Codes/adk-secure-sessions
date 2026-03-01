@@ -300,21 +300,22 @@
             --repo {github_repository} \
             --title "Story {{epic_num}}.{{story_num}}: {{story_title_human_readable}}" \
             --label "story,epic-{{epic_num}}" \
-            --body with HEREDOC containing:
+            --body "$(cat &lt;&lt;'EOF'
+          ## User Story
 
-            ## User Story
+          [The As a / I want / so that statement from the story]
 
-            [The As a / I want / so that statement from the story]
+          ## Acceptance Criteria
 
-            ## Acceptance Criteria
+          [Each AC as a markdown checklist item: - [ ] Given/When/Then summary (FR/NFR refs)]
 
-            [Each AC as a markdown checklist item: - [ ] Given/When/Then summary (FR/NFR refs)]
+          ## Context
 
-            ## Context
-
-            - **Epic**: {{epic_num}} — {{epic_title}}
-            - **Story file**: {{story_file}}
-            - **Branch**: `feat/{{story_key}}`
+          - **Epic**: {{epic_num}} — {{epic_title}}
+          - **Story file**: {{story_file}}
+          - **Branch**: `feat/{{story_key}}`
+          EOF
+          )"
         </action>
         <action>Capture issue URL from gh output</action>
         <action>Update story file GitHub Issue field with the issue URL</action>

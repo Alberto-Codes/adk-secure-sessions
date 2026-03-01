@@ -59,10 +59,10 @@ so that **I can discover it easily and get type hints when coding against it**.
   - [x] 3.2 Verify no `[all]` group is created (architecture decision: security libraries minimize installed surface)
 
 - [x] Task 4: Fix public API type signatures (AC: #7)
-  - [x] 4.1 In `src/adk_secure_sessions/serialization.py`, tighten 4 function signatures:
+  - [x] 4.1 In `src/adk_secure_sessions/serialization.py`, audit 4 serialization functions and tighten 2 signatures:
     - `encrypt_session(data: dict, ...)` → `encrypt_session(data: dict[str, Any], ...)`
     - `decrypt_session(...) -> dict` → `decrypt_session(...) -> dict[str, Any]`
-    - (encrypt_json and decrypt_json already use `str` / `bytes` — no changes needed)
+    - `encrypt_json` and `decrypt_json` already use precise `str` / `bytes` types — confirmed, no changes needed
   - [x] 4.2 Verify `from typing import Any` import is present (added to serialization.py)
   - [x] 4.3 Run `uv run ty check` to confirm type signatures are sound after changes
 
