@@ -54,7 +54,8 @@ _SCHEMA = """
 CREATE TABLE IF NOT EXISTS app_states (
     app_name TEXT PRIMARY KEY,
     state BLOB NOT NULL,
-    update_time REAL NOT NULL
+    update_time REAL NOT NULL,
+    version INTEGER DEFAULT 1
 );
 
 -- User-level state
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS user_states (
     user_id TEXT NOT NULL,
     state BLOB NOT NULL,
     update_time REAL NOT NULL,
+    version INTEGER DEFAULT 1,
     PRIMARY KEY (app_name, user_id)
 );
 
@@ -74,6 +76,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     state BLOB NOT NULL,
     create_time REAL NOT NULL,
     update_time REAL NOT NULL,
+    version INTEGER DEFAULT 1,
     PRIMARY KEY (app_name, user_id, id)
 );
 

@@ -861,3 +861,59 @@ class TestStateDeltaEdgeCases:
         assert service._connection is not None
 
         await service.close()
+
+
+# =============================================================================
+# Schema Reservation Tests (Story 1.2)
+# =============================================================================
+
+
+class TestSchemaVersionColumn:
+    """Tests for version column reservation on state tables.
+
+    Verifies Architecture Decision 1: reserve ``version INTEGER DEFAULT 1``
+    on ``sessions``, ``app_states``, and ``user_states`` tables. The
+    ``events`` table is excluded (append-only). Column is inert in Phase 2.
+    """
+
+    @pytest.mark.parametrize(
+        "table_name",
+        ["sessions", "app_states", "user_states"],
+        ids=["sessions", "app_states", "user_states"],
+    )
+    async def test_version_column_exists_with_correct_default(
+        self, encrypted_service: EncryptedSessionService, table_name: str
+    ) -> None:
+        """T060: State tables have version column with INTEGER DEFAULT 1."""
+        conn = encrypted_service._connection
+        assert conn is not None
+
+        # PRAGMA does not support parameterized queries in SQLite
+        cursor = await conn.execute(f"PRAGMA table_info({table_name})")  # noqa: S608
+        columns = await cursor.fetchall()
+
+        # Find version column: (cid, name, type, notnull, dflt_value, pk)
+        version_cols = [col for col in columns if col[1] == "version"]
+        assert len(version_cols) == 1, f"Expected 1 version column in {table_name}"
+
+        version_col = version_cols[0]
+        assert version_col[2] == "INTEGER", f"Expected INTEGER type in {table_name}"
+        assert version_col[3] == 0, f"version should not be NOT NULL in {table_name}"
+        assert version_col[4] == "1", f"Expected DEFAULT 1 in {table_name}"
+        assert version_col[5] == 0, (
+            f"version should not be a PRIMARY KEY in {table_name}"
+        )
+
+    async def test_events_table_has_no_version_column(
+        self,
+        encrypted_service: EncryptedSessionService,
+    ) -> None:
+        """T061: Events table does NOT have a version column (append-only)."""
+        conn = encrypted_service._connection
+        assert conn is not None
+
+        cursor = await conn.execute("PRAGMA table_info(events)")
+        columns = await cursor.fetchall()
+
+        column_names = [col[1] for col in columns]
+        assert "version" not in column_names
