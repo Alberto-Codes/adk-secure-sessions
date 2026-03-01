@@ -210,7 +210,7 @@ This story follows a series of dependency bumps after Story 1.7. No code conflic
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-| M1 | MEDIUM | PBKDF2 attribution: SECURITY.md said "handled by the `cryptography` library" but code uses `hashlib.pbkdf2_hmac` (stdlib) | Fixed — changed to "PBKDF2-HMAC-SHA256" (no library attribution) |
+| M1 | MEDIUM | PBKDF2 attribution: SECURITY.md said "handled by the `cryptography` library" but code uses `hashlib.pbkdf2_hmac` (stdlib) | Fixed — changed to "PBKDF2-HMAC-SHA256" (no library attribution). PR review caught incomplete fix: "all cryptographic operations" claim on lines 48-50 also corrected to distinguish encryption (`cryptography`) from key derivation (`hashlib`). |
 | M2 | MEDIUM | uv.lock regeneration bundled with docs commit (project convention separates dep changes) | Accepted — commit body documents it, low blast radius for pre-release project |
 | L1 | LOW | `:white_check_mark:` GitHub-specific emoji shortcode | Accepted — GitHub is the primary audience (AC #6) |
 | L2 | LOW | Fixed-salt PBKDF2 limitation not in SECURITY.md Scope section | Accepted — covered by fernet.py docstring + Scope's "key management is deployer responsibility" |
@@ -232,6 +232,7 @@ This story follows a series of dependency bumps after Story 1.7. No code conflic
 | 2026-03-01 | Party mode review (rounds 2-3): 9 consensus items. Removed Phase 3 roadmap from Crypto section, reworded AC #2 (no email), reframed Task 1.7 as post-merge check, added choosealicense.com LICENSE convention note, moved GitHub settings to manual prerequisites, added `cryptography` version guardrail. Research: pyca/cryptography has no SECURITY.md, PyJWT uses hybrid approach, choosealicense.com convention confirmed for non-ASF projects. |
 | 2026-03-01 | Dev implementation complete. Created SECURITY.md (5 sections: Supported Versions, Reporting, Response Timeline, Cryptographic Approach, Scope) and LICENSE (Apache-2.0, choosealicense.com convention). Fixed pre-existing uv.lock corruption from griffe 2.0.0 bump. All 7 pre-commit hooks pass, 167 tests at 99.68% coverage. |
 | 2026-03-01 | Code review: 5 findings (0 HIGH, 2 MEDIUM, 3 LOW). Party mode consensus: 1 fix (M1 — PBKDF2 attribution corrected in SECURITY.md:55), 4 accepted. |
+| 2026-03-01 | PR review (Copilot): 2 comments. (1) "all cryptographic operations" claim still inaccurate after M1 fix — revised to distinguish encryption (cryptography) from key derivation (hashlib). (2) LICENSE short-form header redundant with full text — removed lines 3-13, now copyright → full Apache-2.0 text (matches JAX/TF/Airflow convention). |
 
 ## Dev Agent Record
 

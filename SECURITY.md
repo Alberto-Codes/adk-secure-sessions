@@ -45,9 +45,10 @@ All timelines are best-effort targets for a solo-maintainer project.
 
 ## Cryptographic Approach
 
-This library delegates **all cryptographic operations** to the
-[`cryptography`](https://cryptography.io/) Python library. No custom cryptographic
-primitives are implemented.
+This library delegates symmetric encryption and authentication to the
+[`cryptography`](https://cryptography.io/) Python library (Fernet). Key derivation
+from passphrases uses Python's standard-library `hashlib.pbkdf2_hmac`. No custom
+cryptographic primitives are implemented.
 
 **Current encryption scheme:**
 
