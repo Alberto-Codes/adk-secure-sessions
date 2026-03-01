@@ -65,8 +65,6 @@ adk-secure-sessions/
 │   └── integration/           # Integration tests (real databases)
 ├── scripts/                   # Development tooling
 │   └── gen_ref_pages.py       # MkDocs reference page generation
-├── specs/                     # Feature specifications (speckit workflow)
-│   └── 002-encryption-backend-protocol/
 ├── docs/                      # Documentation source
 │   └── contributing/          # Contributing guides and templates
 ├── .claude/rules/             # Claude Code contextual rules
@@ -275,19 +273,6 @@ We treat all warnings as errors. When CI fails due to a third-party warning:
 - Security-sensitive documentation should include threat model context
 
 ## Submitting Changes
-
-### Feature Specification Workflow
-
-New features follow the speckit workflow. Artifacts live under `specs/{number}-{feature-name}/`:
-
-| Artifact | Purpose |
-|----------|---------|
-| `spec.md` | User stories, functional requirements, success criteria |
-| `plan.md` | Implementation plan with technical context |
-| `tasks.md` | Dependency-ordered task list |
-| `research.md` | Technical research and decisions |
-| `quickstart.md` | Usage examples for the feature |
-| `checklists/` | Verification checklists |
 
 ### Commit Messages
 

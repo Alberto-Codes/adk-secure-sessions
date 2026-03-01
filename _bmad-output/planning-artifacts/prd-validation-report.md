@@ -14,11 +14,6 @@ inputDocuments:
   - 'docs/adr/ADR-003-field-level-encryption.md'
   - 'docs/adr/ADR-004-adk-schema-compatibility.md'
   - 'docs/adr/ADR-005-exception-hierarchy.md'
-  - 'specs/002-encryption-backend-protocol/research.md'
-  - 'specs/003-fernet-backend/research.md'
-  - 'specs/004-exception-hierarchy/research.md'
-  - 'specs/005-serialization-layer/research.md'
-  - 'specs/006-encrypted-session-service/research.md'
   - '_bmad-output/test-artifacts/test-review.md'
   - 'GitHub Issues: #1, #9, #10, #11, #16, #17, #20, #22, #35, #36, #38, #39, #40'
 validationStepsCompleted: ['step-v-01-discovery', 'step-v-02-format-detection', 'step-v-03-density-validation', 'step-v-04-brief-coverage-validation', 'step-v-05-measurability-validation', 'step-v-06-traceability-validation', 'step-v-07-implementation-leakage-validation', 'step-v-08-domain-compliance-validation', 'step-v-09-project-type-validation', 'step-v-10-smart-validation', 'step-v-11-holistic-quality-validation', 'step-v-12-completeness-validation', 'step-v-13-report-complete']

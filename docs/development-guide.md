@@ -113,15 +113,3 @@ Install with: `pre-commit install`
 - **Fixtures**: Async generators with proper teardown (`yield svc; await svc.close()`)
 - **Warnings**: Treated as errors; third-party warnings filtered in `pyproject.toml`
 
-## Feature Specification Workflow
-
-New features follow the speckit workflow. Artifacts live in `specs/{number}-{feature-name}/`:
-
-| Artifact | Purpose |
-|----------|---------|
-| `spec.md` | User stories, requirements, success criteria |
-| `plan.md` | Implementation plan with technical context |
-| `tasks.md` | Dependency-ordered task list |
-| `research.md` | Technical research and decisions |
-| `quickstart.md` | Usage examples |
-| `checklists/` | Verification checklists |

@@ -27,11 +27,6 @@ tests/unit/
   test_serialization.py  # Serialization layer tests (envelope, round-trip, edge cases)
 scripts/
   gen_ref_pages.py       # MkDocs reference generation
-specs/
-  002-encryption-backend-protocol/  # Feature spec, plan, tasks, research
-  003-fernet-backend/               # Feature spec, plan, tasks, research
-  004-exception-hierarchy/          # Feature spec, plan, tasks, research
-  005-serialization-layer/          # Feature spec, plan, tasks, research, contracts
 .claude/rules/
   python.md            # Python style rules (scoped to *.py)
   pytest.md            # Test rules (scoped to tests/**/*.py)

@@ -48,13 +48,6 @@ adk-secure-sessions/
 │   └── reference/
 │       └── index.md                   # Auto-generated API reference landing
 │
-├── specs/                             # Feature specifications (speckit workflow)
-│   ├── 002-encryption-backend-protocol/  # Protocol design spec
-│   ├── 003-fernet-backend/               # Fernet implementation spec
-│   ├── 004-exception-hierarchy/          # Exception design spec
-│   ├── 005-serialization-layer/          # Serialization spec + contracts
-│   └── 006-encrypted-session-service/    # Core service spec
-│
 ├── scripts/                           # Development tooling
 │   └── gen_ref_pages.py               # MkDocs reference page generation
 │
@@ -97,7 +90,6 @@ adk-secure-sessions/
 | `tests/unit/` | Fast isolated tests | 5 test files, ~900 LOC total |
 | `tests/integration/` | Real DB tests | 1 test file, ~577 LOC |
 | `docs/adr/` | Architecture decisions | 6 ADRs documenting key design choices |
-| `specs/` | Feature specifications | 5 feature specs with plans, tasks, research |
 | `.github/workflows/` | CI/CD pipelines | Tests (matrix: ADK 1.22.0 + latest), docs build, release-please |
 
 ## Entry Points

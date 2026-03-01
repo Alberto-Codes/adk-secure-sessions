@@ -464,7 +464,6 @@ def test_exception_accepts_and_stores_message(self, exc_cls):
 
 ### Related Artifacts
 
-- **Feature Specs**: `specs/002-encryption-backend-protocol/` through `specs/006-encrypted-session-service/`
 - **Architecture**: `docs/ARCHITECTURE.md` — Protocol-based plugin architecture, field-level encryption
 - **ADRs**: ADR-000 through ADR-005 documenting key design decisions
 - **Project Rules**: `.claude/rules/pytest.md`, `.claude/rules/dev-quality-checklist.md`
