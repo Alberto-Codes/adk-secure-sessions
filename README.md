@@ -1,5 +1,5 @@
 <!-- PyPI badges activate on first publish (Story 1.11) -->
-[![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/adk-secure-sessions/ci.yml?branch=develop&label=tests)](https://github.com/Alberto-Codes/adk-secure-sessions/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/adk-secure-sessions/ci.yml?branch=main&label=tests)](https://github.com/Alberto-Codes/adk-secure-sessions/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/Alberto-Codes/adk-secure-sessions)](LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
 [![Python](https://img.shields.io/pypi/pyversions/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
@@ -39,7 +39,7 @@ session_service = EncryptedSessionService(
 )
 ```
 
-Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/develop/docs) for details.
+Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/main/docs) for details.
 
 ## What Gets Encrypted
 
@@ -53,7 +53,7 @@ Use `session_service` exactly like any ADK session service — `create_session`,
 ## Links
 
 <!-- Update to https://alberto-codes.github.io/adk-secure-sessions/ when MkDocs deploys (Story 2.2) -->
-- [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/develop/docs)
+- [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/main/docs)
 - [Security Policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Roadmap](docs/ROADMAP.md)
