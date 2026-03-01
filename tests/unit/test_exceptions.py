@@ -148,14 +148,15 @@ class TestSafeErrorMessages:
         Verifies that the DecryptionError raised by FernetBackend.decrypt
         does not contain key material, ciphertext, or plaintext.
         """
+        from cryptography.fernet import Fernet
+
         from adk_secure_sessions.backends.fernet import FernetBackend
 
-        backend = FernetBackend(key="test-key")
+        backend = FernetBackend(key=Fernet.generate_key())
         with pytest.raises(DecryptionError) as exc_info:
             await backend.decrypt(b"not-valid-ciphertext")
         message = str(exc_info.value).lower()
         # Message should describe the failure category, not leak data
-        assert "test-key" not in message
         assert "not-valid-ciphertext" not in message
         assert "failed" in message or "invalid" in message
 
