@@ -50,7 +50,7 @@ development_status:
   1-6a-adk-runner-integration-test: done
   1-6b-concurrent-write-safety-verification: done
   1-7-package-metadata-type-safety: done
-  1-8-security-md: backlog
+  1-8-security-md: done
   1-9-readme-rewrite: backlog
   1-10-trunk-based-migration-to-main: backlog
   1-11-ci-cd-publish-pipeline: backlog
