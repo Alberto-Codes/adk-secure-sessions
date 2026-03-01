@@ -43,9 +43,9 @@ development_status:
   # Epic 1: Ship to PyPI
   epic-1: in-progress
   1-1-test-infrastructure-foundation: done
-  1-2-schema-reservation-for-optimistic-concurrency: review
-  1-3-configurationerror-startup-validation: review
-  1-4-zero-warning-test-suite: backlog
+  1-2-schema-reservation-for-optimistic-concurrency: done
+  1-3-configurationerror-startup-validation: done
+  1-4-zero-warning-test-suite: done
   1-5-encryption-overhead-benchmark: backlog
   1-6a-adk-runner-integration-test: backlog
   1-6b-concurrent-write-safety-verification: backlog
