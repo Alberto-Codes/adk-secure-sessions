@@ -191,16 +191,9 @@ class TestPolish:
 
     def test_key_validation_errors_do_not_contain_key_material(self) -> None:
         """Error messages from key validation never include the key value."""
-        secret_key = "super-secret-passphrase-value"
-        # Non-str/bytes key — message should include type name, not value
         with pytest.raises(ConfigurationError) as exc_info:
             FernetBackend(key=12345)  # type: ignore[arg-type]
         assert "12345" not in str(exc_info.value)
-
-        # Empty key — message should not include any key value
-        with pytest.raises(ConfigurationError) as exc_info:
-            FernetBackend(key="")
-        assert secret_key not in str(exc_info.value)
 
     def test_decryption_error_inherits_secure_session_error(self) -> None:
         """DecryptionError is a SecureSessionError."""

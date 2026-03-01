@@ -150,8 +150,9 @@ class EncryptedSessionService(BaseSessionService):
 
         Raises:
             ConfigurationError: If *db_path* is not a non-empty string,
-                *backend* does not conform to ``EncryptionBackend``, or
-                *backend_id* is not an ``int``.
+                *backend* does not conform to ``EncryptionBackend``,
+                *backend_id* is not an ``int``, or *backend_id* is
+                outside the valid byte range (0–255).
         """
         if not isinstance(db_path, str) or not db_path:
             msg = "db_path must be a non-empty string"
@@ -164,6 +165,12 @@ class EncryptedSessionService(BaseSessionService):
             raise ConfigurationError(msg)
         if not isinstance(backend_id, int):
             msg = f"backend_id must be an int, got {type(backend_id).__name__}"
+            raise ConfigurationError(msg)
+        if not (0 <= backend_id <= 255):
+            msg = (
+                f"backend_id must be in range 0–255, got {backend_id}. "
+                f"Use BACKEND_FERNET (0x01) for Fernet encryption."
+            )
             raise ConfigurationError(msg)
 
         self._db_path = db_path
@@ -184,11 +191,9 @@ class EncryptedSessionService(BaseSessionService):
             try:
                 self._connection = await aiosqlite.connect(self._db_path)
             except (OSError, sqlite3.OperationalError) as exc:
-                error_code = getattr(exc, "errno", None) or ""
-                code_suffix = f" (errno={error_code})" if error_code else ""
                 msg = (
                     f"Failed to connect to database at "
-                    f"'{self._db_path}': {exc}{code_suffix}. "
+                    f"'{self._db_path}': {exc}. "
                     f"Check that the path exists and is writable."
                 )
                 raise ConfigurationError(msg) from exc

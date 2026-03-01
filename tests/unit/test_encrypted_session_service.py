@@ -76,6 +76,22 @@ class TestConstructorValidation:
                 backend_id=BACKEND_FERNET,
             )
 
+    @pytest.mark.parametrize(
+        "bad_id",
+        [256, -1, 999],
+        ids=["above_max", "negative", "far_above_max"],
+    )
+    def test_backend_id_out_of_range_raises_configuration_error(
+        self, db_path: str, fernet_backend: FernetBackend, bad_id: int
+    ) -> None:
+        """backend_id outside 0–255 raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="range 0–255"):
+            EncryptedSessionService(
+                db_path=db_path,
+                backend=fernet_backend,
+                backend_id=bad_id,
+            )
+
     def test_valid_construction_does_not_raise(
         self, db_path: str, fernet_backend: FernetBackend
     ) -> None:
