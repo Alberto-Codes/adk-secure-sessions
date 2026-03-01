@@ -293,12 +293,29 @@
 
       <check if="no existing issue found">
         <action>Determine epic title from {epics_content} for epic {{epic_num}}</action>
-        <action>Create GitHub issue:
+        <action>Extract the user story statement (As a... I want... so that...) from the generated story</action>
+        <action>Extract the acceptance criteria list from the generated story</action>
+        <action>Create GitHub issue using the story template structure (see .github/ISSUE_TEMPLATE/04-story.yml):
           gh issue create \
             --repo {github_repository} \
             --title "Story {{epic_num}}.{{story_num}}: {{story_title_human_readable}}" \
-            --body "Created by create-story workflow from epic {{epic_num}}." \
-            --label "story,epic-{{epic_num}}"
+            --label "story,epic-{{epic_num}}" \
+            --body "$(cat &lt;&lt;'EOF'
+          ## User Story
+
+          [The As a / I want / so that statement from the story]
+
+          ## Acceptance Criteria
+
+          [Each AC as a markdown checklist item: - [ ] Given/When/Then summary (FR/NFR refs)]
+
+          ## Context
+
+          - **Epic**: {{epic_num}} — {{epic_title}}
+          - **Story file**: {{story_file}}
+          - **Branch**: `feat/{{story_key}}`
+          EOF
+          )"
         </action>
         <action>Capture issue URL from gh output</action>
         <action>Update story file GitHub Issue field with the issue URL</action>
