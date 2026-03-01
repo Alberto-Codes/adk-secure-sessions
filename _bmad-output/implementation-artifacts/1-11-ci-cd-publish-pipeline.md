@@ -1,6 +1,6 @@
 # Story 1.11: CI/CD Publish Pipeline
 
-Status: review
+Status: done
 Branch: feat/ci-1-11-publish-pipeline
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/70
 
@@ -270,21 +270,24 @@ Conventional commit for this story: `feat(ci): add PyPI publish pipeline with tr
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Claude Opus 4.6 (adversarial code review + party mode consensus)
+- **Outcome:** Pass with 1 fix applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | MEDIUM | `--index testpypi` redundant in publish-testpypi job (no checkout, UV_PUBLISH_URL overrides) | Fixed: removed flag, rely on UV_PUBLISH_URL |
+| 2 | LOW | `uv.lock` missing from story File List | Accepted: lockfile is generated artifact, added to File List |
+| 3 | DROPPED | No `workflow_dispatch` for failure recovery | Dropped: job-level re-run handles recovery; workflow_dispatch is a footgun on publish pipelines |
+| 4 | LOW | Hardcoded `sleep 30` in smoke test | Accepted: pragmatic for v1; revisit if flaky in practice |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -293,6 +296,7 @@ Conventional commit for this story: `feat(ci): add PyPI publish pipeline with tr
 | 2026-03-01 | Story created by create-story workflow |
 | 2026-03-01 | Party mode review (Winston, Amelia, Murat, Bob): 4 consensus items applied. (1) Added smoke test job between TestPyPI and PyPI publish to catch packaging mistakes. (2) Explicit design decision documented: single-version quality gate is intentional, not an omission. (3) AC-to-Test mapping refined with specific verification methods (automated vs manual vs structural). (4) Added Task 6: pre-flight checklist for manual setup (GitHub environments, trusted publishers, PAT secret) with silent failure warning for RELEASE_PLEASE_TOKEN. pip-audit version pinning relaxed to check latest. |
 | 2026-03-01 | Implementation complete: Tasks 1-5 done (pip-audit added, publish.yml created with 5-job chain, release-please verified, actionlint validated, build dry-run passed). Task 6 (pre-flight checklist) surfaced to user — manual setup required before first release. All quality gates pass. |
+| 2026-03-01 | Code review (adversarial + party mode consensus): 4 findings reviewed. Fixed #1 (removed redundant `--index testpypi` flag from publish-testpypi job). Downgraded #2 to LOW (uv.lock is generated artifact). Dropped #3 (workflow_dispatch is a footgun). Deferred #4 (sleep 30 pragmatic for v1). |
 
 ## Dev Agent Record
 
@@ -318,5 +322,6 @@ Claude Opus 4.6
 
 **Modified:**
 - `pyproject.toml` — added `pip-audit>=2.9.0` to `[dependency-groups] dev`
+- `uv.lock` — regenerated with pip-audit and transitive dependencies
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — story status tracking
 - `_bmad-output/implementation-artifacts/1-11-ci-cd-publish-pipeline.md` — story file updates
