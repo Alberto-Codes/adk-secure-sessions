@@ -117,7 +117,9 @@ filterwarnings = [
     "ignore:Exception in thread.*_connection_worker_thread.*:pytest.PytestUnhandledThreadExceptionWarning",
     # google-adk RunConfig accesses a deprecated pydantic field
     # (save_input_blobs_as_artifacts) internally — upstream issue, not our defect.
-    "ignore:deprecated:DeprecationWarning:google.adk.*",
+    # google-adk RunConfig.save_input_blobs_as_artifacts deprecated pydantic field;
+    # narrowed to google.adk.runners to surface deprecations from other ADK submodules.
+    "ignore:deprecated:DeprecationWarning:google\\.adk\\.runners",
 ]
 
 [dependency-groups]

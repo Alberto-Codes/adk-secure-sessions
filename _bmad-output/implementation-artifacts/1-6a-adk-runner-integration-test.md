@@ -1,6 +1,6 @@
 # Story 1.6a: ADK Runner Integration Test
 
-Status: review
+Status: done
 Branch: feat/integration-1-6a-adk-runner-test
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/52
 
@@ -315,21 +315,28 @@ The `test(benchmark)` commit (4561a99) is the most recent — story 1.5. The cur
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review workflow + Party Mode consensus (Dev, TEA, Architect)
+- **Outcome:** Changes Requested → Fixed (4 MEDIUM + 1 LOW fixed, 3 LOW accepted as-is)
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | `>= 2` should be `== 2` in lifecycle event count assertion | Fixed — exact count matches multi-turn test precedent |
+| M2 | MEDIUM | Missing agent response content verification (AC-to-test gap) | Fixed — added assertion verifying "Agent response" text in events |
+| M3 | MEDIUM | Overly broad DeprecationWarning filter (`google.adk.*`) | Fixed — narrowed to `google\.adk\.runners` module only |
+| M4 | MEDIUM | No event-data encryption check through Runner path | Fixed — added raw-DB assertion on `events.event_data` column |
+| L1 | LOW | Three near-identical Runner fixtures | Accepted — test readability > DRY in fixture code |
+| L2 | LOW | `callback_context: object` with `# type: ignore` | Accepted — deliberate ADK decoupling |
+| L3 | LOW | `aiosqlite` import style inconsistency | Accepted — this file is correct; sibling is the outlier |
+| L4 | LOW | Incomplete raw-DB state key assertion | Fixed — added `agent_response_count` check alongside `agent_ran` |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved (none found)
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (163 passed, 99.68% coverage)
+- [x] Quality gates re-verified (ruff check, ruff format, pytest)
 
 ## Change Log
 
@@ -338,6 +345,7 @@ The `test(benchmark)` commit (4561a99) is the most recent — story 1.5. The cur
 | 2026-02-28 | Story created by create-story workflow — comprehensive developer guide |
 | 2026-02-28 | Party mode review (SM + Architect + Dev + TEA): 2 MEDIUM (`runner.close()` teardown, explicit 4-event count in multi-turn), 1 LOW (raw-DB encryption assertion on Runner path), 1 LOW (`app_name` consistency guardrail). All 4 applied. |
 | 2026-02-28 | Implementation complete — 6 integration tests, 3 test classes, 3 callback functions, 3 Runner fixtures. Added pydantic DeprecationWarning filter for upstream google-adk RunConfig issue. All quality gates pass. |
+| 2026-02-28 | Code review (adversarial + party mode consensus): 4 MEDIUM + 1 LOW fixed — tightened event count assertion, added content verification, narrowed warning filter to `google.adk.runners`, added event encryption + complete state key raw-DB assertions. 3 LOW accepted as-is. All 163 tests pass, 99.68% coverage. |
 
 ## Dev Agent Record
 
@@ -347,7 +355,7 @@ Claude Opus 4.6
 
 ### Debug Log References
 
-- google-adk `RunConfig.save_input_blobs_as_artifacts` deprecated field triggers `DeprecationWarning` from pydantic internals; resolved by adding warning filter to `pyproject.toml` scoped to `google.adk.*`
+- google-adk `RunConfig.save_input_blobs_as_artifacts` deprecated field triggers `DeprecationWarning` from pydantic internals; resolved by adding warning filter to `pyproject.toml` scoped to `google.adk.runners` (narrowed from `google.adk.*` during code review)
 
 ### Completion Notes List
 

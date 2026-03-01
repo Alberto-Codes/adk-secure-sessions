@@ -167,7 +167,16 @@ class TestADKRunnerIntegration:
             session_id=session.id,
         )
         assert retrieved is not None
-        assert len(retrieved.events) >= 2  # At least user + agent events
+        assert len(retrieved.events) == 2  # Exactly 1 user + 1 agent event
+
+        # Verify agent response content is present in events
+        agent_texts = [
+            part.text
+            for event in retrieved.events
+            for part in (event.content.parts if event.content else [])
+            if hasattr(part, "text") and part.text
+        ]
+        assert "Agent response" in agent_texts
 
         # 4. Raw-DB encryption assertion
         async with aiosqlite.connect(db_path) as conn:
@@ -178,6 +187,16 @@ class TestADKRunnerIntegration:
             assert isinstance(raw_state, bytes)
             raw_str = raw_state.decode("latin-1")
             assert "initial" not in raw_str
+
+            # Verify event data is also encrypted in raw database
+            evt_cursor = await conn.execute("SELECT event_data FROM events")
+            evt_rows = await evt_cursor.fetchall()
+            assert len(evt_rows) > 0
+            for evt_row in evt_rows:
+                raw_event = evt_row[0]
+                assert isinstance(raw_event, bytes)
+                raw_evt_str = raw_event.decode("latin-1")
+                assert "Agent response" not in raw_evt_str
 
         # 5. Delete session
         await encrypted_service.delete_session(
@@ -258,6 +277,7 @@ class TestStateDeltas:
             assert isinstance(raw_state, bytes)
             raw_str = raw_state.decode("latin-1")
             assert "agent_ran" not in raw_str
+            assert "agent_response_count" not in raw_str
 
 
 class TestMultiTurnConversation:
