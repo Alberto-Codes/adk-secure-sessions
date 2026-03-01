@@ -196,7 +196,12 @@ class TestADKRunnerIntegration:
                 raw_event = evt_row[0]
                 assert isinstance(raw_event, bytes)
                 raw_evt_str = raw_event.decode("latin-1")
+                # No plaintext agent or user messages should be visible
                 assert "Agent response" not in raw_evt_str
+                assert "Hello" not in raw_evt_str
+                # No obvious JSON structure markers
+                assert '"author"' not in raw_evt_str
+                assert '"parts"' not in raw_evt_str
 
         # 5. Delete session
         await encrypted_service.delete_session(
