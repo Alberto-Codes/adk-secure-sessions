@@ -153,4 +153,5 @@ dev = [
     "griffe-warnings-deprecated>=1.1.0",
     "griffe-inherited-docstrings>=1.1.2",
     "docvet>=1.6.0",
+    "pip-audit>=2.9.0",
 ]
