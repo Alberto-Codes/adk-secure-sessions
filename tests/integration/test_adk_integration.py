@@ -552,3 +552,234 @@ class TestWrongKeyIntegration:
         ) as service:
             with pytest.raises(DecryptionError):
                 await service.list_sessions(app_name="my-agent")
+
+
+# =============================================================================
+# Coverage Expansion Tests (TEA Automate — P1)
+# =============================================================================
+
+
+class TestUserStateEncryption:
+    """[P1] Verify user-level state is encrypted in raw database."""
+
+    async def test_user_state_is_encrypted_in_database(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Verify user_states table contains only encrypted data."""
+        import aiosqlite
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=fernet_backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="secure-app",
+                user_id="user-1",
+            )
+
+            event = Event(
+                id="event-1",
+                author="agent",
+                invocation_id="inv-1",
+                actions=EventActions(
+                    state_delta={"user:personal_secret": "my-ssn-123-45-6789"}
+                ),
+            )
+            await service.append_event(session, event)
+
+        # Read raw database content
+        async with aiosqlite.connect(db_path) as conn:
+            cursor = await conn.execute("SELECT state FROM user_states")
+            row = await cursor.fetchone()
+            assert row is not None, "Expected user_states row to exist"
+            raw_state = row[0]
+
+            # Verify sensitive data is NOT in plaintext
+            assert isinstance(raw_state, bytes)
+            raw_str = raw_state.decode("latin-1")
+            assert "my-ssn-123-45-6789" not in raw_str
+            assert "personal_secret" not in raw_str
+
+
+class TestStateMergePrecedence:
+    """[P1] Verify state merge precedence: session > user > app."""
+
+    async def test_session_state_overrides_user_and_app_state(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Same key in app, user, and session state — session wins."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=fernet_backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="test-app",
+                user_id="user-1",
+                state={"theme": "session-dark"},
+            )
+
+            # Set app-level and user-level state with the same key
+            event = Event(
+                id="event-1",
+                author="agent",
+                invocation_id="inv-1",
+                actions=EventActions(
+                    state_delta={
+                        "app:theme": "app-light",
+                        "user:theme": "user-blue",
+                    }
+                ),
+            )
+            await service.append_event(session, event)
+
+            # Retrieve session — merge order is {app, user, session}
+            retrieved = await service.get_session(
+                app_name="test-app",
+                user_id="user-1",
+                session_id=session.id,
+            )
+
+            assert retrieved is not None
+            # Session state should win over user and app state
+            assert retrieved.state["theme"] == "session-dark"
+
+    async def test_user_state_overrides_app_state(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Same key in app and user state (no session key) — user wins."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=fernet_backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            # Session state does NOT have 'color' key
+            session = await service.create_session(
+                app_name="test-app",
+                user_id="user-1",
+                state={"unrelated": "data"},
+            )
+
+            event = Event(
+                id="event-1",
+                author="agent",
+                invocation_id="inv-1",
+                actions=EventActions(
+                    state_delta={
+                        "app:color": "app-red",
+                        "user:color": "user-green",
+                    }
+                ),
+            )
+            await service.append_event(session, event)
+
+            retrieved = await service.get_session(
+                app_name="test-app",
+                user_id="user-1",
+                session_id=session.id,
+            )
+
+            assert retrieved is not None
+            # User state should override app state
+            assert retrieved.state["color"] == "user-green"
+
+
+class TestWrongKeyOnStateTables:
+    """[P1] Wrong key raises DecryptionError on app/user state paths."""
+
+    async def test_wrong_key_raises_on_get_with_app_state(self, db_path: str) -> None:
+        """Wrong key raises DecryptionError when app_states has data."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        from adk_secure_sessions import DecryptionError
+
+        # Create session and app state with key1
+        backend1 = FernetBackend("key-one")
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=backend1,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="test-app",
+                user_id="user-1",
+                state={"session": "data"},
+            )
+            session_id = session.id
+
+            # Add app-level state
+            event = Event(
+                id="evt-1",
+                author="agent",
+                invocation_id="inv-1",
+                actions=EventActions(state_delta={"app:secret": "classified"}),
+            )
+            await service.append_event(session, event)
+
+        # Try to read with key2 — should fail on app_state decryption
+        backend2 = FernetBackend("key-two")
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=backend2,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            with pytest.raises(DecryptionError):
+                await service.get_session(
+                    app_name="test-app",
+                    user_id="user-1",
+                    session_id=session_id,
+                )
+
+    async def test_wrong_key_raises_on_get_with_user_state(self, db_path: str) -> None:
+        """Wrong key raises DecryptionError when user_states has data."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        from adk_secure_sessions import DecryptionError
+
+        # Create session and user state with key1
+        backend1 = FernetBackend("key-one")
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=backend1,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="test-app",
+                user_id="user-1",
+                state={"session": "data"},
+            )
+            session_id = session.id
+
+            # Add user-level state
+            event = Event(
+                id="evt-1",
+                author="agent",
+                invocation_id="inv-1",
+                actions=EventActions(state_delta={"user:secret": "classified"}),
+            )
+            await service.append_event(session, event)
+
+        # Try to read with key2 — should fail on user_state decryption
+        backend2 = FernetBackend("key-two")
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=backend2,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            with pytest.raises(DecryptionError):
+                await service.get_session(
+                    app_name="test-app",
+                    user_id="user-1",
+                    session_id=session_id,
+                )
