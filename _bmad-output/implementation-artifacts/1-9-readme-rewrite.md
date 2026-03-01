@@ -180,7 +180,7 @@ The README must link to:
 - Modifies: `README.md` in repository root
 - No changes to `src/` directory
 - No changes to `tests/` directory
-- No changes to `pyproject.toml`
+- Modifies: `pyproject.toml` (removed direct `sqlalchemy` dependency — code review fix)
 - Aligns with architecture Phase 2 requirements (FR34: quick-start, FR40: badges/verifiability)
 
 ### Previous Story Intelligence (1.8)

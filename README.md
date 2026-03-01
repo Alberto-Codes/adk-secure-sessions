@@ -9,7 +9,7 @@
 
 The compliance gateway for [Google ADK](https://github.com/google/adk-python) — add encrypted sessions in 5 minutes.
 
-ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is a drop-in replacement for `DatabaseSessionService` that encrypts state and conversation history at rest, so you can pass the audit without changing your agent code.
+ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is a drop-in replacement for `DatabaseSessionService` that encrypts state and conversation history at rest, so you can close the encryption-at-rest gap without changing your agent code.
 
 ## Install
 
@@ -23,7 +23,7 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add adk-secure-sessions
 ```
 
-**3 runtime dependencies**: google-adk, cryptography, aiosqlite.
+**3 direct runtime dependencies**: google-adk, cryptography, aiosqlite.
 
 ## Quick Start
 
@@ -39,7 +39,7 @@ session_service = EncryptedSessionService(
 )
 ```
 
-Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way.
+Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/develop/docs) for details.
 
 ## What Gets Encrypted
 
