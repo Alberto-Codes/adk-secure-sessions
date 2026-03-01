@@ -108,11 +108,10 @@ asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 filterwarnings = [
     "error",
-    "ignore:.*PydanticDeprecatedSince20.*:DeprecationWarning",
-    "ignore:.*Pydantic.*serialization.*:UserWarning",
-    "ignore:.*Pydantic.*:UserWarning",
-    "ignore:^deprecated$:DeprecationWarning:pydantic.*",
-    "ignore:Inheritance class.*from ClientSession is discouraged:DeprecationWarning",
+    # aiosqlite.Connection.close() does not join _connection_worker_thread — the
+    # thread may call call_soon_threadsafe() after pytest-asyncio closes the event
+    # loop, raising RuntimeError("Event loop is closed"). This is an inherent race
+    # in aiosqlite's architecture (no thread.join() in close()), not a test defect.
     "ignore:Exception in thread.*_connection_worker_thread.*:pytest.PytestUnhandledThreadExceptionWarning",
 ]
 

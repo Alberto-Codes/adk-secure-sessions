@@ -1067,7 +1067,7 @@ class TestSchemaVersionColumn:
 
         # PRAGMA does not support parameterized queries in SQLite
         cursor = await conn.execute(f"SELECT version FROM {table_name}")  # noqa: S608
-        rows = await cursor.fetchall()
+        rows = list(await cursor.fetchall())
         assert len(rows) >= 1, f"Expected at least 1 row in {table_name}"
         for row in rows:
             assert row[0] == 1, f"Expected version=1 in {table_name}, got {row[0]}"
