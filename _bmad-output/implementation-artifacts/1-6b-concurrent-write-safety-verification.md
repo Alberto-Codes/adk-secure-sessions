@@ -1,6 +1,6 @@
 # Story 1.6b: Concurrent Write Safety Verification
 
-Status: review
+Status: done
 Branch: feat/concurrency-1-6b-concurrent-write-safety
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/54
 
@@ -333,21 +333,25 @@ Story 1.6a is the most recent — it added `tests/integration/test_adk_runner.py
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Claude Opus 4.6 (adversarial code review) + party mode consensus (Winston, Amelia, Murat, Bob)
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | T064 missing `BACKEND_FERNET` byte assertion — Task 2.3 only checked version byte, not backend ID | Fixed — added `BACKEND_FERNET` import and `raw_state[1:2]` assertion |
+| L1 | LOW | T063 no explicit `DecryptionError` catch with per-session context | Accept as-is — implicit test failure provides sufficient diagnosability |
+| L2 | LOW | T064 no `len(spot_check_ids)` assertion before DB check loop | Wontfix — index is input param, cannot be corrupted; test scaffolding not data under test |
+| L3 | LOW | T066 no author uniqueness verification for concurrent events | Fixed — added `event_authors` set and `len(event_authors) == NUM_COROUTINES` assertion |
+| L4 | LOW | T066 unnecessary session re-fetch after `create_session` | Wontfix — defensive pattern resilient to future modifications |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -356,6 +360,7 @@ Story 1.6a is the most recent — it added `tests/integration/test_adk_runner.py
 | 2026-02-28 | Story created by create-story workflow — party mode consensus (Winston, Amelia, Murat, Bob) |
 | 2026-02-28 | Party mode review: 1 CRITICAL (test ID collision T050-T053 → T063-T066), 2 MEDIUM (`ListSessionsResponse.sessions` trap, Event construction caveat), 3 LOW (read-back assertion pattern, raw-DB style consistency, performance claim removed). All applied. |
 | 2026-02-28 | Implementation complete — 4 tests (T063-T066), all tasks done, all quality gates pass |
+| 2026-02-28 | Code review: 1 MEDIUM (M1: missing BACKEND_FERNET byte assertion), 4 LOW. Party mode consensus: fix M1 + L3, accept/wontfix rest. Both fixes applied, all 167 tests pass, 99.68% coverage. |
 
 ## Dev Agent Record
 

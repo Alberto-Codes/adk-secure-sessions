@@ -22,7 +22,11 @@ import pytest
 from google.adk.events.event import Event
 from google.genai import types
 
-from adk_secure_sessions import ENVELOPE_VERSION_1, EncryptedSessionService
+from adk_secure_sessions import (
+    BACKEND_FERNET,
+    ENVELOPE_VERSION_1,
+    EncryptedSessionService,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -120,8 +124,9 @@ class TestConcurrentSessionCreation:
                 assert "index" not in raw_str
                 assert "sentinel" not in raw_str
 
-                # Verify envelope header bytes
+                # Verify envelope header bytes (version + backend ID)
                 assert raw_state[0:1] == bytes([ENVELOPE_VERSION_1])
+                assert raw_state[1:2] == bytes([BACKEND_FERNET])
 
     async def test_list_sessions_returns_all_fifty(
         self, encrypted_service: EncryptedSessionService
@@ -182,11 +187,14 @@ class TestConcurrentEventAppends:
         assert retrieved is not None
         assert len(retrieved.events) == NUM_COROUTINES
 
-        # Verify each event has distinct content
+        # Verify each event has distinct content and author
         event_texts = set()
+        event_authors = set()
         for event in retrieved.events:
+            event_authors.add(event.author)
             if event.content and event.content.parts:
                 for part in event.content.parts:
                     if hasattr(part, "text") and part.text:
                         event_texts.add(part.text)
         assert len(event_texts) == NUM_COROUTINES
+        assert len(event_authors) == NUM_COROUTINES
