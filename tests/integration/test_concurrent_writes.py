@@ -168,6 +168,7 @@ class TestConcurrentEventAppends:
         async def _append_one(index: int) -> Event:
             """Append a single event with distinct content."""
             event = Event(
+                invocation_id=f"inv-{index}",
                 author=f"test-agent-{index}",
                 content=types.Content(
                     parts=[types.Part(text=f"Event from coroutine {index}")]
