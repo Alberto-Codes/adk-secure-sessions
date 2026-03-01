@@ -258,5 +258,5 @@ Claude Opus 4.6 (claude-opus-4-6)
 
 - `pyproject.toml` — removed 5 stale filterwarnings entries, added explanatory comment to aiosqlite filter
 - `tests/unit/test_encrypted_session_service.py` — line 1070: `rows = list(await cursor.fetchall())` to fix ty diagnostic
-- `_bmad-output/implementation-artifacts/sprint-status.yaml` — updated 1-4 status (backlog -> review); also corrected stale statuses for 1-2 and 1-3 (review -> done, both already merged to develop)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` — updated 1-4 status (backlog -> done); also corrected stale statuses for 1-2 and 1-3 (review -> done, both already merged to develop)
 - `_bmad-output/implementation-artifacts/1-4-zero-warning-test-suite.md` — story file updated with task completions, AC mapping, dev agent record
