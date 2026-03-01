@@ -66,7 +66,7 @@ so that {{benefit}}.
 - [ ] `uv run ruff format --check .` -- zero format issues
 - [ ] `uv run ty check` -- zero type errors (src/ only)
 - [ ] `uv run pytest --cov=adk_secure_sessions --cov-fail-under=90` -- all tests pass, >=90% coverage
-- [ ] `bash scripts/code_quality_check.sh --all --verbose` -- full quality pipeline green
+- [ ] `pre-commit run --all-files` -- all hooks pass
 
 ## Code Review
 

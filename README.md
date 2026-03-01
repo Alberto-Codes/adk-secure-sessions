@@ -132,8 +132,8 @@ uv run pytest
 # Lint
 uv run ruff check .
 
-# Full quality check (lint, format, docstrings, types, tests)
-bash scripts/code_quality_check.sh --all --verbose
+# Full quality check (lint, format, types, tests, docvet)
+pre-commit run --all-files
 ```
 
 ## License

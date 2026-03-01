@@ -64,11 +64,6 @@ adk-secure-sessions/
 │   ├── unit/                  # Unit tests (fast, isolated)
 │   └── integration/           # Integration tests (real databases)
 ├── scripts/                   # Development tooling
-│   ├── code_quality_check.sh  # 8-step quality pipeline
-│   ├── docstring_freshness.py # Detect stale docstrings
-│   ├── docstring_enrichment.py# Find enrichment opportunities
-│   ├── docstring_docs_coverage.py # Verify docs coverage
-│   ├── docstring_griffe_check.py  # Griffe docstring warnings
 │   └── gen_ref_pages.py       # MkDocs reference page generation
 ├── specs/                     # Feature specifications (speckit workflow)
 │   └── 002-encryption-backend-protocol/
@@ -124,10 +119,9 @@ Use descriptive branch names:
 
 2. Make your changes, following the code style guidelines below.
 
-3. Run quality checks before committing:
+3. Pre-commit hooks run automatically on commit. To run manually:
    ```bash
-   # Full 8-step quality pipeline (lint, format, docstrings, types, tests)
-   bash scripts/code_quality_check.sh --all --verbose
+   pre-commit run --all-files
 
    # Or run individual checks
    uv run ruff check .

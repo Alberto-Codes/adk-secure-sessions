@@ -56,11 +56,6 @@ adk-secure-sessions/
 │   └── 006-encrypted-session-service/    # Core service spec
 │
 ├── scripts/                           # Development tooling
-│   ├── code_quality_check.sh          # 8-step quality pipeline
-│   ├── docstring_freshness.py         # Stale docstring detection (git blame)
-│   ├── docstring_enrichment.py        # Missing section audit
-│   ├── docstring_docs_coverage.py     # Docs coverage verification
-│   ├── docstring_griffe_check.py      # Griffe docstring warnings
 │   └── gen_ref_pages.py               # MkDocs reference page generation
 │
 ├── .github/                           # GitHub configuration
@@ -111,7 +106,7 @@ adk-secure-sessions/
 - **No CLI entry**: This is a library, not an application
 - **Test entry**: `uv run pytest` (configured in `pyproject.toml` with `testpaths = ["tests"]`)
 - **Docs entry**: `uv run mkdocs serve` (configured in `mkdocs.yml`)
-- **Quality entry**: `bash scripts/code_quality_check.sh --all --verbose`
+- **Quality entry**: `pre-commit run --all-files`
 
 ## Module Dependency Graph
 

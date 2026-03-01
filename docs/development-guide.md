@@ -42,24 +42,9 @@ uv run ruff check .     # Lint check
 | `uv run ruff format --check .` | Check formatting without changes |
 | `uv run ty check src/` | Type checking |
 | `uv run interrogate src/` | Docstring coverage (95% threshold) |
-| `bash scripts/code_quality_check.sh --all --verbose` | Full 8-step quality pipeline |
+| `pre-commit run --all-files` | Full quality pipeline (lint, format, ty, tests, docvet) |
 | `uv run mkdocs serve` | Local docs preview |
 | `uv run mkdocs build` | Build docs site |
-
-## Quality Pipeline
-
-The `scripts/code_quality_check.sh` script runs 8 sequential checks:
-
-1. **Ruff lint** — Import sorting, style rules
-2. **Ruff format** — Code formatting (88 char line length)
-3. **Docstring freshness** — Stale docstrings via git blame
-4. **Docstring enrichment** — Missing sections audit
-5. **Docs coverage** — Missing `__init__.py` detection
-6. **Griffe docstring warnings** — Missing parameter types
-7. **Type checking (ty)** — Static type analysis on `src/`
-8. **Tests (pytest)** — Full test suite
-
-The `specs/` directory is excluded from all quality checks.
 
 ## Pre-Commit Hooks
 

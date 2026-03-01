@@ -26,8 +26,6 @@ tests/unit/
   test_fernet_backend.py # FernetBackend tests
   test_serialization.py  # Serialization layer tests (envelope, round-trip, edge cases)
 scripts/
-  code_quality_check.sh  # 8-step quality pipeline (excludes specs/)
-  docstring_*.py         # Docstring quality scripts
   gen_ref_pages.py       # MkDocs reference generation
 specs/
   002-encryption-backend-protocol/  # Feature spec, plan, tasks, research
@@ -45,7 +43,7 @@ specs/
 uv run pytest                                    # Run tests
 uv run ruff check .                              # Lint
 uv run ruff format .                             # Format
-bash scripts/code_quality_check.sh --all --verbose  # Full quality pipeline
+pre-commit run --all-files                       # Full quality pipeline (lint, format, ty, tests, docvet)
 ```
 
 ## Code Style
