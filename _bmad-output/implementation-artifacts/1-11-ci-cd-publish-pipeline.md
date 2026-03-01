@@ -173,7 +173,7 @@ publish-url = "https://test.pypi.org/legacy/"
 explicit = true
 ```
 
-This means `uv publish --index testpypi` will use the correct TestPyPI URLs.
+The publish workflow uses `UV_PUBLISH_URL` to target TestPyPI directly rather than `--index testpypi`, since the publish job has no checkout and cannot resolve the index from `pyproject.toml`.
 
 ### Workflow Job Dependency Chain
 
@@ -182,7 +182,7 @@ quality-gate       (lint, format, type-check, test, interrogate, pip-audit)
      |
    build           (uv build -> upload dist/ artifact)
      |
-publish-testpypi   (download dist/ -> uv publish --index testpypi)
+publish-testpypi   (download dist/ -> uv publish via UV_PUBLISH_URL)
      |
 smoke-test         (install from TestPyPI -> verify import works)
      |
@@ -193,7 +193,7 @@ Each job `needs:` the previous one. If any job fails, downstream jobs are skippe
 
 ### pip-audit Integration
 
-`pip-audit` is not currently in dev dependencies. Add it to `pyproject.toml` `[dependency-groups] dev`. It scans the installed dependency tree against the OSV database for known vulnerabilities. The publish workflow runs it as a quality gate before building artifacts.
+`pip-audit` is included in the `dev` dependency group in `pyproject.toml` (`[dependency-groups].dev`). It scans the installed dependency tree against the OSV database for known vulnerabilities. The publish workflow runs it as a quality gate before building artifacts.
 
 ### What NOT to Change
 

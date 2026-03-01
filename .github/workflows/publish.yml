@@ -136,7 +136,7 @@ jobs:
             "adk-secure-sessions==${{ steps.version.outputs.version }}"
 
       - name: Verify import
-        run: python -c "from adk_secure_sessions import EncryptedSessionService, FernetBackend; print('Smoke test passed')"
+        run: uv run python -c "from adk_secure_sessions import EncryptedSessionService, FernetBackend; print('Smoke test passed')"
 
   # ---------------------------------------------------------------------------
   # Publish to PyPI — production release.
