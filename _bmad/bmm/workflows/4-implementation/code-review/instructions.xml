@@ -85,6 +85,14 @@
       4. Record specific proof (file:line)
     </action>
 
+    <!-- Claims Verification -->
+    <action>For EACH documentation file, docstring, comment, or README change in the review:
+      1. Identify all factual claims (e.g., "all operations use X", "N dependencies", "supports Y")
+      2. Cross-reference each claim against actual code, imports, and configuration
+      3. If claim is inaccurate or unsubstantiated → MEDIUM finding (factual claim not verified)
+      4. Pay special attention to: dependency counts, algorithm attributions, feature completeness assertions
+    </action>
+
     <!-- Code Quality Deep Dive -->
     <action>For EACH file in comprehensive review list:
       1. **Security**: Look for injection risks, missing validation, auth issues

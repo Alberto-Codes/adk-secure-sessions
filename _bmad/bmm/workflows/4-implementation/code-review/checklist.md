@@ -12,6 +12,7 @@
 - [ ] File List reviewed and validated for completeness
 - [ ] Tests identified and mapped to ACs; gaps noted
 - [ ] Code quality review performed on changed files
+- [ ] Factual claims in docs/comments verified against actual code (no unsubstantiated assertions)
 - [ ] Security review performed on changed files and dependencies
 - [ ] Outcome decided (Approve/Changes Requested/Blocked)
 - [ ] Review notes appended under "Senior Developer Review (AI)"
