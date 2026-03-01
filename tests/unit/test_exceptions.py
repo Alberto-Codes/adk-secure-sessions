@@ -152,11 +152,13 @@ class TestSafeErrorMessages:
 
         from adk_secure_sessions.backends.fernet import FernetBackend
 
-        backend = FernetBackend(key=Fernet.generate_key())
+        key = Fernet.generate_key()
+        backend = FernetBackend(key=key)
         with pytest.raises(DecryptionError) as exc_info:
             await backend.decrypt(b"not-valid-ciphertext")
         message = str(exc_info.value).lower()
         # Message should describe the failure category, not leak data
+        assert key.decode().lower() not in message
         assert "not-valid-ciphertext" not in message
         assert "failed" in message or "invalid" in message
 

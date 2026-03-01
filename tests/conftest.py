@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 # Two distinct keys are provided for wrong-key / key-isolation tests.
 TEST_FERNET_KEY_A: bytes = Fernet.generate_key()
 TEST_FERNET_KEY_B: bytes = Fernet.generate_key()
+assert TEST_FERNET_KEY_A != TEST_FERNET_KEY_B  # 2^-256 collision guard
 
 
 @pytest.fixture(scope="session")

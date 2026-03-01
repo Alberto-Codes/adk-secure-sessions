@@ -106,6 +106,7 @@ class TestWrongKeyDecryption:
 
         error_msg = str(exc_info.value)
         assert _KEY_A.decode() not in error_msg
+        assert _KEY_B.decode() not in error_msg
 
 
 # ---------------------------------------------------------------------------
