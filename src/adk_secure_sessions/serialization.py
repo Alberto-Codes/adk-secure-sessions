@@ -24,6 +24,7 @@ Examples:
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from adk_secure_sessions.exceptions import DecryptionError, SerializationError
 from adk_secure_sessions.protocols import EncryptionBackend
@@ -90,7 +91,7 @@ def _parse_envelope(envelope: bytes) -> tuple[int, int, bytes]:
 
 
 async def encrypt_session(
-    data: dict,
+    data: dict[str, Any],
     backend: EncryptionBackend,
     backend_id: int,
 ) -> bytes:
@@ -126,7 +127,7 @@ async def encrypt_session(
 async def decrypt_session(
     envelope: bytes,
     backend: EncryptionBackend,
-) -> dict:
+) -> dict[str, Any]:
     """Decrypt an encrypted envelope back to a session state dict.
 
     Args:

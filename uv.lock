@@ -54,6 +54,7 @@ requires-dist = [
     { name = "google-adk", specifier = ">=1.22.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
 ]
+provides-extras = ["postgres"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -49,7 +49,7 @@ development_status:
   1-5-encryption-overhead-benchmark: done
   1-6a-adk-runner-integration-test: done
   1-6b-concurrent-write-safety-verification: done
-  1-7-package-metadata-type-safety: backlog
+  1-7-package-metadata-type-safety: done
   1-8-security-md: backlog
   1-9-readme-rewrite: backlog
   1-10-trunk-based-migration-to-main: backlog
