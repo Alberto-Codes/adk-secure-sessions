@@ -27,11 +27,6 @@ inputDocuments:
   - 'docs/adr/ADR-003-field-level-encryption.md'
   - 'docs/adr/ADR-004-adk-schema-compatibility.md'
   - 'docs/adr/ADR-005-exception-hierarchy.md'
-  - 'specs/002-encryption-backend-protocol/research.md'
-  - 'specs/003-fernet-backend/research.md'
-  - 'specs/004-exception-hierarchy/research.md'
-  - 'specs/005-serialization-layer/research.md'
-  - 'specs/006-encrypted-session-service/research.md'
   - '_bmad-output/test-artifacts/test-review.md'
   - 'GitHub Issues: #1, #9, #10, #11, #16, #17, #20, #22, #35, #36, #38, #39, #40'
 documentCounts:

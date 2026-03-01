@@ -655,19 +655,7 @@ adk-secure-sessions/
 │       └── index.md                  # Auto-generated API reference entry
 │
 ├── scripts/
-│   ├── code_quality_check.sh         # 8-step quality pipeline
-│   ├── docstring_docs_coverage.py    # Docstring coverage analysis
-│   ├── docstring_enrichment.py       # Docstring enrichment check
-│   ├── docstring_freshness.py        # Docstring freshness check
-│   ├── docstring_griffe_check.py     # Griffe docstring parser check
 │   └── gen_ref_pages.py              # MkDocs API reference generation
-│
-├── specs/                            # Feature specifications (Phase 1)
-│   ├── 002-encryption-backend-protocol/
-│   ├── 003-fernet-backend/
-│   ├── 004-exception-hierarchy/
-│   ├── 005-serialization-layer/
-│   └── 006-encrypted-session-service/
 │
 └── _bmad-output/                     # BMAD workflow outputs
     ├── project-context.md
@@ -899,8 +887,6 @@ Components communicate through direct Python imports and function calls. There i
 **Test Organization:** `tests/` at project root with `unit/`, `integration/`, and (Phase 3) `benchmarks/` subdirectories. Test files mirror source: `test_<module>.py`. Shared fixtures in `conftest.py` at each level. Register custom markers (`benchmark`, `integration`) in `pyproject.toml`.
 
 **Documentation:** `docs/` at project root. ADRs in `docs/adr/`. API reference auto-generated from docstrings via `scripts/gen_ref_pages.py`.
-
-**Specs:** `specs/<NNN>-<feature-name>/` for feature specifications. Each contains spec, plan, tasks, checklists, and optionally contracts and research.
 
 **Phase 2 Structural Action Items:**
 - Create `tests/conftest.py`, `tests/unit/conftest.py`, `tests/integration/conftest.py`

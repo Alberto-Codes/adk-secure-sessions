@@ -24,6 +24,7 @@ Examples:
 
 from __future__ import annotations
 
+import sqlite3
 import time
 import uuid
 from typing import TYPE_CHECKING, Any
@@ -37,6 +38,7 @@ from google.adk.sessions.base_session_service import (
 )
 from google.adk.sessions.session import Session
 
+from adk_secure_sessions.exceptions import ConfigurationError
 from adk_secure_sessions.protocols import EncryptionBackend
 from adk_secure_sessions.serialization import (
     decrypt_json,
@@ -145,7 +147,32 @@ class EncryptedSessionService(BaseSessionService):
             db_path: Path to the SQLite database file. Created if not exists.
             backend: Any object conforming to EncryptionBackend protocol.
             backend_id: Integer identifier for the backend (e.g., BACKEND_FERNET).
+
+        Raises:
+            ConfigurationError: If *db_path* is not a non-empty string,
+                *backend* does not conform to ``EncryptionBackend``,
+                *backend_id* is not an ``int``, or *backend_id* is
+                outside the valid byte range (0–255).
         """
+        if not isinstance(db_path, str) or not db_path:
+            msg = "db_path must be a non-empty string"
+            raise ConfigurationError(msg)
+        if not isinstance(backend, EncryptionBackend):
+            msg = (
+                f"backend must conform to EncryptionBackend protocol, "
+                f"got {type(backend).__name__}"
+            )
+            raise ConfigurationError(msg)
+        if not isinstance(backend_id, int):
+            msg = f"backend_id must be an int, got {type(backend_id).__name__}"
+            raise ConfigurationError(msg)
+        if not (0 <= backend_id <= 255):
+            msg = (
+                f"backend_id must be in range 0–255, got {backend_id}. "
+                f"Use BACKEND_FERNET (0x01) for Fernet encryption."
+            )
+            raise ConfigurationError(msg)
+
         self._db_path = db_path
         self._backend = backend
         self._backend_id = backend_id
@@ -156,9 +183,20 @@ class EncryptedSessionService(BaseSessionService):
 
         Returns:
             The database connection.
+
+        Raises:
+            ConfigurationError: If the database connection fails.
         """
         if self._connection is None:
-            self._connection = await aiosqlite.connect(self._db_path)
+            try:
+                self._connection = await aiosqlite.connect(self._db_path)
+            except (OSError, sqlite3.OperationalError) as exc:
+                msg = (
+                    f"Failed to connect to database at "
+                    f"'{self._db_path}': {exc}. "
+                    f"Check that the path exists and is writable."
+                )
+                raise ConfigurationError(msg) from exc
             await self._connection.executescript(_SCHEMA)
             await self._connection.commit()
         return self._connection

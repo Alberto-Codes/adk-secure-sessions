@@ -10,3 +10,4 @@ This section documents the key architectural decisions for adk-secure-sessions.
 | [ADR-003](ADR-003-field-level-encryption.md) | Field-Level Encryption | Accepted |
 | [ADR-004](ADR-004-adk-schema-compatibility.md) | ADK Schema Compatibility | Accepted |
 | [ADR-005](ADR-005-exception-hierarchy.md) | Exception Hierarchy | Accepted |
+| [ADR-006](ADR-006-configuration-error.md) | ConfigurationError | Accepted |

@@ -9,6 +9,7 @@ from __future__ import annotations
 import pytest
 
 from adk_secure_sessions.exceptions import (
+    ConfigurationError,
     DecryptionError,
     EncryptionError,
     SecureSessionError,
@@ -124,8 +125,14 @@ class TestSafeErrorMessages:
 
     @pytest.mark.parametrize(
         "exc_cls",
-        [SecureSessionError, EncryptionError, DecryptionError, SerializationError],
-        ids=["base", "encryption", "decryption", "serialization"],
+        [
+            SecureSessionError,
+            EncryptionError,
+            DecryptionError,
+            SerializationError,
+            ConfigurationError,
+        ],
+        ids=["base", "encryption", "decryption", "serialization", "configuration"],
     )
     def test_exception_accepts_empty_message(
         self,
@@ -193,3 +200,66 @@ class TestSerializationErrorHierarchy:
             raise SerializationError("serialization failed") from original
         except SerializationError as exc:
             assert exc.__cause__ is original
+
+
+# ---------------------------------------------------------------------------
+# ConfigurationError Hierarchy
+# ---------------------------------------------------------------------------
+
+
+class TestConfigurationErrorHierarchy:
+    """ConfigurationError is a sibling of other SecureSessionError subclasses."""
+
+    def test_configuration_error_inherits_from_base(self) -> None:
+        """ConfigurationError is a subclass of SecureSessionError."""
+        assert issubclass(ConfigurationError, SecureSessionError)
+
+    def test_configuration_error_caught_by_base(self) -> None:
+        """ConfigurationError is caught by except SecureSessionError."""
+        with pytest.raises(SecureSessionError):
+            raise ConfigurationError("bad config")
+
+    def test_configuration_error_not_subclass_of_encryption(self) -> None:
+        """ConfigurationError is not a subclass of EncryptionError."""
+        assert not issubclass(ConfigurationError, EncryptionError)
+
+    def test_configuration_error_not_subclass_of_decryption(self) -> None:
+        """ConfigurationError is not a subclass of DecryptionError."""
+        assert not issubclass(ConfigurationError, DecryptionError)
+
+    def test_configuration_error_not_subclass_of_serialization(self) -> None:
+        """ConfigurationError is not a subclass of SerializationError."""
+        assert not issubclass(ConfigurationError, SerializationError)
+
+    def test_configuration_error_not_caught_by_encryption_handler(self) -> None:
+        """ConfigurationError is not caught by except EncryptionError."""
+        with pytest.raises(ConfigurationError):
+            try:
+                raise ConfigurationError("bad config")
+            except EncryptionError:
+                pytest.fail("ConfigurationError caught by EncryptionError")
+
+    def test_configuration_error_chaining_preserves_cause(self) -> None:
+        """Raise ConfigurationError from original preserves __cause__."""
+        original = OSError("cannot open database")
+        try:
+            raise ConfigurationError("config failed") from original
+        except ConfigurationError as exc:
+            assert exc.__cause__ is original
+
+    def test_configuration_error_has_docstring(self) -> None:
+        """ConfigurationError has a non-empty docstring."""
+        assert ConfigurationError.__doc__ is not None
+        assert len(ConfigurationError.__doc__.strip()) > 0
+
+    def test_configuration_error_accepts_and_stores_message(self) -> None:
+        """ConfigurationError accepts and stores a message."""
+        msg = "invalid encryption key"
+        exc = ConfigurationError(msg)
+        assert str(exc) == msg
+        assert exc.args == (msg,)
+
+    def test_configuration_error_accepts_empty_message(self) -> None:
+        """ConfigurationError accepts an empty message."""
+        exc = ConfigurationError()
+        assert str(exc) == ""

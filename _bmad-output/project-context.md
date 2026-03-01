@@ -138,8 +138,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Single responsibility** — one module = one concept (protocols, exceptions, serialization, etc.)
 
 #### Quality Pipeline
-- **Full pipeline:** `bash scripts/code_quality_check.sh --all --verbose` — runs 8 steps: ruff check, ruff format, ty check, interrogate, docstring enrichment, docstring freshness, docstring coverage, griffe check
-- **Excludes `specs/`** — ruff config skips the specs directory; agents adding new directories with Python files should check if exclusion is needed
+- **Full pipeline:** `pre-commit run --all-files` — runs 7 hooks: yamllint, actionlint, ruff-check, ruff-format, ty check (src/ only), pytest, docvet
+- **Pre-commit hooks run automatically on each commit** — no manual step needed before pushing
 
 ### Development Workflow Rules
 
@@ -170,7 +170,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Must pass: lint → format check → type check (`src/` only) → tests (90% coverage)
 - `ty check` runs on `src/` only — type errors in tests won't fail CI (intentional)
 - google-adk version matrix ensures backward compatibility
-- **Run local pipeline before push** — `bash scripts/code_quality_check.sh --all --verbose` catches more than CI (interrogate, docstring checks, griffe validation)
+- **Pre-commit runs on every commit** — hooks enforce lint, format, types, tests, and docvet before code reaches the remote
 
 ### Critical Don't-Miss Rules
 
