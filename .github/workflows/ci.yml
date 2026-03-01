@@ -66,6 +66,9 @@ jobs:
       - name: Pin google-adk to specific version
         if: matrix.adk-version != 'latest'
         run: uv pip install --force-reinstall google-adk==${{ matrix.adk-version }}
+      - name: Upgrade google-adk to latest
+        if: matrix.adk-version == 'latest'
+        run: uv pip install --upgrade google-adk
       - run: uv run pytest --tb=short --cov=adk_secure_sessions --cov-report=term-missing --cov-fail-under=90
         env:
           UV_PYTHON: ${{ matrix.python-version }}
