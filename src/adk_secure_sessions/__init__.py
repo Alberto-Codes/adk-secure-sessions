@@ -13,6 +13,7 @@ Attributes:
     EncryptionError: Raised when encryption fails.
     DecryptionError: Raised when decryption fails.
     SerializationError: Raised when data cannot be serialized to JSON.
+    ConfigurationError: Raised when the service is misconfigured at startup.
     encrypt_session: Serialize a dict to an encrypted envelope.
     decrypt_session: Decrypt an envelope back to a dict.
     encrypt_json: Encrypt a JSON string into an envelope.
@@ -43,6 +44,7 @@ See Also:
 
 from adk_secure_sessions.backends.fernet import FernetBackend
 from adk_secure_sessions.exceptions import (
+    ConfigurationError,
     DecryptionError,
     EncryptionError,
     SecureSessionError,
@@ -61,6 +63,7 @@ from adk_secure_sessions.services.encrypted_session import EncryptedSessionServi
 
 __all__ = [
     "BACKEND_FERNET",
+    "ConfigurationError",
     "DecryptionError",
     "EncryptedSessionService",
     "ENVELOPE_VERSION_1",

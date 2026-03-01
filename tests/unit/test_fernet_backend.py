@@ -6,6 +6,7 @@ import pytest
 from cryptography.fernet import Fernet
 
 from adk_secure_sessions import (
+    ConfigurationError,
     DecryptionError,
     EncryptionBackend,
     FernetBackend,
@@ -145,14 +146,14 @@ class TestFlexibleKeyInput:
         result2 = await backend2.decrypt(ciphertext)
         assert result2 == b"test"
 
-    def test_empty_string_key_raises_value_error(self) -> None:
-        """T018: Empty string key raises ValueError."""
-        with pytest.raises(ValueError, match="must not be empty"):
+    def test_empty_string_key_raises_configuration_error(self) -> None:
+        """T018: Empty string key raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="must not be empty"):
             FernetBackend(key="")
 
-    def test_empty_bytes_key_raises_value_error(self) -> None:
-        """T018b: Empty bytes key raises ValueError."""
-        with pytest.raises(ValueError, match="must not be empty"):
+    def test_empty_bytes_key_raises_configuration_error(self) -> None:
+        """T018b: Empty bytes key raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="must not be empty"):
             FernetBackend(key=b"")
 
 
@@ -183,10 +184,23 @@ class TestPolish:
         with pytest.raises(TypeError, match="ciphertext must be bytes"):
             await backend.decrypt("not bytes")  # type: ignore[arg-type]
 
-    def test_non_str_bytes_key_raises_type_error(self) -> None:
-        """Key that is neither str nor bytes raises TypeError."""
-        with pytest.raises(TypeError, match="key must be str or bytes"):
+    def test_non_str_bytes_key_raises_configuration_error(self) -> None:
+        """Key that is neither str nor bytes raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="key must be str or bytes"):
             FernetBackend(key=12345)  # type: ignore[arg-type]
+
+    def test_key_validation_errors_do_not_contain_key_material(self) -> None:
+        """Error messages from key validation never include the key value."""
+        secret_key = "super-secret-passphrase-value"
+        # Non-str/bytes key — message should include type name, not value
+        with pytest.raises(ConfigurationError) as exc_info:
+            FernetBackend(key=12345)  # type: ignore[arg-type]
+        assert "12345" not in str(exc_info.value)
+
+        # Empty key — message should not include any key value
+        with pytest.raises(ConfigurationError) as exc_info:
+            FernetBackend(key="")
+        assert secret_key not in str(exc_info.value)
 
     def test_decryption_error_inherits_secure_session_error(self) -> None:
         """DecryptionError is a SecureSessionError."""

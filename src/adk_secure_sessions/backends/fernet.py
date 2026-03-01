@@ -32,7 +32,7 @@ import hashlib
 
 from cryptography.fernet import Fernet, InvalidToken
 
-from adk_secure_sessions.exceptions import DecryptionError
+from adk_secure_sessions.exceptions import ConfigurationError, DecryptionError
 
 _PBKDF2_ITERATIONS = 480_000
 _PBKDF2_SALT = b"adk-secure-sessions-fernet-v1"
@@ -71,19 +71,19 @@ class FernetBackend:
                 PBKDF2-HMAC-SHA256.
 
         Raises:
-            TypeError: If *key* is not ``str`` or ``bytes``.
-            ValueError: If *key* is empty.
+            ConfigurationError: If *key* is not ``str`` or ``bytes``,
+                or if *key* is empty.
         """
         if not isinstance(key, (str, bytes)):
             msg = f"key must be str or bytes, got {type(key).__name__}"
-            raise TypeError(msg)
+            raise ConfigurationError(msg)
 
         if isinstance(key, str):
             key = key.encode()
 
         if not key:
             msg = "key must not be empty"
-            raise ValueError(msg)
+            raise ConfigurationError(msg)
 
         fernet_key = self._resolve_key(key)
         self._fernet = Fernet(fernet_key)

@@ -100,3 +100,27 @@ class SerializationError(SecureSessionError):
             log.error("Data contains non-JSON-serializable values")
         ```
     """
+
+
+class ConfigurationError(SecureSessionError):
+    """Raised when the service is misconfigured at startup.
+
+    Covers invalid encryption keys, backends that do not conform to the
+    ``EncryptionBackend`` protocol, invalid backend IDs, empty database
+    paths, and database connection failures. Error messages never include
+    key material or other sensitive data.
+
+    Examples:
+        Handle configuration failures at startup:
+
+        ```python
+        try:
+            service = EncryptedSessionService(
+                db_path="sessions.db",
+                backend=my_backend,
+                backend_id=BACKEND_FERNET,
+            )
+        except ConfigurationError as exc:
+            log.error("Service misconfigured: %s", exc)
+        ```
+    """

@@ -18,12 +18,98 @@ import pytest
 
 from adk_secure_sessions import (
     BACKEND_FERNET,
+    ConfigurationError,
     DecryptionError,
     EncryptedSessionService,
     FernetBackend,
 )
 
 pytestmark = pytest.mark.unit
+
+# =============================================================================
+# Story 1.3: Constructor Validation
+# =============================================================================
+
+
+class TestConstructorValidation:
+    """Tests for EncryptedSessionService.__init__ parameter validation."""
+
+    def test_invalid_backend_raises_configuration_error(self, db_path: str) -> None:
+        """Non-EncryptionBackend backend raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="EncryptionBackend protocol"):
+            EncryptedSessionService(
+                db_path=db_path,
+                backend="not-a-backend",  # type: ignore[arg-type]
+                backend_id=BACKEND_FERNET,
+            )
+
+    def test_invalid_backend_id_raises_configuration_error(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Non-int backend_id raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="backend_id must be an int"):
+            EncryptedSessionService(
+                db_path=db_path,
+                backend=fernet_backend,
+                backend_id="not-an-int",  # type: ignore[arg-type]
+            )
+
+    def test_empty_db_path_raises_configuration_error(
+        self, fernet_backend: FernetBackend
+    ) -> None:
+        """Empty db_path raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="db_path must be a non-empty"):
+            EncryptedSessionService(
+                db_path="",
+                backend=fernet_backend,
+                backend_id=BACKEND_FERNET,
+            )
+
+    def test_non_string_db_path_raises_configuration_error(
+        self, fernet_backend: FernetBackend
+    ) -> None:
+        """Non-string db_path raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="db_path must be a non-empty"):
+            EncryptedSessionService(
+                db_path=123,  # type: ignore[arg-type]
+                backend=fernet_backend,
+                backend_id=BACKEND_FERNET,
+            )
+
+    def test_valid_construction_does_not_raise(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Valid parameters do not raise any error."""
+        service = EncryptedSessionService(
+            db_path=db_path,
+            backend=fernet_backend,
+            backend_id=BACKEND_FERNET,
+        )
+        assert service is not None
+
+    def test_error_message_includes_backend_type_name(self, db_path: str) -> None:
+        """Error message includes the type name of invalid backend."""
+        with pytest.raises(ConfigurationError) as exc_info:
+            EncryptedSessionService(
+                db_path=db_path,
+                backend="not-a-backend",  # type: ignore[arg-type]
+                backend_id=BACKEND_FERNET,
+            )
+        assert "str" in str(exc_info.value)
+
+    def test_error_message_does_not_contain_key_material(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Error messages never include encryption key values."""
+        # Invalid backend_id — should show type, not any key info
+        with pytest.raises(ConfigurationError) as exc_info:
+            EncryptedSessionService(
+                db_path=db_path,
+                backend=fernet_backend,
+                backend_id="secret",  # type: ignore[arg-type]
+            )
+        assert "secret" not in str(exc_info.value)
+
 
 # =============================================================================
 # Phase 3: User Story 2 - Create and Retrieve Encrypted Sessions
@@ -672,19 +758,27 @@ class TestEdgeCases:
         assert retrieved is not None
         assert retrieved.state == {}
 
-    async def test_database_connection_errors_propagate(
+    async def test_database_connection_errors_raise_configuration_error(
         self, fernet_backend: FernetBackend
     ) -> None:
-        """T054: Database connection errors propagate as aiosqlite exceptions."""
-        # Use an invalid path that will fail
+        """T054: Database connection errors raise ConfigurationError with enriched message."""
+        bad_path = "/nonexistent/path/to/db.sqlite"
         service = EncryptedSessionService(
-            db_path="/nonexistent/path/to/db.sqlite",
+            db_path=bad_path,
             backend=fernet_backend,
             backend_id=BACKEND_FERNET,
         )
 
-        with pytest.raises(Exception):  # aiosqlite.OperationalError
+        with pytest.raises(ConfigurationError, match=bad_path) as exc_info:
             await service._init_db()
+
+        error_msg = str(exc_info.value)
+        # Should include the db path
+        assert bad_path in error_msg
+        # Should include remediation hint
+        assert "writable" in error_msg.lower() or "exists" in error_msg.lower()
+        # Should chain the original exception
+        assert exc_info.value.__cause__ is not None
 
     async def test_large_state_objects(
         self, encrypted_service: EncryptedSessionService
