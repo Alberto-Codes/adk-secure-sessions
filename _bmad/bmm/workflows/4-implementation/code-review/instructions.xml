@@ -12,7 +12,7 @@
   <critical>Read EVERY file in the File List - verify implementation against story requirements</critical>
   <critical>Tasks marked complete but not done = CRITICAL finding</critical>
   <critical>Acceptance Criteria not implemented = HIGH severity finding</critical>
-  <critical>Do not review files that are not part of the application's source code. Always exclude the _bmad/ and _bmad-output/ folders from the review. Always exclude IDE and CLI configuration folders like .cursor/ and .windsurf/ and .claude/</critical>
+  <critical>Exclude BMAD workflow files (_bmad/, _bmad-output/) and IDE/CLI configuration folders (.cursor/, .windsurf/, .claude/) from the review. DO review all project documentation (README, SECURITY.md, CHANGELOG, docs/) and all docstrings in source files — these are in-scope for code review and claims verification.</critical>
 
 
   <step n="1" goal="Load story and discover changes">
