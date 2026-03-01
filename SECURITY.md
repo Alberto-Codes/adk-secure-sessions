@@ -52,7 +52,7 @@ primitives are implemented.
 **Current encryption scheme:**
 
 - **Algorithm**: Fernet (AES-128-CBC + HMAC-SHA256)
-- **Key derivation**: PBKDF2 (handled by the `cryptography` library)
+- **Key derivation**: PBKDF2-HMAC-SHA256
 - **Envelope format**: Self-describing binary header (`[version][backend_id][ciphertext]`)
   for key rotation and audit support
 

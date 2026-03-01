@@ -1,6 +1,6 @@
 # Story 1.8: SECURITY.md
 
-Status: review
+Status: done
 Branch: feat/docs-1-8-security-md
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/63
 
@@ -203,21 +203,25 @@ This story follows a series of dependency bumps after Story 1.7. No code conflic
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) + Party Mode consensus
+- **Outcome:** Approved with 1 fix applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | PBKDF2 attribution: SECURITY.md said "handled by the `cryptography` library" but code uses `hashlib.pbkdf2_hmac` (stdlib) | Fixed — changed to "PBKDF2-HMAC-SHA256" (no library attribution) |
+| M2 | MEDIUM | uv.lock regeneration bundled with docs commit (project convention separates dep changes) | Accepted — commit body documents it, low blast radius for pre-release project |
+| L1 | LOW | `:white_check_mark:` GitHub-specific emoji shortcode | Accepted — GitHub is the primary audience (AC #6) |
+| L2 | LOW | Fixed-salt PBKDF2 limitation not in SECURITY.md Scope section | Accepted — covered by fernet.py docstring + Scope's "key management is deployer responsibility" |
+| L3 | LOW | Compliance Note names specific frameworks (HIPAA, SOC 2, PCI-DSS) | Accepted — naming without claiming compliance is a trust signal for keyword-searching reviewers |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved (none found)
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (167 passed)
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -227,6 +231,7 @@ This story follows a series of dependency bumps after Story 1.7. No code conflic
 | 2026-03-01 | Party mode review (round 1): 6 findings (0 HIGH, 2 MEDIUM, 4 LOW). Resolved: LICENSE marked as bonus scope, GitHub private vuln reporting chosen over email, copyright year corrected to 2026, pre-release noted in Supported Versions, AC #5 verification reframed. |
 | 2026-03-01 | Party mode review (rounds 2-3): 9 consensus items. Removed Phase 3 roadmap from Crypto section, reworded AC #2 (no email), reframed Task 1.7 as post-merge check, added choosealicense.com LICENSE convention note, moved GitHub settings to manual prerequisites, added `cryptography` version guardrail. Research: pyca/cryptography has no SECURITY.md, PyJWT uses hybrid approach, choosealicense.com convention confirmed for non-ASF projects. |
 | 2026-03-01 | Dev implementation complete. Created SECURITY.md (5 sections: Supported Versions, Reporting, Response Timeline, Cryptographic Approach, Scope) and LICENSE (Apache-2.0, choosealicense.com convention). Fixed pre-existing uv.lock corruption from griffe 2.0.0 bump. All 7 pre-commit hooks pass, 167 tests at 99.68% coverage. |
+| 2026-03-01 | Code review: 5 findings (0 HIGH, 2 MEDIUM, 3 LOW). Party mode consensus: 1 fix (M1 — PBKDF2 attribution corrected in SECURITY.md:55), 4 accepted. |
 
 ## Dev Agent Record
 
