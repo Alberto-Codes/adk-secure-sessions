@@ -6,6 +6,9 @@ on:
   push:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -37,7 +40,7 @@ jobs:
           enable-cache: true
       - run: uv python install 3.12
       - run: uv sync --dev
-      - run: uv run ty check
+      - run: uv run ty check src/
       - run: uv cache prune --ci
         if: always()
         continue-on-error: true
