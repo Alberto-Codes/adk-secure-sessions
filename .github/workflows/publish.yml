@@ -105,7 +105,7 @@ jobs:
           path: dist/
 
       - name: Publish to TestPyPI
-        run: uv publish --trusted-publishing always
+        run: uv publish --trusted-publishing always --check-url https://test.pypi.org/simple/
         env:
           UV_PUBLISH_URL: "https://test.pypi.org/legacy/"
 
@@ -128,6 +128,9 @@ jobs:
       - name: Wait for TestPyPI index
         run: sleep 30
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install from TestPyPI
         run: |
           uv pip install \
@@ -136,7 +139,7 @@ jobs:
             "adk-secure-sessions==${{ steps.version.outputs.version }}"
 
       - name: Verify import
-        run: uv run python -c "from adk_secure_sessions import EncryptedSessionService, FernetBackend; print('Smoke test passed')"
+        run: uv run --no-project python -c "from adk_secure_sessions import EncryptedSessionService, FernetBackend; print('Smoke test passed')"
 
   # ---------------------------------------------------------------------------
   # Publish to PyPI — production release.
