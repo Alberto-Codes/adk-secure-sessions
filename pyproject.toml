@@ -115,6 +115,11 @@ filterwarnings = [
     # loop, raising RuntimeError("Event loop is closed"). This is an inherent race
     # in aiosqlite's architecture (no thread.join() in close()), not a test defect.
     "ignore:Exception in thread.*_connection_worker_thread.*:pytest.PytestUnhandledThreadExceptionWarning",
+    # google-adk RunConfig accesses a deprecated pydantic field
+    # (save_input_blobs_as_artifacts) internally — upstream issue, not our defect.
+    # google-adk RunConfig.save_input_blobs_as_artifacts deprecated pydantic field;
+    # narrowed to google.adk.runners to surface deprecations from other ADK submodules.
+    "ignore:deprecated:DeprecationWarning:google\\.adk\\.runners",
 ]
 
 [dependency-groups]
