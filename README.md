@@ -9,7 +9,7 @@
 
 The compliance gateway for [Google ADK](https://github.com/google/adk-python) — add encrypted sessions in 5 minutes.
 
-ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is a drop-in `BaseSessionService` that encrypts state and conversation history at rest, so you can pass the audit without changing your agent code.
+ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is a drop-in replacement for `DatabaseSessionService` that encrypts state and conversation history at rest, so you can pass the audit without changing your agent code.
 
 ## Install
 

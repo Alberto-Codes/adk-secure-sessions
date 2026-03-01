@@ -1,6 +1,6 @@
 # Story 1.9: README Rewrite
 
-Status: review
+Status: done
 Branch: docs/readme-1-9-rewrite
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/65
 
@@ -233,21 +233,24 @@ This story follows a documentation story (1.8). No code conflicts expected. Conv
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) — 2026-03-01
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | HIGH | README claims "3 runtime deps" but pyproject.toml listed 4 (sqlalchemy). Task 1.3 verification incomplete. | Fixed — removed unused `sqlalchemy` from pyproject.toml (transitive via google-adk). README "3 deps" now accurate. |
+| 2 | MEDIUM | README says "drop-in `BaseSessionService`" — inconsistent with codebase ("drop-in replacement for `DatabaseSessionService`"). | Fixed — updated README line 12 to match codebase convention. |
+| 3 | LOW | `sqlalchemy` declared as direct dep but never imported in src/. | Fixed — bundled with Finding 1. |
+| 4 | LOW | Static coverage badge will drift. | No action — known limitation, no Codecov configured. |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (167 passed)
+- [x] Quality gates re-verified (ruff check clean)
 
 ## Change Log
 
@@ -256,6 +259,7 @@ This story follows a documentation story (1.8). No code conflicts expected. Conv
 | 2026-03-01 | Story created by create-story workflow |
 | 2026-03-01 | Party mode review (full roster): 8 consensus items applied. (1) Added 3 candidate taglines for dev agent. (2) Badge strategy: include all markdown now, CI+license work today, PyPI badges auto-resolve on publish, fixed ci.yml filename. (3) Keep "What Gets Encrypted" table after quick-start. (4) Docs link: GitHub docs/ tree as interim, HTML comment for future MkDocs URL. (5) Branch renamed to docs/readme-1-9-rewrite. (6) Clarified 5-line limit applies to "after" block only; fixed BACKEND_FERNET guardrail (required, no default). (7) Embedded verified constructor signature; added import validation subtask. (8) Added concrete dependency list task (3 runtime deps near install section). |
 | 2026-03-01 | Dev implementation complete. README rewritten from 142 lines to 60 lines. Compliance gateway positioning, 5 badges, before/after quick-start (4-line "after" block), "What Gets Encrypted" table preserved, links to GitHub docs/ tree. Imports verified. No coverage upload service found — used static badge. All 7 pre-commit hooks pass, 167 tests at 99.68% coverage. |
+| 2026-03-01 | Code review (adversarial): 4 findings (1 HIGH, 1 MEDIUM, 2 LOW). Party mode consensus: removed unused `sqlalchemy` from pyproject.toml (transitive via google-adk), fixed README description to say "drop-in replacement for DatabaseSessionService" matching codebase convention. 167 tests pass, ruff clean. |
 
 ## Dev Agent Record
 
@@ -281,3 +285,4 @@ Claude Opus 4.6
 ### File List
 
 - `README.md` — **REWRITTEN** — Compliance gateway positioning, badges, 60-line simplified structure with before/after quick-start
+- `pyproject.toml` — **MODIFIED** — Removed unused `sqlalchemy>=2.0.0` direct dependency (transitive via google-adk) — code review fix
