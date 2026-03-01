@@ -32,7 +32,7 @@ This project follows standard open-source community guidelines. Be respectful, c
    ```bash
    git clone https://github.com/Alberto-Codes/adk-secure-sessions.git
    cd adk-secure-sessions
-   git checkout develop
+   git checkout main
    ```
 
 2. **Install dependencies with uv**:
@@ -108,10 +108,10 @@ Use descriptive branch names:
 
 ### Making Changes
 
-1. Create a new branch from `develop`:
+1. Create a new branch from `main`:
    ```bash
-   git checkout develop
-   git pull origin develop
+   git checkout main
+   git pull origin main
    git checkout -b feat/your-feature-name
    ```
 
@@ -129,7 +129,7 @@ Use descriptive branch names:
 
 4. Commit with conventional commit messages (see [Commit Messages](#commit-messages)).
 
-5. Push and create a pull request targeting `develop`.
+5. Push and create a pull request targeting `main`.
 
 ## Code Style
 

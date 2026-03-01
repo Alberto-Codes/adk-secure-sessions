@@ -15,10 +15,10 @@
 ## Setup
 
 ```bash
-# Clone and checkout develop branch
+# Clone and checkout main branch
 git clone https://github.com/Alberto-Codes/adk-secure-sessions.git
 cd adk-secure-sessions
-git checkout develop
+git checkout main
 
 # Install all dependencies (runtime + dev)
 uv sync --dev
@@ -66,7 +66,7 @@ Install with: `pre-commit install`
 
 ### Tests Workflow (`.github/workflows/tests.yml`)
 
-- **Trigger**: Push to `main`/`develop`, PRs to `main`/`develop`
+- **Trigger**: Push to `main`, PRs to `main`
 - **Matrix**: Python 3.12 x ADK versions (1.22.0, latest)
 - **Steps**: Lint, format check, type check, tests with 90% coverage minimum
 
@@ -77,7 +77,7 @@ Install with: `pre-commit install`
 
 ### Release Please (`.github/workflows/release-please.yml`)
 
-- **Trigger**: Push to `develop`
+- **Trigger**: Push to `main`
 - **Steps**: Automated release PR creation via release-please
 
 ## Code Style
@@ -92,10 +92,10 @@ Install with: `pre-commit install`
 
 ## Branch Workflow
 
-- **Base branch**: `develop` (not `main`)
+- **Base branch**: `main`
 - **Branch naming**: `feat/`, `fix/`, `docs/`, `refactor/`, `test/`
 - **Commit style**: Conventional commits (`type(scope): description`)
-- **PRs**: Always draft (`--draft`), target `develop`, follow PR template
+- **PRs**: Always draft (`--draft`), target `main`, follow PR template
 
 ## SonarQube Integration
 

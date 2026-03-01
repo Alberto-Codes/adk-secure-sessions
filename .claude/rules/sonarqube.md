@@ -19,9 +19,9 @@ This project has a SonarQube Community Edition instance on the local LAN, connec
 
 ## Scanning (Manual)
 
-Community Edition has no branch analysis and no automatic scan triggers. Scans must be run manually after merging to develop (or main once trunk-based migration happens).
+Community Edition has no branch analysis and no automatic scan triggers. Scans must be run manually after merging to main.
 
-**Scan command** (run from project root on develop branch):
+**Scan command** (run from project root on main branch):
 
 ```bash
 # Optional: generate coverage report first
@@ -44,7 +44,7 @@ The scanner reads `sonar-project.properties` from the project root. **Do NOT add
 - After completing code changes, use `analyze_code_snippet` to check modified files for issues
 - Use `search_sonar_issues_in_projects` with `projects: ["adk-secure-sessions"]` to review open issues
 - Use `get_project_quality_gate_status` with `projectKey: "adk-secure-sessions"` to check gate status
-- After a PR merges to develop, offer to run a scan if the user is on-LAN
+- After a PR merges to main, offer to run a scan if the user is on-LAN
 
 ## Known Issue Patterns
 
