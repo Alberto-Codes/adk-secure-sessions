@@ -861,3 +861,221 @@ class TestStateDeltaEdgeCases:
         assert service._connection is not None
 
         await service.close()
+
+
+# =============================================================================
+# Schema Reservation Tests (Story 1.2)
+# =============================================================================
+
+
+class TestSchemaVersionColumn:
+    """Tests for version column reservation on state tables.
+
+    Verifies Architecture Decision 1: reserve ``version INTEGER DEFAULT 1``
+    on ``sessions``, ``app_states``, and ``user_states`` tables. The
+    ``events`` table is excluded (append-only). Column is inert in Phase 2.
+    """
+
+    @pytest.mark.parametrize(
+        "table_name",
+        ["sessions", "app_states", "user_states"],
+        ids=["sessions", "app_states", "user_states"],
+    )
+    async def test_version_column_exists_with_correct_default(
+        self, encrypted_service: EncryptedSessionService, table_name: str
+    ) -> None:
+        """T060: State tables have version column with INTEGER DEFAULT 1."""
+        conn = encrypted_service._connection
+        assert conn is not None
+
+        # PRAGMA does not support parameterized queries in SQLite
+        cursor = await conn.execute(f"PRAGMA table_info({table_name})")  # noqa: S608
+        columns = await cursor.fetchall()
+
+        # Find version column: (cid, name, type, notnull, dflt_value, pk)
+        version_cols = [col for col in columns if col[1] == "version"]
+        assert len(version_cols) == 1, f"Expected 1 version column in {table_name}"
+
+        version_col = version_cols[0]
+        assert version_col[2] == "INTEGER", f"Expected INTEGER type in {table_name}"
+        assert version_col[3] == 0, f"version should not be NOT NULL in {table_name}"
+        assert version_col[4] == "1", f"Expected DEFAULT 1 in {table_name}"
+        assert version_col[5] == 0, (
+            f"version should not be a PRIMARY KEY in {table_name}"
+        )
+
+    async def test_events_table_has_no_version_column(
+        self,
+        encrypted_service: EncryptedSessionService,
+    ) -> None:
+        """T061: Events table does NOT have a version column (append-only)."""
+        conn = encrypted_service._connection
+        assert conn is not None
+
+        cursor = await conn.execute("PRAGMA table_info(events)")
+        columns = await cursor.fetchall()
+
+        column_names = [col[1] for col in columns]
+        assert "version" not in column_names
+
+    @pytest.mark.parametrize(
+        "table_name",
+        ["sessions", "app_states", "user_states"],
+        ids=["sessions", "app_states", "user_states"],
+    )
+    async def test_version_defaults_to_one_on_insert(
+        self, encrypted_service: EncryptedSessionService, table_name: str
+    ) -> None:
+        """T062: Rows inserted via service have version=1 by DEFAULT."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        # Insert data through the service to populate all tables
+        session = await encrypted_service.create_session(
+            app_name="test-app",
+            user_id="user-1",
+            state={"key": "value"},
+        )
+        event = Event(
+            id="evt-1",
+            author="agent",
+            invocation_id="inv-1",
+            actions=EventActions(
+                state_delta={
+                    "app:shared": "val",
+                    "user:pref": "val",
+                }
+            ),
+        )
+        await encrypted_service.append_event(session, event)
+
+        # Read version column directly from the table
+        conn = encrypted_service._connection
+        assert conn is not None
+
+        # PRAGMA does not support parameterized queries in SQLite
+        cursor = await conn.execute(f"SELECT version FROM {table_name}")  # noqa: S608
+        rows = await cursor.fetchall()
+        assert len(rows) >= 1, f"Expected at least 1 row in {table_name}"
+        for row in rows:
+            assert row[0] == 1, f"Expected version=1 in {table_name}, got {row[0]}"
+
+
+# =============================================================================
+# Coverage Expansion Tests (TEA Automate)
+# =============================================================================
+
+
+class TestEmptyResults:
+    """Tests for empty result edge cases."""
+
+    async def test_list_sessions_returns_empty_when_no_sessions_exist(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """[P2] list_sessions returns empty response for app with no sessions."""
+        result = await encrypted_service.list_sessions(app_name="nonexistent-app")
+
+        assert len(result.sessions) == 0
+
+    async def test_list_sessions_returns_empty_for_nonexistent_user(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """[P2] list_sessions returns empty when user_id has no sessions."""
+        await encrypted_service.create_session(app_name="test-app", user_id="user-1")
+
+        result = await encrypted_service.list_sessions(
+            app_name="test-app", user_id="nonexistent-user"
+        )
+        assert len(result.sessions) == 0
+
+
+class TestMixedStateDelta:
+    """Tests for mixed state delta handling in a single event."""
+
+    async def test_single_event_with_all_delta_types(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """[P2] Single event with app: + user: + session + temp: keys."""
+        from google.adk.events.event import Event
+        from google.adk.events.event_actions import EventActions
+
+        session = await encrypted_service.create_session(
+            app_name="test-app",
+            user_id="user-1",
+            state={"existing": "original"},
+        )
+
+        event = Event(
+            id="mixed-event",
+            author="agent",
+            invocation_id="inv-1",
+            actions=EventActions(
+                state_delta={
+                    "app:global_setting": "enabled",
+                    "user:preference": "dark",
+                    "session_key": "session_value",
+                    "temp:scratch": "discarded",
+                }
+            ),
+        )
+        await encrypted_service.append_event(session, event)
+
+        # Verify app state
+        app_state = await encrypted_service._get_app_state("test-app")
+        assert app_state.get("global_setting") == "enabled"
+
+        # Verify user state
+        user_state = await encrypted_service._get_user_state("test-app", "user-1")
+        assert user_state.get("preference") == "dark"
+
+        # Verify session state (includes merged app + user + session)
+        retrieved = await encrypted_service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id=session.id,
+        )
+        assert retrieved is not None
+        assert retrieved.state.get("session_key") == "session_value"
+        assert retrieved.state.get("existing") == "original"
+        # Temp keys must not be in any state
+        assert "temp:scratch" not in retrieved.state
+        assert "scratch" not in retrieved.state
+
+
+class TestTimestampFilterBoundary:
+    """Tests for timestamp filter boundary behavior."""
+
+    async def test_after_timestamp_is_exclusive(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """[P2] after_timestamp filter excludes events AT the exact timestamp."""
+        from google.adk.events.event import Event
+        from google.adk.sessions.base_session_service import GetSessionConfig
+
+        session = await encrypted_service.create_session(
+            app_name="test-app", user_id="user-1"
+        )
+
+        # Add events with precise timestamps
+        timestamps = [100.0, 200.0, 300.0]
+        for i, ts in enumerate(timestamps):
+            event = Event(
+                id=f"event-{i}",
+                author="user",
+                invocation_id="inv-1",
+                timestamp=ts,
+            )
+            await encrypted_service.append_event(session, event)
+
+        # Filter after_timestamp=200.0 — should exclude event AT 200.0
+        config = GetSessionConfig(after_timestamp=200.0)
+        result = await encrypted_service.get_session(
+            app_name="test-app",
+            user_id="user-1",
+            session_id=session.id,
+            config=config,
+        )
+
+        assert result is not None
+        assert len(result.events) == 1
+        assert result.events[0].id == "event-2"
