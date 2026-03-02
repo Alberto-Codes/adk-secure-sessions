@@ -147,8 +147,8 @@ nav:
       - Full Module Index: reference/adk_secure_sessions/index.md
   - Architecture:
       - Overview: ARCHITECTURE.md
-      # Story 2.3 adds: - Envelope Protocol: envelope-protocol.md
-      # Story 2.3 adds: - Algorithm Documentation: algorithms.md
+      - Envelope Protocol: envelope-protocol.md
+      - Algorithm Documentation: algorithms.md
       - Decisions:
           - adr/index.md
           - Direct Implementation: adr/ADR-000-strategy-decorator-architecture.md
