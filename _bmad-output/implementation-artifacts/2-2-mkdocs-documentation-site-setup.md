@@ -161,16 +161,14 @@ YAML comments are stripped at build time — they serve only as dev guidance and
 
 ### Excluding Non-Nav Pages
 
-Pages that exist in `docs/` but must NOT be in the nav need to be excluded from strict-mode warnings. Add this to `mkdocs.yml`:
+Pages that exist in `docs/` but must NOT be in the nav need to be excluded from strict-mode warnings. Add this as a **top-level** key in `mkdocs.yml` (MkDocs 1.6+ syntax):
 
 ```yaml
-validation:
-  nav:
-    not_in_nav: |
-      project-overview.md
-      source-tree-analysis.md
-      reference/SUMMARY.md
-      reference/**/*.md
+not_in_nav: |
+  project-overview.md
+  source-tree-analysis.md
+  reference/SUMMARY.md
+  reference/**/*.md
 ```
 
 - `project-overview.md`, `source-tree-analysis.md` — BMAD-generated internal artifacts, not user-facing
