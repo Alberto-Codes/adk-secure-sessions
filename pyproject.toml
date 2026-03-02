@@ -92,15 +92,6 @@ quote-style = "double"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
-[tool.interrogate]
-verbose = 1
-fail-under = 95
-ignore-init-method = true
-ignore-init-module = true
-ignore-magic = true
-ignore-private = true
-exclude = ["tests", "scripts"]
-
 [tool.pytest.ini_options]
 markers = [
     "unit: Unit tests - fast, isolated",
@@ -135,7 +126,6 @@ dev = [
     "pytest-timeout>=2.4.0",
     "ruff>=0.13.0",
     "ty>=0.0.1a20",
-    "interrogate>=1.7.0",
     "google-adk>=1.23.0",
     "griffe>=1.15.0",
     "mkdocs-gen-files>=0.6.0",
