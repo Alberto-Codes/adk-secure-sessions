@@ -22,20 +22,20 @@ Attributes:
     ENVELOPE_VERSION_1: Current envelope format version byte.
 
 Examples:
-    Encrypt and decrypt session state::
+    Encrypt and decrypt session state:
 
-        from adk_secure_sessions import (
-            FernetBackend,
-            encrypt_session,
-            decrypt_session,
-            BACKEND_FERNET,
-        )
+    ```python
+    from adk_secure_sessions import (
+        FernetBackend,
+        encrypt_session,
+        decrypt_session,
+        BACKEND_FERNET,
+    )
 
-        backend = FernetBackend("my-secret-passphrase")
-        envelope = await encrypt_session(
-            {"ssn": "123-45-6789"}, backend, BACKEND_FERNET
-        )
-        state = await decrypt_session(envelope, backend)
+    backend = FernetBackend("my-secret-passphrase")
+    envelope = await encrypt_session({"ssn": "123-45-6789"}, backend, BACKEND_FERNET)
+    state = await decrypt_session(envelope, backend)
+    ```
 
 See Also:
     [`adk_secure_sessions.protocols`][adk_secure_sessions.protocols]:

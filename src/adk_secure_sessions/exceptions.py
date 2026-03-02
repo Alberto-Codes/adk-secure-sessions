@@ -5,23 +5,31 @@ broad exception handling while keeping specific failure modes
 distinguishable in control flow.
 
 Examples:
-    Catch all library errors::
+    Catch all library errors:
 
-        from adk_secure_sessions.exceptions import SecureSessionError
+    ```python
+    from adk_secure_sessions.exceptions import SecureSessionError
 
-        try:
-            await backend.decrypt(ciphertext)
-        except SecureSessionError:
-            ...
+    try:
+        await backend.decrypt(ciphertext)
+    except SecureSessionError:
+        ...
+    ```
 
-    Catch only decryption failures::
+    Catch only decryption failures:
 
-        from adk_secure_sessions.exceptions import DecryptionError
+    ```python
+    from adk_secure_sessions.exceptions import DecryptionError
 
-        try:
-            await backend.decrypt(ciphertext)
-        except DecryptionError:
-            ...
+    try:
+        await backend.decrypt(ciphertext)
+    except DecryptionError:
+        ...
+    ```
+
+See Also:
+    [`adk_secure_sessions.protocols`][adk_secure_sessions.protocols]:
+    Encryption backend protocol definition.
 """
 
 

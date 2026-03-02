@@ -6,8 +6,10 @@ operating on raw bytes. No inheritance or registration is required;
 any class with matching method signatures conforms via structural
 subtyping (PEP 544).
 
-Typical usage::
+Examples:
+    Define a conforming backend and verify at runtime:
 
+    ```python
     class MyBackend:
         async def encrypt(self, plaintext: bytes) -> bytes: ...
         async def decrypt(self, ciphertext: bytes) -> bytes: ...
@@ -16,6 +18,11 @@ Typical usage::
     from adk_secure_sessions.protocols import EncryptionBackend
 
     assert isinstance(MyBackend(), EncryptionBackend)  # True
+    ```
+
+See Also:
+    [`adk_secure_sessions.backends.fernet`][adk_secure_sessions.backends.fernet]:
+    Reference implementation using Fernet symmetric encryption.
 """
 
 from __future__ import annotations
@@ -47,17 +54,19 @@ class EncryptionBackend(Protocol):
       async context.
 
     Examples:
-        Define a minimal conforming backend::
+        Define a minimal conforming backend:
 
-            class MyBackend:
-                async def encrypt(self, plaintext: bytes) -> bytes:
-                    return plaintext  # replace with real encryption
+        ```python
+        class MyBackend:
+            async def encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext  # replace with real encryption
 
-                async def decrypt(self, ciphertext: bytes) -> bytes:
-                    return ciphertext  # replace with real decryption
+            async def decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext  # replace with real decryption
 
 
-            assert isinstance(MyBackend(), EncryptionBackend)
+        assert isinstance(MyBackend(), EncryptionBackend)
+        ```
     """
 
     async def encrypt(self, plaintext: bytes) -> bytes:
