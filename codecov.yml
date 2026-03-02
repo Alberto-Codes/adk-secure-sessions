@@ -1,0 +1,22 @@
+# Codecov configuration for adk-secure-sessions
+# See: https://docs.codecov.com/docs/codecovyml-reference
+
+codecov:
+  require_ci_to_pass: true
+  notify:
+    after_n_builds: 1  # Only 1 matrix cell uploads coverage (3.12/latest)
+
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+        threshold: 0%
+    patch:
+      default:
+        target: 85%
+
+comment:
+  layout: "reach,diff,files"
+  behavior: default
+  require_changes: true
