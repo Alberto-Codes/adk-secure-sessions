@@ -15,13 +15,18 @@ input is derived into a valid Fernet key via PBKDF2-HMAC-SHA256.
     keys via `cryptography.fernet.Fernet.generate_key()`.
 
 Examples:
-    Basic usage::
+    Basic usage:
 
-        from adk_secure_sessions.backends.fernet import FernetBackend
+    ```python
+    from adk_secure_sessions.backends.fernet import FernetBackend
 
-        backend = FernetBackend(key="my-secret-passphrase")
-        ciphertext = await backend.encrypt(b"hello")
-        plaintext = await backend.decrypt(ciphertext)
+    backend = FernetBackend(key="my-secret-passphrase")
+    ciphertext = await backend.encrypt(b"hello")
+    plaintext = await backend.decrypt(ciphertext)
+    ```
+
+See Also:
+    [`adk_secure_sessions.protocols`][]: EncryptionBackend protocol definition.
 """
 
 from __future__ import annotations
@@ -50,16 +55,20 @@ class FernetBackend:
             operations.
 
     Examples:
-        Initialize with a passphrase::
+        Initialize with a passphrase:
 
-            backend = FernetBackend(key="my-secret")
+        ```python
+        backend = FernetBackend(key="my-secret")
+        ```
 
-        Initialize with a pre-generated Fernet key::
+        Initialize with a pre-generated Fernet key:
 
-            from cryptography.fernet import Fernet
+        ```python
+        from cryptography.fernet import Fernet
 
-            key = Fernet.generate_key()
-            backend = FernetBackend(key=key)
+        key = Fernet.generate_key()
+        backend = FernetBackend(key=key)
+        ```
     """
 
     def __init__(self, key: str | bytes) -> None:

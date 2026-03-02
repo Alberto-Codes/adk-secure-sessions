@@ -9,16 +9,22 @@ The layer is stateless — four async module-level functions, no classes.
 The encryption backend is passed per call.
 
 Examples:
-    Encrypt and decrypt a session state dictionary::
+    Encrypt and decrypt a session state dictionary:
 
-        from adk_secure_sessions.serialization import (
-            encrypt_session,
-            decrypt_session,
-            BACKEND_FERNET,
-        )
+    ```python
+    from adk_secure_sessions.serialization import (
+        encrypt_session,
+        decrypt_session,
+        BACKEND_FERNET,
+    )
 
-        envelope = await encrypt_session(state, backend, BACKEND_FERNET)
-        restored = await decrypt_session(envelope, backend)
+    envelope = await encrypt_session(state, backend, BACKEND_FERNET)
+    restored = await decrypt_session(envelope, backend)
+    ```
+
+See Also:
+    [`adk_secure_sessions.protocols`][adk_secure_sessions.protocols]:
+    Encryption backend protocol that backends must conform to.
 """
 
 from __future__ import annotations
