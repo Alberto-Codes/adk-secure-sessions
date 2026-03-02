@@ -6,10 +6,10 @@ classes, functions, and interfaces.
 
 ## Quick Guidance
 
-- Use **Examples** (plural) for code samples with fenced code blocks (` ```python `).
+- Use **Examples** (plural) for code samples with fenced code blocks (`` ```python ``).
 - Use **Example** (singular) only for admonition-style callouts.
 - All `Examples:` and `Typical usage:` sections use **fenced code blocks**
-  (` ```python `). No `::` directive, no `>>>` doctest. Fenced blocks render with
+  (`` ```python ``). No `::` directive, no `>>>` doctest. Fenced blocks render with
   syntax highlighting and a copy button in mkdocs-material.
 - Include types in **Attributes** (e.g., `name (str): Description`) since types
   aren't visible from class/module-level attributes like they are in function Args.
@@ -243,7 +243,7 @@ class EncryptionMetadata:
 | `Raises` | Exceptions raised | |
 | `Warns` | Warnings emitted | `Warnings` |
 | `Attributes` | Module/class attributes | |
-| `Examples` | Fenced code block examples (prefer ` ```python `) | |
+| `Examples` | Fenced code block examples (prefer `` ```python ``) | |
 | `See Also` | Related APIs | |
 | `Note` | Brief admonitions | |
 | `Warning` | Important warnings | |

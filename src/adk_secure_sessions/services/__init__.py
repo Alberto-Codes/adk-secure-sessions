@@ -9,7 +9,7 @@ Attributes:
         ``DatabaseSessionService`` with transparent encryption.
 
 Examples:
-    Import and instantiate the encrypted service:
+    Import the encrypted service:
 
     ```python
     from adk_secure_sessions.services import EncryptedSessionService

@@ -57,6 +57,9 @@ class EncryptionBackend(Protocol):
         Define a minimal conforming backend:
 
         ```python
+        from adk_secure_sessions.protocols import EncryptionBackend
+
+
         class MyBackend:
             async def encrypt(self, plaintext: bytes) -> bytes:
                 return plaintext  # replace with real encryption

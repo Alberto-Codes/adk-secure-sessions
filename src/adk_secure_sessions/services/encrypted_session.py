@@ -123,9 +123,9 @@ class EncryptedSessionService(BaseSessionService):
     event data. Drop-in replacement for ADK's ``DatabaseSessionService``.
 
     Attributes:
-        db_path (str): Path to the SQLite database file.
-        backend (EncryptionBackend): Encryption backend conforming to EncryptionBackend protocol.
-        backend_id (int): Integer identifier for the backend (for envelope format).
+        db_path (str): Path to the SQLite database file (read-only after init).
+        backend (EncryptionBackend): Encryption backend instance (read-only after init).
+        backend_id (int): Integer backend identifier for the envelope format (read-only after init).
 
     Examples:
         Basic usage with FernetBackend:
