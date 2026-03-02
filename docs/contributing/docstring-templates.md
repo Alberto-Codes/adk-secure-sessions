@@ -8,8 +8,9 @@ classes, functions, and interfaces.
 
 - Use **Examples** (plural) for code samples with fenced code blocks (` ```python `).
 - Use **Example** (singular) only for admonition-style callouts.
-- **Prefer fenced code blocks** over doctest format (`>>>`) - they copy cleanly
-  without prompt characters and render better in mkdocs-material.
+- All `Examples:` and `Typical usage:` sections use **fenced code blocks**
+  (` ```python `). No `::` directive, no `>>>` doctest. Fenced blocks render with
+  syntax highlighting and a copy button in mkdocs-material.
 - Include types in **Attributes** (e.g., `name (str): Description`) since types
   aren't visible from class/module-level attributes like they are in function Args.
 - Use `Note:` and `Warning:` sections for short admonitions.
@@ -39,7 +40,7 @@ Examples:
     ```
 
 See Also:
-    - [`adk_secure_sessions.services`][adk_secure_sessions.services]: Session service implementations.
+    - [`adk_secure_sessions.services`][]: Session service implementations.
 """
 ```
 

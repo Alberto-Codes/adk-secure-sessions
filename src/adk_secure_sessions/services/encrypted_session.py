@@ -4,22 +4,28 @@ Provides a drop-in replacement for ADK's ``DatabaseSessionService`` with
 transparent field-level encryption for session state and event data.
 
 Examples:
-    Basic usage with FernetBackend::
+    Basic usage with FernetBackend:
 
-        from adk_secure_sessions import FernetBackend, BACKEND_FERNET
-        from adk_secure_sessions.services import EncryptedSessionService
+    ```python
+    from adk_secure_sessions import FernetBackend, BACKEND_FERNET
+    from adk_secure_sessions.services import EncryptedSessionService
 
-        backend = FernetBackend("my-secret-passphrase")
-        async with EncryptedSessionService(
-            db_path="sessions.db",
-            backend=backend,
-            backend_id=BACKEND_FERNET,
-        ) as service:
-            session = await service.create_session(
-                app_name="my-agent",
-                user_id="user-123",
-                state={"secret": "sensitive-data"},
-            )
+    backend = FernetBackend("my-secret-passphrase")
+    async with EncryptedSessionService(
+        db_path="sessions.db",
+        backend=backend,
+        backend_id=BACKEND_FERNET,
+    ) as service:
+        session = await service.create_session(
+            app_name="my-agent",
+            user_id="user-123",
+            state={"secret": "sensitive-data"},
+        )
+    ```
+
+See Also:
+    [`adk_secure_sessions.backends.fernet`][]: Fernet encryption backend.
+    [`adk_secure_sessions.protocols`][]: EncryptionBackend protocol definition.
 """
 
 from __future__ import annotations
@@ -112,27 +118,29 @@ class EncryptedSessionService(BaseSessionService):
     event data. Drop-in replacement for ADK's ``DatabaseSessionService``.
 
     Attributes:
-        db_path: Path to the SQLite database file.
-        backend: Encryption backend conforming to EncryptionBackend protocol.
-        backend_id: Integer identifier for the backend (for envelope format).
+        db_path (str): Path to the SQLite database file.
+        backend (EncryptionBackend): Encryption backend conforming to EncryptionBackend protocol.
+        backend_id (int): Integer identifier for the backend (for envelope format).
 
     Examples:
-        Basic usage with FernetBackend::
+        Basic usage with FernetBackend:
 
-            from adk_secure_sessions import FernetBackend, BACKEND_FERNET
-            from adk_secure_sessions.services import EncryptedSessionService
+        ```python
+        from adk_secure_sessions import FernetBackend, BACKEND_FERNET
+        from adk_secure_sessions.services import EncryptedSessionService
 
-            backend = FernetBackend("my-secret-passphrase")
-            async with EncryptedSessionService(
-                db_path="sessions.db",
-                backend=backend,
-                backend_id=BACKEND_FERNET,
-            ) as service:
-                session = await service.create_session(
-                    app_name="my-agent",
-                    user_id="user-123",
-                    state={"secret": "sensitive-data"},
-                )
+        backend = FernetBackend("my-secret-passphrase")
+        async with EncryptedSessionService(
+            db_path="sessions.db",
+            backend=backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-123",
+                state={"secret": "sensitive-data"},
+            )
+        ```
     """
 
     def __init__(
@@ -234,6 +242,17 @@ class EncryptedSessionService(BaseSessionService):
             AlreadyExistsError: If a session with the given ID already exists.
             EncryptionError: If state encryption fails.
             SerializationError: If state contains non-JSON-serializable values.
+
+        Examples:
+            Create a session with initial state:
+
+            ```python
+            session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-123",
+                state={"preference": "dark-mode"},
+            )
+            ```
         """
         from google.adk.errors.already_exists_error import AlreadyExistsError
 
@@ -392,6 +411,19 @@ class EncryptedSessionService(BaseSessionService):
         Raises:
             DecryptionError: If state or event decryption fails.
             SerializationError: If decrypted data is not valid JSON.
+
+        Examples:
+            Retrieve a session by ID:
+
+            ```python
+            session = await service.get_session(
+                app_name="my-agent",
+                user_id="user-123",
+                session_id="abc-def-ghi",
+            )
+            if session is None:
+                print("Session not found")
+            ```
         """
         conn = await self._get_connection()
 
@@ -449,6 +481,18 @@ class EncryptedSessionService(BaseSessionService):
 
         Raises:
             DecryptionError: If state decryption fails for any session.
+
+        Examples:
+            List all sessions for a user:
+
+            ```python
+            response = await service.list_sessions(
+                app_name="my-agent",
+                user_id="user-123",
+            )
+            for session in response.sessions:
+                print(session.id)
+            ```
         """
         conn = await self._get_connection()
 
@@ -506,6 +550,17 @@ class EncryptedSessionService(BaseSessionService):
         Note:
             This operation cascades to delete all events for the session.
             No error is raised if the session does not exist.
+
+        Examples:
+            Delete a session by ID:
+
+            ```python
+            await service.delete_session(
+                app_name="my-agent",
+                user_id="user-123",
+                session_id="abc-def-ghi",
+            )
+            ```
         """
         conn = await self._get_connection()
         await conn.execute(
@@ -698,6 +753,19 @@ class EncryptedSessionService(BaseSessionService):
         Note:
             Events with event.partial=True are not persisted to the database.
             The session's in-memory state is updated via the base class methods.
+
+        Examples:
+            Append an event to a session:
+
+            ```python
+            from google.adk.events.event import Event
+
+            event = Event(
+                invocation_id="inv-001",
+                author="agent",
+            )
+            stored_event = await service.append_event(session, event)
+            ```
         """
         # Check for partial event - don't persist
         if event.partial:

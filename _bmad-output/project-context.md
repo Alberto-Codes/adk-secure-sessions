@@ -122,8 +122,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **One-line summary** — max 80 chars, ends with period
 - **Section order** — summary → description → Args → Returns → Raises → Yields → Examples → See Also
 - **Args format** — `name: Description.` (no type in docstring, type hints handle that)
-- **Module docstrings** — three-part structure: overview paragraph, `Typical usage::` block (uses `::` directive), `See Also:` section with cross-reference links
-- **Function/class docstrings** — `Examples:` section uses fenced triple-backtick code blocks (NOT `::` directive). Do NOT mix conventions between module and function/class docstrings.
+- **Module docstrings** — three-part structure: overview paragraph, `Examples:` block with fenced ` ```python ` code blocks, `See Also:` section with cross-reference links
+- **Docstring Examples** — all `Examples:` and `Typical usage:` sections use fenced ` ```python ` blocks at every level (module, class, function). No `::` directive, no `>>>` doctest.
 - **Examples must be runnable code** — griffe validates them; no pseudocode
 - **Cross-references** — markdown links: `` [`module`][full.path] ``
 - **`@property` docstrings** — "The X" not "Returns the X"

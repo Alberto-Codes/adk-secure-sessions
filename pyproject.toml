@@ -92,6 +92,9 @@ quote-style = "double"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
+[tool.docvet]
+fail-on = ["enrichment", "freshness", "coverage", "griffe"]
+
 [tool.pytest.ini_options]
 markers = [
     "unit: Unit tests - fast, isolated",

@@ -58,8 +58,8 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2: Documentation & Compliance Credibility
-  epic-2: backlog
-  2-1-docstring-examples-on-all-public-apis: backlog
+  epic-2: in-progress
+  2-1-docstring-examples-on-all-public-apis: review
   2-2-mkdocs-documentation-site-setup: backlog
   2-3-envelope-protocol-algorithm-specification-pages: backlog
   2-4-published-roadmap-on-documentation-site: backlog
