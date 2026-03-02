@@ -133,20 +133,34 @@ copyright: >
   Copyright &copy; 2026 Alberto-Codes -
   <a href="https://github.com/Alberto-Codes/adk-secure-sessions/blob/HEAD/LICENSE">Apache 2.0 License</a>
 
+not_in_nav: |
+  project-overview.md
+  source-tree-analysis.md
+  reference/SUMMARY.md
+  reference/**/*.md
+
 nav:
   - Home: index.md
+  # Story 2.6 adds: - Getting Started: getting-started.md
   - API Reference:
       - Overview: reference/index.md
       - Full Module Index: reference/adk_secure_sessions/index.md
   - Architecture:
       - Overview: ARCHITECTURE.md
-      - adr/index.md
-      - Direct Implementation: adr/ADR-000-strategy-decorator-architecture.md
-      - Protocol Interfaces: adr/ADR-001-protocol-based-interfaces.md
-      - Async-First: adr/ADR-002-async-first.md
-      - Field-Level Encryption: adr/ADR-003-field-level-encryption.md
-      - ADK Schema Compatibility: adr/ADR-004-adk-schema-compatibility.md
-      - Exception Hierarchy: adr/ADR-005-exception-hierarchy.md
+      # Story 2.3 adds: - Envelope Protocol: envelope-protocol.md
+      # Story 2.3 adds: - Algorithm Documentation: algorithms.md
+      - Decisions:
+          - adr/index.md
+          - Direct Implementation: adr/ADR-000-strategy-decorator-architecture.md
+          - Protocol Interfaces: adr/ADR-001-protocol-based-interfaces.md
+          - Async-First: adr/ADR-002-async-first.md
+          - Field-Level Encryption: adr/ADR-003-field-level-encryption.md
+          - ADK Schema Compatibility: adr/ADR-004-adk-schema-compatibility.md
+          - Exception Hierarchy: adr/ADR-005-exception-hierarchy.md
+          - Configuration Error: adr/ADR-006-configuration-error.md
+  - Roadmap: ROADMAP.md
+  # Story 2.5 adds: - FAQ: faq.md
   - Changelog: changelog.md
   - Contributing:
+      - Development Guide: development-guide.md
       - Docstring Templates: contributing/docstring-templates.md
