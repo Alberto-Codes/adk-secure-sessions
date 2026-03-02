@@ -14,7 +14,6 @@ jobs:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
         with:
@@ -34,7 +33,7 @@ jobs:
       - run: uv sync --locked --dev
 
       - name: Build documentation
-        run: uv run mkdocs build
+        run: uv run mkdocs build --strict
 
       - run: uv cache prune --ci
         if: always()
