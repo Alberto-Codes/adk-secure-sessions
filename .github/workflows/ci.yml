@@ -69,9 +69,13 @@ jobs:
       - name: Upgrade google-adk to latest
         if: matrix.adk-version == 'latest'
         run: uv pip install --upgrade google-adk
-      - run: uv run pytest --tb=short --cov=adk_secure_sessions --cov-report=term-missing --cov-fail-under=90
+      - run: uv run pytest --tb=short --cov=adk_secure_sessions --cov-report=term-missing --cov-report=xml --cov-fail-under=90
         env:
           UV_PYTHON: ${{ matrix.python-version }}
+      - uses: codecov/codecov-action@v5
+        if: matrix.python-version == '3.12' && matrix.adk-version == 'latest'
+        with:
+          fail_ci_if_error: false
       - run: uv cache prune --ci
         if: always()
         continue-on-error: true

@@ -1,9 +1,9 @@
-<!-- PyPI badges activate on first publish (Story 1.11) -->
 [![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/adk-secure-sessions/ci.yml?branch=main&label=tests)](https://github.com/Alberto-Codes/adk-secure-sessions/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/Alberto-Codes/adk-secure-sessions)](LICENSE)
+[![License](https://img.shields.io/pypi/l/adk-secure-sessions)](https://github.com/Alberto-Codes/adk-secure-sessions/blob/main/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
 [![Python](https://img.shields.io/pypi/pyversions/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
-[![Coverage](https://img.shields.io/badge/coverage-99%25-brightgreen)](#)
+[![Coverage](https://codecov.io/gh/Alberto-Codes/adk-secure-sessions/graph/badge.svg)](https://codecov.io/gh/Alberto-Codes/adk-secure-sessions)
+[![docs vetted](https://img.shields.io/badge/docs%20vetted-docvet-purple)](https://github.com/Alberto-Codes/docvet)
 
 # adk-secure-sessions
 
