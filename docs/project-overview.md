@@ -33,7 +33,6 @@ Google ADK's built-in session services store all session data — including user
 | Test Mocking | pytest-mock | >=3.15.1 | Mock fixtures |
 | Docs | MkDocs Material | >=9.7.1 | Documentation site |
 | Docs API | mkdocstrings-python | >=2.0.1 | Auto-generated API reference |
-| Docstring QA | interrogate | >=1.7.0 | 95% docstring coverage threshold |
 | Docstring QA | docvet | >=1.6.0 | Docstring quality linting |
 | Build | uv | - | Package manager + build tool |
 | CI/CD | GitHub Actions | - | Tests, docs build, release-please |

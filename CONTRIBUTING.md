@@ -173,7 +173,7 @@ async def create_session(
 
 ### Docstrings
 
-We follow **Google-style docstrings** with strict quality standards enforced by `interrogate` (95% threshold).
+We follow **Google-style docstrings** with strict quality standards enforced by `docvet`.
 
 See [docs/contributing/docstring-templates.md](docs/contributing/docstring-templates.md) for comprehensive templates.
 
