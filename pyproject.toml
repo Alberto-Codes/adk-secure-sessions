@@ -144,4 +144,5 @@ dev = [
     "griffe-inherited-docstrings>=1.1.2",
     "docvet>=1.6.0",
     "pip-audit>=2.9.0",
+    "uv-secure>=0.17.0",
 ]
