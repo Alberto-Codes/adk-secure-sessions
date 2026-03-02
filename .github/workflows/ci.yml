@@ -23,9 +23,11 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install 3.12
-      - run: uv sync --dev
+      - run: uv lock --check
+      - run: uv sync --locked --dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
+      - run: uv run uv-secure
       - run: uv cache prune --ci
         if: always()
         continue-on-error: true
@@ -39,7 +41,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv python install 3.12
-      - run: uv sync --dev
+      - run: uv sync --locked --dev
       - run: uv run ty check src/
       - run: uv cache prune --ci
         if: always()
@@ -60,7 +62,7 @@ jobs:
           enable-cache: true
           cache-suffix: py${{ matrix.python-version }}-adk${{ matrix.adk-version }}
       - run: uv python install ${{ matrix.python-version }}
-      - run: uv sync --dev
+      - run: uv sync --locked --dev
         env:
           UV_PYTHON: ${{ matrix.python-version }}
       - name: Pin google-adk to specific version
@@ -76,21 +78,6 @@ jobs:
         if: matrix.python-version == '3.12' && matrix.adk-version == 'latest'
         with:
           fail_ci_if_error: false
-      - run: uv cache prune --ci
-        if: always()
-        continue-on-error: true
-
-  interrogate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
-      - run: uv python install 3.12
-      - run: uv sync --dev
-      - run: uv run interrogate -v .
       - run: uv cache prune --ci
         if: always()
         continue-on-error: true

@@ -41,7 +41,8 @@ uv run ruff check .     # Lint check
 | `uv run ruff format .` | Format code |
 | `uv run ruff format --check .` | Check formatting without changes |
 | `uv run ty check src/` | Type checking |
-| `uv run interrogate src/` | Docstring coverage (95% threshold) |
+| `uv run docvet check --all` | Docstring quality |
+| `uv run uv-secure` | Dependency vulnerability scan |
 | `pre-commit run --all-files` | Full quality pipeline (lint, format, ty, tests, docvet) |
 | `uv run mkdocs serve` | Local docs preview |
 | `uv run mkdocs build` | Build docs site |

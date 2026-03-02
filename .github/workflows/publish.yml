@@ -33,8 +33,11 @@ jobs:
           enable-cache: true
       - run: uv python install 3.12
 
+      - name: Check lockfile freshness
+        run: uv lock --check
+
       - name: Install dependencies
-        run: uv sync --dev
+        run: uv sync --locked --dev
 
       - name: Lint
         run: uv run ruff check .
@@ -48,8 +51,8 @@ jobs:
       - name: Tests with coverage
         run: uv run pytest --tb=short --cov=adk_secure_sessions --cov-report=term-missing --cov-fail-under=90
 
-      - name: Docstring coverage
-        run: uv run interrogate -v .
+      - name: Vulnerability scan
+        run: uv run uv-secure
 
       - name: Dependency audit (runtime only)
         run: |
