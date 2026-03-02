@@ -108,7 +108,7 @@ graph LR
 - **`protocols.py`** — `EncryptionBackend` protocol with `encrypt`/`decrypt` async methods, `@runtime_checkable`
 - **`backends/fernet.py`** — `FernetBackend` using Fernet symmetric encryption with PBKDF2 key derivation
 - **`exceptions.py`** — `SecureSessionError` base, `EncryptionError`, `DecryptionError`, `SerializationError`
-- **`serialization.py`** — `encrypt_session`, `decrypt_session`, `encrypt_json`, `decrypt_json` with self-describing `[version][backend_id][ciphertext]` envelope format
+- **`serialization.py`** — `encrypt_session`, `decrypt_session`, `encrypt_json`, `decrypt_json` with self-describing `[version][backend_id][ciphertext]` envelope format ([see Envelope Protocol Specification](envelope-protocol.md))
 - **`services/encrypted_session.py`** — `EncryptedSessionService` implementing ADK's `BaseSessionService` with:
   - `create_session` with encrypted state
   - `get_session` with automatic decryption
