@@ -21,6 +21,11 @@ Examples:
             user_id="user-123",
             state={"secret": "sensitive-data"},
         )
+        retrieved = await service.get_session(
+            app_name="my-agent",
+            user_id="user-123",
+            session_id=session.id,
+        )
     ```
 
 See Also:
@@ -139,6 +144,11 @@ class EncryptedSessionService(BaseSessionService):
                 app_name="my-agent",
                 user_id="user-123",
                 state={"secret": "sensitive-data"},
+            )
+            retrieved = await service.get_session(
+                app_name="my-agent",
+                user_id="user-123",
+                session_id=session.id,
             )
         ```
     """
