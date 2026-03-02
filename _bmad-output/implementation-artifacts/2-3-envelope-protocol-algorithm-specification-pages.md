@@ -1,6 +1,6 @@
 # Story 2.3: Envelope Protocol & Algorithm Specification Pages
 
-Status: review
+Status: done
 Branch: feat/docs-2-3-envelope-protocol-spec
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/91
 
@@ -311,27 +311,29 @@ Recent commits on `main`:
 - [x] `uv run ruff check .` -- zero lint violations
 - [x] `uv run ruff format --check .` -- zero format issues
 - [x] `uv run ty check` -- zero type errors (via pre-commit)
-- [x] `uv run pytest` -- 167 passed, 0 failures (no source code changes — coverage unchanged)
+- [x] `uv run pytest` -- 168 passed, 0 failures (1 PBKDF2 stability test added in `bc611dc`)
 - [x] `pre-commit run --all-files` -- 9/9 hooks pass
 - [x] `uv run mkdocs build --strict` -- zero errors, pages render correctly
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code review workflow + party-mode consensus (Bob, Paige, Amelia, Quinn, Winston, Murat, John)
+- **Outcome:** Approved with fixes applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | MEDIUM | Story Dev Agent Record not updated after commit `bc611dc`: File List missing `test_fernet_backend.py`, Completion Notes claimed "no new tests," Change Log missing second commit entry | Fixed: updated File List, Completion Notes, Change Log, Quality Gates |
+| 2 | LOW | Quality gate test count stale (167 → 168) | Fixed: updated pytest count |
+| — | DISMISSED | `sprint-status.yaml` not in File List — BMAD workflow artifact, not dev-tracked | No action (party consensus) |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved (none found)
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (168 passed)
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -341,6 +343,7 @@ Recent commits on `main`:
 | 2026-03-02 | Party-mode round 1 (Paige, Winston, Amelia, Bob, Mary, John, Quinn, Sally). 7 improvements applied: (1) Critical: v1 dispatch validates-not-dispatches clarification, (2) Critical: Fernet 256-bit key split (128 signing + 128 encryption), (3) Brief Fernet token format summary + external spec link, (4) Prescriptive Mermaid guidance (flowchart, no block-beta), (5) PBKDF2 iteration wording corrected (OWASP 2023, not NIST minimum), (6) Visual Mermaid inspection subtask added, (7) Cross-reference link format specified (relative paths). 3 items skipped: audience statements (self-evident), word counts (ACs define completeness), manual-review note (already clear). |
 | 2026-03-02 | Party-mode round 2 — full roster review (all 11 agents). 5 enhancements applied: (1) Dev Note: docvet doesn't run on .md files — real markdown validation is mkdocs build --strict, (2) Subtask 1.9: migration enablement narrative (backend coexistence via envelope format), (3) Algorithms page structure guidance (NIST/FIPS table as second section), (4) PBKDF2 freshness risk note (constants not test-verified), (5) Optional subtask 3.4: cross-link from ARCHITECTURE.md. PRD compliance verified against FR37, FR38, Marcus/Diane user journeys. No critical issues found. |
 | 2026-03-02 | Implementation complete. Created `docs/envelope-protocol.md` (binary layout, v1 dispatch behavior, Mermaid flowchart LR, error handling, extensibility, migration enablement, cross-refs). Created `docs/algorithms.md` (Fernet overview with key composition, NIST/FIPS compliance mapping table, PBKDF2 parameters, key resolution, Fernet token format summary, async implementation, known limitations, cross-refs). Updated `mkdocs.yml` nav (2 entries added, 2 comment placeholders removed). Added cross-link from `ARCHITECTURE.md` (optional subtask 3.4). All quality gates pass: mkdocs build --strict, pre-commit 9/9, ruff, pytest 167/167. Status → review. |
+| 2026-03-02 | Added PBKDF2 derivation stability test (`bc611dc`). `TestKeyDerivationStability` in `tests/unit/test_fernet_backend.py` pins PBKDF2 output to detect constant drift, addressing Documentation Freshness Risk from Dev Notes. Test count 167 → 168. |
 
 ## Dev Agent Record
 
@@ -356,7 +359,7 @@ None — clean implementation, no debugging needed.
 
 - Subtask 4.5 (visual Mermaid check) left unchecked — requires `mkdocs serve` + browser. Strict build validates Mermaid syntax; rendering is a visual confirmation step for the reviewer.
 - `git-revision-date-localized-plugin` warnings for new files (no git logs) are expected for uncommitted files and do not fail strict mode.
-- Documentation-only story — no source code changes, no new tests needed. Coverage unchanged at existing levels.
+- Commit `bc611dc` added `TestKeyDerivationStability` in `tests/unit/test_fernet_backend.py` — pins PBKDF2 derivation output to detect constant drift, addressing the Documentation Freshness Risk identified in Dev Notes. Test count: 167 → 168.
 
 ### File List
 
@@ -366,4 +369,5 @@ None — clean implementation, no debugging needed.
 | `docs/algorithms.md` | Created | Algorithm Documentation page |
 | `mkdocs.yml` | Modified | Added 2 nav entries, removed 2 comment placeholders |
 | `docs/ARCHITECTURE.md` | Modified | Added cross-link to envelope-protocol.md (line 111) |
+| `tests/unit/test_fernet_backend.py` | Modified | Added `TestKeyDerivationStability`: PBKDF2 constant pinning test |
 | `_bmad-output/implementation-artifacts/2-3-envelope-protocol-algorithm-specification-pages.md` | Modified | Story status → review, tasks checked, completion details |
