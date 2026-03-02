@@ -1,6 +1,6 @@
 [project]
 name = "adk-secure-sessions"
-version = "1.0.0"
+version = "1.0.1"
 description = "Encrypted session storage for Google ADK — drop-in replacement for DatabaseSessionService with at-rest encryption"
 readme = "README.md"
 license = { text = "Apache-2.0" }
