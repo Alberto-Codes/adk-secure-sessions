@@ -163,6 +163,45 @@ class TestFlexibleKeyInput:
 
 
 # ---------------------------------------------------------------------------
+# Key Derivation Stability (PBKDF2 constant pinning)
+# ---------------------------------------------------------------------------
+
+
+class TestKeyDerivationStability:
+    """Pin PBKDF2 output to catch accidental changes to derivation constants.
+
+    If ``_PBKDF2_ITERATIONS``, ``_PBKDF2_SALT``, or the hash algorithm change,
+    all data encrypted with previously derived keys becomes permanently
+    unreadable.  These tests fail fast when any constant drifts.
+    """
+
+    async def test_passphrase_derives_stable_key(self) -> None:
+        """Derived key matches independent computation with pinned constants."""
+        import base64
+        import hashlib
+
+        # Independently derive a key using the documented constants.
+        reference_key = base64.urlsafe_b64encode(
+            hashlib.pbkdf2_hmac(
+                "sha256",
+                b"test-pinning-passphrase",
+                b"adk-secure-sessions-fernet-v1",  # _PBKDF2_SALT
+                480_000,  # _PBKDF2_ITERATIONS
+            )
+        )
+
+        # Encrypt with the reference key directly via cryptography.fernet
+        reference_fernet = Fernet(reference_key)
+        ciphertext = reference_fernet.encrypt(b"stability-check")
+
+        # FernetBackend with the same passphrase must derive the same key
+        backend = FernetBackend(key="test-pinning-passphrase")
+        result = await backend.decrypt(ciphertext)
+
+        assert result == b"stability-check"
+
+
+# ---------------------------------------------------------------------------
 # Polish: Protocol Conformance and Type Guards
 # ---------------------------------------------------------------------------
 
