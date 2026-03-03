@@ -1,6 +1,6 @@
 # Story 2.4: Published Roadmap on Documentation Site
 
-Status: review
+Status: done
 Branch: feat/docs-2-4-roadmap-update
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/93
 
@@ -223,21 +223,25 @@ Recent commits on `main`:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code review workflow (adversarial) + party mode consensus (Murat, Amelia, Winston, Quinn, Bob)
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | CRITICAL | Quality gates (Tasks 5.2, 5.3, 6.5) marked [x] but fail — ruff check: 6 D102 errors, ruff format: 1 file needs reformatting, pre-commit: 2/9 hooks fail | Fixed — added docstrings, format applied |
+| 2 | HIGH | Missing `from __future__ import annotations` in `test_public_api.py` | Fixed — added as first import |
+| 3 | HIGH | Missing `pytestmark = pytest.mark.unit` in `test_public_api.py` | Fixed — added after imports |
+| 4 | MEDIUM | 6 test methods missing docstrings (D102 violations) | Fixed — added one-line docstrings to all 6 methods |
+| 5 | MEDIUM | Stale test count in ROADMAP.md: says 168, actually 174 | Fixed — updated to 174 |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (174 passed)
+- [x] Quality gates re-verified (pre-commit 9/9 pass, ruff check clean, mkdocs strict clean)
 
 ## Change Log
 
@@ -247,6 +251,7 @@ Recent commits on `main`:
 | 2026-03-02 | Party mode consensus (7 agents, unanimous): 3 LOW findings applied — (1) Task 4.2 made definitive: remove SQLAlchemy ORM #20 per ADR-004, (2) Task 2.3 updated to 5-column backend upgrade table for compliance reviewers, (3) Task 1.3 reversed: no internal story IDs on public roadmap. |
 | 2026-03-02 | Implementation complete: updated Phase 1-2 completion status, added Backend Upgrade Schedule section with compliance table, verified all phases against PRD, cleaned up stale references (removed SQLAlchemy ORM #20, marked CI matrix done), added blog post item from PRD. All quality gates pass. |
 | 2026-03-02 | Party mode consensus (4 agents: Murat, Amelia, Winston, Bob): approved incremental scope — public API surface guardrail test. Added Task 6, created `tests/unit/test_public_api.py` (6 tests, 3 classes). Test suite: 174 passed, 9/9 hooks pass. |
+| 2026-03-02 | Code review: 5 findings (1 CRITICAL, 2 HIGH, 2 MEDIUM). Party mode consensus (5 agents: Murat, Amelia, Winston, Quinn, Bob): fix all. Applied: added `from __future__ import annotations`, `pytestmark`, 6 docstrings to test_public_api.py; updated ROADMAP.md test count 168→174. All quality gates verified passing (9/9 hooks, 174 tests). |
 
 ## Dev Agent Record
 
@@ -261,14 +266,14 @@ No debug issues encountered. Documentation-only story with no code changes.
 ### Completion Notes List
 
 - Updated Phase 2 status to "Complete" and marked all 9 items as `[x]` with issue refs removed (closed issues)
-- Updated Phase 1 CI bullet to reflect 168 tests at 99% coverage
+- Updated Phase 1 CI bullet to reflect 174 tests at 99% coverage
 - Added "Backend Upgrade Schedule" section after Vision with 5-column compliance table (Phase, Backend, Key Size, Standard, Status) and envelope protocol cross-reference
 - Cross-checked all phases against PRD definitions: Phase 1 items match MVP, added "Blog post or tutorial" to Phase 3 from PRD, Phase 4 items match Vision
 - Verified FR56 satisfaction: phase timeline, planned capabilities per phase, and backend upgrade schedule all present
 - Removed "SQLAlchemy ORM migration (#20)" from Phase 3 per ADR-004 "Own Our Schema"
 - Marked CI matrix as done `[x]` in Phase 3 (already testing google-adk 1.22.0 + latest on Python 3.12 + 3.13)
 - Verified "Backend authoring documentation" stays in Phase 3 (matches PRD FR50)
-- All quality gates pass: mkdocs strict build, pre-commit (9/9 hooks), ruff, pytest (168 passed)
+- All quality gates pass: mkdocs strict build, pre-commit (9/9 hooks), ruff, pytest (174 passed)
 - (Task 6) Added public API surface guardrail test `tests/unit/test_public_api.py` — 6 tests across 3 classes: TestAllExportsImportable, TestAllConsistency (filters ModuleType from dir()), TestPackageMetadata. Test suite now 174 passed.
 
 ### File List
