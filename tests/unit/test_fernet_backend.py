@@ -200,6 +200,28 @@ class TestKeyDerivationStability:
 
         assert result == b"stability-check"
 
+    async def test_fernet_key_passthrough_interop(self) -> None:
+        """Pre-generated Fernet key works interchangeably with raw Fernet.
+
+        Guards against ``_resolve_key`` regressions that would route
+        valid Fernet keys through PBKDF2 derivation.  If passthrough
+        breaks, data encrypted by this library becomes unreadable by
+        standard Fernet tools and vice versa.
+        """
+        fernet_key = Fernet.generate_key()
+        raw_fernet = Fernet(fernet_key)
+        backend = FernetBackend(key=fernet_key)
+
+        # Direction 1: raw Fernet encrypt → FernetBackend decrypt
+        raw_ciphertext = raw_fernet.encrypt(b"interop-check")
+        result = await backend.decrypt(raw_ciphertext)
+        assert result == b"interop-check"
+
+        # Direction 2: FernetBackend encrypt → raw Fernet decrypt
+        backend_ciphertext = await backend.encrypt(b"reverse-check")
+        result2 = raw_fernet.decrypt(backend_ciphertext)
+        assert result2 == b"reverse-check"
+
 
 # ---------------------------------------------------------------------------
 # Polish: Protocol Conformance and Type Guards
