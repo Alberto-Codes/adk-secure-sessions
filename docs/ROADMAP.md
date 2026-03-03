@@ -10,7 +10,7 @@ The [envelope protocol](envelope-protocol.md) enables zero-downtime migration be
 
 | Phase | Backend | Key Size | Standard | Status |
 |-------|---------|----------|----------|--------|
-| Phase 1 (now) | Fernet (AES-128-CBC + HMAC-SHA256) | 128-bit | FIPS 197, SP 800-38A | Available |
+| Phase 1 (now) | Fernet (AES-128-CBC + HMAC-SHA256) | 128-bit | FIPS 197, SP 800-38A, FIPS 198-1 | Available |
 | Phase 3 | AES-256-GCM | 256-bit | FIPS 197, SP 800-38D | Planned |
 | Phase 4 | AWS KMS / GCP Cloud KMS / HashiCorp Vault | Provider-managed | Provider-dependent | Planned |
 
