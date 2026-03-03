@@ -93,7 +93,10 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.docvet]
-fail-on = ["enrichment", "freshness", "coverage", "griffe"]
+fail-on = ["enrichment", "freshness", "coverage", "griffe", "presence"]
+
+[tool.docvet.presence]
+min-coverage = 100.0
 
 [tool.pytest.ini_options]
 markers = [
@@ -145,7 +148,7 @@ dev = [
     "cairosvg>=2.8.2",
     "griffe-warnings-deprecated>=1.1.0",
     "griffe-inherited-docstrings>=1.1.2",
-    "docvet>=1.6.0",
+    "docvet>=1.7.0",
     "pip-audit>=2.9.0",
     "uv-secure>=0.17.0",
 ]
