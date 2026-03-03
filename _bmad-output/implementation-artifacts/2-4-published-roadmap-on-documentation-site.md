@@ -54,6 +54,13 @@ so that **I can evaluate the project's trajectory and plan my adoption timing (e
   - [x] 5.3 `uv run ruff check .` — zero lint violations
   - [x] 5.4 `uv run pytest` — all tests pass (no regressions, documentation-only story)
 
+- [x] Task 6: Add public API surface guardrail test (cross-cutting, approved scope addition)
+  - [x] 6.1 Create `tests/unit/test_public_api.py` with three test classes
+  - [x] 6.2 `TestAllExportsImportable` — every `__all__` symbol is importable and not None
+  - [x] 6.3 `TestAllConsistency` — bidirectional check: `__all__` matches non-private `dir()` entries (filters `types.ModuleType` to exclude implicit submodule refs)
+  - [x] 6.4 `TestPackageMetadata` — `importlib.metadata.version("adk-secure-sessions")` returns valid semver
+  - [x] 6.5 Re-run quality gates: `uv run pytest` (174 passed), `pre-commit run --all-files` (9/9 pass)
+
 ## AC-to-Test Mapping
 
 <!-- Dev agent MUST fill this table before marking story done -->
@@ -239,6 +246,7 @@ Recent commits on `main`:
 | 2026-03-02 | Story created by create-story workflow. Documentation update story: update `docs/ROADMAP.md` with Phase 1-2 completion status, add backend upgrade schedule section (FR56), verify against PRD phase definitions, clean up stale references. No new files, no nav changes. |
 | 2026-03-02 | Party mode consensus (7 agents, unanimous): 3 LOW findings applied — (1) Task 4.2 made definitive: remove SQLAlchemy ORM #20 per ADR-004, (2) Task 2.3 updated to 5-column backend upgrade table for compliance reviewers, (3) Task 1.3 reversed: no internal story IDs on public roadmap. |
 | 2026-03-02 | Implementation complete: updated Phase 1-2 completion status, added Backend Upgrade Schedule section with compliance table, verified all phases against PRD, cleaned up stale references (removed SQLAlchemy ORM #20, marked CI matrix done), added blog post item from PRD. All quality gates pass. |
+| 2026-03-02 | Party mode consensus (4 agents: Murat, Amelia, Winston, Bob): approved incremental scope — public API surface guardrail test. Added Task 6, created `tests/unit/test_public_api.py` (6 tests, 3 classes). Test suite: 174 passed, 9/9 hooks pass. |
 
 ## Dev Agent Record
 
@@ -261,11 +269,13 @@ No debug issues encountered. Documentation-only story with no code changes.
 - Marked CI matrix as done `[x]` in Phase 3 (already testing google-adk 1.22.0 + latest on Python 3.12 + 3.13)
 - Verified "Backend authoring documentation" stays in Phase 3 (matches PRD FR50)
 - All quality gates pass: mkdocs strict build, pre-commit (9/9 hooks), ruff, pytest (168 passed)
+- (Task 6) Added public API surface guardrail test `tests/unit/test_public_api.py` — 6 tests across 3 classes: TestAllExportsImportable, TestAllConsistency (filters ModuleType from dir()), TestPackageMetadata. Test suite now 174 passed.
 
 ### File List
 
 | File | Action |
 |------|--------|
 | `docs/ROADMAP.md` | Modified |
+| `tests/unit/test_public_api.py` | Added |
 | `_bmad-output/implementation-artifacts/sprint-status.yaml` | Modified |
 | `_bmad-output/implementation-artifacts/2-4-published-roadmap-on-documentation-site.md` | Modified |
