@@ -1,6 +1,6 @@
 # Story 2.5: FAQ Page
 
-Status: review
+Status: done
 Branch: feat/docs-2-5-faq-page
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/95
 
@@ -191,7 +191,7 @@ Recent commits on `main`:
 | `pyproject.toml` | No changes | No new deps |
 | `.pre-commit-config.yaml` | No changes | docvet already configured |
 | Source code (`src/`) | No changes | Documentation-only story |
-| Tests (`tests/`) | No changes | No code changes to test |
+| Tests (`tests/`) | Modified | Opportunistic interop sentinel for key passthrough (`test_fernet_backend.py`) |
 
 ### Project Structure Notes
 
@@ -223,21 +223,23 @@ Recent commits on `main`:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) + Party Mode consensus (Paige, Bob, Amelia, Murat)
+- **Outcome:** Approved with fixes applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | MEDIUM | `tests/unit/test_fernet_backend.py` modified but absent from File List; story claimed "Tests: No changes" | Updated File List, Peripheral Config Impact, and Completion Notes to document the interop sentinel addition |
+| 2 | MEDIUM | Dev Notes sentence counts inaccurate: Q1, Q2, Q5 claimed 5 sentences, actual count is 4 each | Corrected sentence counts in Completion Notes (5→4 for Q1, Q2, Q5) |
+| 3 | LOW | Change Log says "pytest 174 passed" but actual count is 175 after interop test commit | Updated test count from 174 to 175 in Change Log |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -245,7 +247,8 @@ Recent commits on `main`:
 |------|-------------|
 | 2026-03-02 | Story created by create-story workflow. Documentation-only story: create `docs/faq.md` with 6 required FAQ entries (algorithms, compliance, protocols, backends, wrong key, field-level encryption), add to MkDocs nav. No source code changes. |
 | 2026-03-02 | Party mode consensus (7 agents: Paige, Winston, John, Amelia, Bob, Murat, Quinn): 8 findings applied — (1) added FAQ markdown structure guidance (H2 headings matching sibling pages), (2) added `## Related` footer pattern, (3) enriched Q4 with protocol-works-today + envelope coexistence guidance, (4) added tone guidance (direct for tech Qs, precise for compliance Qs), (5) specified nav entry 2-space indentation, (6) split into 2 ACs for cleaner tracking, (7) added code review focus note (content accuracy, not code patterns), (8) clarified docvet doesn't check `.md` — mkdocs strict is the real gate. |
-| 2026-03-02 | Implementation complete: created `docs/faq.md` with 6 FAQ entries, added nav entry in `mkdocs.yml` between Roadmap and Changelog. All quality gates pass (mkdocs strict, pre-commit 9/9, ruff, pytest 174 passed). |
+| 2026-03-02 | Implementation complete: created `docs/faq.md` with 6 FAQ entries, added nav entry in `mkdocs.yml` between Roadmap and Changelog. All quality gates pass (mkdocs strict, pre-commit 9/9, ruff, pytest 175 passed). |
+| 2026-03-02 | Code review (adversarial + party mode consensus: Paige, Bob, Amelia, Murat): 3 findings — (1) MEDIUM: added undocumented `test_fernet_backend.py` to File List and Peripheral Config Impact, (2) MEDIUM: corrected sentence counts in Completion Notes (Q1, Q2, Q5: 5→4), (3) LOW: updated Change Log test count 174→175. Finding #4 (ROADMAP test count drift) dropped as out-of-scope per consensus. All fixes are story-file-only — no code or FAQ content changes. |
 
 ## Dev Agent Record
 
@@ -260,11 +263,11 @@ No debug issues encountered. Clean implementation.
 ### Completion Notes List
 
 - Created `docs/faq.md` with 6 FAQ entries using H2 headings, matching the heading pattern in `algorithms.md` and `envelope-protocol.md`
-- Q1 (algorithms): Covers AES-128-CBC + HMAC-SHA256 + PBKDF2, links to algorithms.md (5 sentences)
-- Q2 (compliance): Uses exact PRD positioning language verbatim, links to ROADMAP.md for FIPS guide (5 sentences)
+- Q1 (algorithms): Covers AES-128-CBC + HMAC-SHA256 + PBKDF2, links to algorithms.md (4 sentences)
+- Q2 (compliance): Uses exact PRD positioning language verbatim, links to ROADMAP.md for FIPS guide (4 sentences)
 - Q3 (protocols): Explains PEP 544 structural subtyping + @runtime_checkable, links to ADR-001 (4 sentences)
 - Q4 (backends): Emphasizes works-today + envelope coexistence for zero-downtime migration, links to envelope-protocol.md and ROADMAP.md (5 sentences)
-- Q5 (wrong key): Explains DecryptionError always raised, never silent corruption, links to exceptions API reference (5 sentences)
+- Q5 (wrong key): Explains DecryptionError always raised, never silent corruption, links to exceptions API reference (4 sentences)
 - Q6 (field-level): Explains what's encrypted vs queryable, links to ADR-003 (4 sentences)
 - Added `## Related` footer with links to Algorithm Documentation, Envelope Protocol, Architecture Decisions, Roadmap
 - Replaced placeholder comment in `mkdocs.yml` with nav entry between Roadmap and Changelog
@@ -275,4 +278,5 @@ No debug issues encountered. Clean implementation.
 - `docs/faq.md` — New: FAQ page with 6 questions, concise answers, cross-reference links, and Related footer
 - `mkdocs.yml` — Modified: replaced placeholder comment with `- FAQ: faq.md` nav entry (line 162)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — Modified: story status ready-for-dev → in-progress → review
+- `tests/unit/test_fernet_backend.py` — Modified: added `test_fernet_key_passthrough_interop` interop sentinel (guards `_resolve_key` passthrough regression)
 - `_bmad-output/implementation-artifacts/2-5-faq-page.md` — Modified: task checkboxes, AC-to-Test, Quality Gates, Dev Agent Record, Change Log, Status
