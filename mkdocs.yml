@@ -159,7 +159,7 @@ nav:
           - Exception Hierarchy: adr/ADR-005-exception-hierarchy.md
           - Configuration Error: adr/ADR-006-configuration-error.md
   - Roadmap: ROADMAP.md
-  # Story 2.5 adds: - FAQ: faq.md
+  - FAQ: faq.md
   - Changelog: changelog.md
   - Contributing:
       - Development Guide: development-guide.md
