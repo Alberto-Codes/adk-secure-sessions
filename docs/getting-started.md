@@ -61,6 +61,7 @@ The script below demonstrates the complete `EncryptedSessionService` lifecycle:
 create a session with sensitive data, retrieve it, list sessions, and clean up.
 Copy it into a file and run it directly.
 
+<!-- test:exec:getting-started-full-example -->
 ```python
 import asyncio
 

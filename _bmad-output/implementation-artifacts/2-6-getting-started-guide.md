@@ -77,14 +77,19 @@ so that **I can go from install to encrypted sessions in under 5 minutes with co
   - [x] 3.4 `uv run pytest` — all tests pass (no regressions, documentation-only story)
   - [x] 3.5 Verify all cross-reference links in Getting Started page resolve correctly in strict build
 
+- [x] Task 4: Living Documentation Smoke Test (scope add — cross-cutting test maturity)
+  - [x] 4.1 Add sentinel comment `<!-- test:exec:getting-started-full-example -->` before the Full Working Example code block in `docs/getting-started.md`
+  - [x] 4.2 Create `tests/integration/test_docs_examples.py` with `test_full_example_runs_successfully` — extracts code via sentinel regex, execs in isolated `tmp_path`, validates example completes without error
+  - [x] 4.3 Verify test passes and full suite remains green (176 passed, 9/9 hooks pass)
+
 ## AC-to-Test Mapping
 
 <!-- Dev agent MUST fill this table before marking story done -->
 
 | AC # | Test(s) | Status |
 |------|---------|--------|
-| 1    | `uv run mkdocs build --strict` renders `docs/getting-started.md`; page contains install commands, full working example with realistic state, verification section, and What's Next links; full example script verified end-to-end via `uv run python test_script.py` | pass |
-| 2    | `uv run mkdocs build --strict` zero errors; Getting Started in nav between Home and API Reference; all cross-reference links resolve; `pre-commit run --all-files` passes 9/9 hooks; `uv run pytest` 175 passed | pass |
+| 1    | `uv run mkdocs build --strict` renders `docs/getting-started.md`; page contains install commands, full working example with realistic state, verification section, and What's Next links; `test_docs_examples.py::test_full_example_runs_successfully` validates example executes end-to-end | pass |
+| 2    | `uv run mkdocs build --strict` zero errors; Getting Started in nav between Home and API Reference; all cross-reference links resolve; `pre-commit run --all-files` passes 9/9 hooks; `uv run pytest` 176 passed | pass |
 
 ## Dev Notes
 
@@ -350,6 +355,7 @@ Recent commits on `main`:
 | 2026-03-03 | Story created by create-story workflow. Documentation-only story: create `docs/getting-started.md` with install, full working example, verification step, and What's Next links; add to MkDocs nav. No source code changes. |
 | 2026-03-03 | Party mode consensus (5 agents: Paige, Bob, Amelia, Winston, Murat): 6 findings applied — (1) fixed `__version__` verification to use `importlib.metadata` (no `__version__` attribute exported), (2) added `!!! warning` admonition subtask for key management in Full Working Example, (3) added subtask to verify example script runs end-to-end, (4) updated Task 1.5 to show both CLI and Python sqlite3 verification approaches, (5) clarified "full working example" anti-pattern with NFR28/Gemini API key rationale, (6) added `ListSessionsResponse` return type pattern to dev notes. Item rejected: marking Task 1.6 (Error Handling) as enhancement — team consensus is error handling is table stakes for a getting started guide. |
 | 2026-03-03 | Implementation complete. Created `docs/getting-started.md` with 8 sections (Installation, Quick Start, Full Working Example, Verify Encryption, Error Handling, What's Next, Related). Replaced nav placeholder in `mkdocs.yml`. Full example script verified end-to-end. All quality gates pass: `mkdocs build --strict` zero errors, 9/9 pre-commit hooks pass, 175 tests pass, zero lint violations. |
+| 2026-03-03 | Scope add (approved): Living Documentation Smoke Test. Party mode consensus (7 agents: Murat, Amelia, Quinn, Paige, Winston, Bob, John) — added `tests/integration/test_docs_examples.py` with sentinel-based extraction (`<!-- test:exec:getting-started-full-example -->`), `exec()` in isolated `tmp_path`, validates Full Working Example runs without error. Catches API drift before users do. 176 tests pass. |
 
 ## Dev Agent Record
 
@@ -374,10 +380,12 @@ None — clean implementation with no debugging required.
 - Replaced `mkdocs.yml` nav placeholder comment with actual `Getting Started: getting-started.md` entry between Home and API Reference
 - Full example script verified end-to-end: creates session with realistic state, retrieves with decrypted state, lists sessions via `response.sessions`, deletes session
 - All cross-reference links resolve in `mkdocs build --strict`
+- **Scope add (approved)**: Created `tests/integration/test_docs_examples.py` — living documentation smoke test that extracts the Full Working Example via `<!-- test:exec:getting-started-full-example -->` sentinel, executes it in isolated `tmp_path` via `exec()`, and validates it completes without error. Catches API drift before users encounter broken examples. Pattern scales to future doc pages via the `test:exec:<name>` sentinel convention.
 
 ### File List
 
-- `docs/getting-started.md` — New: Getting Started tutorial page
+- `docs/getting-started.md` — New: Getting Started tutorial page (+ sentinel comment for test extraction)
 - `mkdocs.yml` — Modified: replaced line 144 comment placeholder with nav entry
+- `tests/integration/test_docs_examples.py` — New: Living documentation smoke test (sentinel-based example extraction + exec)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — Modified: story status `ready-for-dev` → `review`
 - `_bmad-output/implementation-artifacts/2-6-getting-started-guide.md` — Modified: task checkboxes, AC-to-Test Mapping, Quality Gates, Dev Agent Record, Change Log, Status
