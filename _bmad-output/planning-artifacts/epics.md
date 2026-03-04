@@ -1,5 +1,5 @@
 ---
-stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories']
+stepsCompleted: ['step-01-validate-prerequisites', 'step-02-design-epics', 'step-03-create-stories', 'step-02-design-epics-v2', 'step-03-create-stories-v2', 'step-04-final-validation-v2']
 inputDocuments:
   - '_bmad-output/planning-artifacts/prd.md'
   - '_bmad-output/planning-artifacts/architecture.md'
@@ -71,6 +71,12 @@ FR53 [Phase 4]: Developer can use GCP Cloud KMS as an encryption backend
 FR54 [Phase 4]: Developer can use HashiCorp Vault as an encryption backend
 FR55 [Phase 4]: Operator can access audit logs of encryption operations for compliance reporting
 FR56 [MVP]: Developer can read a published roadmap on the documentation site with phase timeline, planned capabilities per phase, and backend upgrade schedule
+FR-NEW-1 [Now]: All user-facing descriptions accurately characterize the library as an "encrypted session persistence service implementing BaseSessionService," not a "drop-in replacement for DatabaseSessionService" or "encryption layer"
+FR-NEW-2 [Now]: All schema references list all 4 tables (sessions, events, app_states, user_states) and describe the schema relationship as "mirroring ADK V1 structure with encrypted column types"
+FR-NEW-3 [Now]: Planning artifacts that contain superseded architectural claims carry revision markers without rewriting history
+FR-NEW-4 [Phase 3]: EncryptedSessionService wraps DatabaseSessionService via SQLAlchemy TypeDecorator for transparent encrypt/decrypt at the ORM boundary
+FR-NEW-5 [Phase 3]: Multi-database support (SQLite, PostgreSQL, MySQL, MariaDB) via DatabaseSessionService's existing dialect handling
+FR-NEW-6 [Phase 3]: New ADR documents the architecture migration decision, references ADR-000 V1 changes, and explains why wrapping is now viable
 
 ### NonFunctional Requirements
 
@@ -219,6 +225,23 @@ FR53: Epic 5 — GCP Cloud KMS backend
 FR54: Epic 5 — HashiCorp Vault backend
 FR55: Epic 5 — Audit logging
 
+**Epic 6: Documentation Honesty (Now)**
+
+FR-NEW-1: Epic 6 — Accurate library characterization across all user-facing docs
+FR-NEW-2: Epic 6 — Correct schema descriptions (4 tables, mirrored structure)
+FR-NEW-3: Epic 6 — Superseded markers on stale planning artifacts
+FR12: Epic 6 — Language correction (schema claim); Epic 7 — Implementation change
+FR28: Epic 6 — Language correction (drop-in claim)
+
+**Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)**
+
+FR-NEW-4: Epic 7 — DatabaseSessionService wrapper via TypeDecorator
+FR-NEW-5: Epic 7 — Multi-database support via DatabaseSessionService
+FR-NEW-6: Epic 7 — New ADR documenting migration decision
+FR11: Epic 7 — Reworded: "System persists encrypted session data via async database operations" (drop SQLite-specific)
+FR12: Epic 7 — Superseded: wrapping replaces own schema
+FR49: Epic 7 — PostgreSQL comes for free (remapped from Epic 4)
+
 ## Epic List
 
 ### Epic 1: Ship to PyPI
@@ -247,8 +270,9 @@ Enterprise security teams approve unconditionally with AES-256-GCM. Per-key rand
 
 Teams run encrypted sessions on managed PostgreSQL. Operators rotate keys with zero downtime. Backend authors and operators get dedicated documentation.
 
-**FRs covered:** FR48, FR49, FR50, FR51
+**FRs covered:** FR48, ~~FR49~~ _(remapped to Epic 7)_, FR50, FR51
 **NFRs served:** NFR24, NFR26, NFR27
+**Note:** Stories 4.1 (Persistence Protocol), 4.2 (Encryption Coordinator), 4.3 (PostgreSQL Backend) are **[SUPERSEDED by Epic 7]**. Remaining stories: 4.4 (Key Rotation), 4.5 (Backend Docs), 4.6 (Ops Guide), 4.7 (Python Version Tracking).
 
 ### Epic 5: Enterprise KMS Backends & Audit (Phase 4)
 
@@ -256,6 +280,32 @@ Enterprise teams use managed KMS providers (AWS, GCP, Vault) with organization-m
 
 **FRs covered:** FR52, FR53, FR54, FR55
 **NFRs served:** NFR12
+
+### Epic 6: Documentation Honesty (Now)
+
+A developer reading the README, docs site, or PyPI description gets an accurate understanding of what adk-secure-sessions is: an encrypted session persistence service implementing BaseSessionService — not a "drop-in replacement for DatabaseSessionService" or an "encryption layer." A contributor reading CLAUDE.md, conventions, or planning artifacts encounters no false claims about schema independence or table counts. Superseded planning artifacts carry revision markers preserving history.
+
+**FRs covered:** FR-NEW-1, FR-NEW-2, FR-NEW-3
+**Existing FRs corrected:** FR12 (schema language), FR28 (drop-in language)
+**NFRs served:** NFR28
+**Scope:** 15 audit findings (8 HIGH, 7 MEDIUM) across ~12 files. Zero code changes.
+**Dependencies:** None — standalone.
+
+### Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)
+
+Encrypted sessions work with any database ADK supports — SQLite, PostgreSQL, MySQL, MariaDB — with zero additional configuration beyond what ADK already provides. The ~800-line raw aiosqlite implementation is replaced by a thin wrapper around DatabaseSessionService via SQLAlchemy TypeDecorator, focused solely on encryption — the project's actual value-add. The encryption core (EncryptionBackend protocol, FernetBackend, serialization envelope) is untouched. aiosqlite is removed as a direct dependency.
+
+**FRs covered:** FR-NEW-4, FR-NEW-5, FR-NEW-6
+**Existing FRs superseded:** FR11 (reworded: multi-DB), FR12 (obsoleted by wrapping)
+**Existing FRs remapped:** FR49 (PostgreSQL — collapses from Epic 4 to Epic 7)
+**NFRs served:** NFR5, NFR20, NFR25, NFR26
+**Scope:** Spike-gated. Code rewrite + tests + new ADR + docs.
+**Dependencies:** Epic 6 (soft — fix narrative before changing architecture). Story 7.1 spike gates all subsequent stories.
+**Impact on existing epics:**
+- Epic 3: Unaffected (encryption backends decoupled from persistence)
+- Epic 4 Stories 4.1, 4.2, 4.3: [SUPERSEDED by Epic 7]
+- Epic 4 Stories 4.4-4.7: Unchanged
+- Epic 5: Unaffected (protocol-based backends)
 
 ---
 
@@ -717,7 +767,7 @@ So that **I can make an informed decision about which backend to use based on re
 
 Teams run encrypted sessions on managed PostgreSQL. Operators rotate keys with zero downtime. Backend authors and operators get dedicated documentation. The service architecture is decomposed for extensibility.
 
-### Story 4.1: Persistence Protocol & SQLite Extraction
+### Story 4.1: Persistence Protocol & SQLite Extraction [SUPERSEDED by Epic 7]
 
 As a **library maintainer**,
 I want **the persistence layer extracted behind a Protocol interface with SQLite as the first implementation**,
@@ -736,7 +786,7 @@ So that **adding PostgreSQL (and future backends) doesn't require modifying the 
 **And** Google-style docstring with `Examples:` section on the protocol and implementation
 **And** the `version` column (reserved in Story 1.2) is preserved in the extracted schema
 
-### Story 4.2: Encryption Coordinator Extraction
+### Story 4.2: Encryption Coordinator Extraction [SUPERSEDED by Epic 7]
 
 As a **library maintainer**,
 I want **the encryption orchestration logic extracted into a dedicated coordinator**,
@@ -754,7 +804,7 @@ So that **the service orchestrator has clear separation of concerns: persistence
 **And** Google-style docstring with `Examples:` section
 **And** the refactoring does not change any public API signatures (NFR20 — drop-in compatibility preserved)
 
-### Story 4.3: PostgreSQL Persistence Backend
+### Story 4.3: PostgreSQL Persistence Backend [SUPERSEDED by Epic 7]
 
 As a **team running ADK agents in production**,
 I want **encrypted session persistence to PostgreSQL as an alternative to SQLite**,
@@ -951,3 +1001,316 @@ So that **I can produce compliance reports showing encryption activity for regul
 **And** the compliance reporting section in the Operations Guide documents: how to enable audit logging, how to route audit logs to SIEM systems, what fields are available for querying
 **And** documentation includes a FIPS 140-2 deployment guide section with honest limitations: the library uses NIST-approved algorithms via the `cryptography` library, but FIPS 140-2 certification applies to the cryptographic module (OpenSSL), not the library itself — the deploying organization is responsible for certification (NFR12)
 **And** an integration test verifies audit events are emitted for a complete session lifecycle (create, get, update, delete)
+
+---
+
+## Epic 6: Documentation Honesty
+
+A developer reading the README, docs site, or PyPI description gets an accurate understanding of what adk-secure-sessions is: an encrypted session persistence service implementing BaseSessionService — not a "drop-in replacement for DatabaseSessionService" or an "encryption layer." A contributor reading CLAUDE.md, conventions, or planning artifacts encounters no false claims about schema independence or table counts. Superseded planning artifacts carry revision markers preserving history.
+
+### Story 6.1: Fix User-Facing "Drop-In Replacement" Claims
+
+As a **developer evaluating the library**,
+I want **accurate descriptions of what adk-secure-sessions is on PyPI, README, docs site, and API reference**,
+So that **I understand exactly what I'm installing — an encrypted session service implementing BaseSessionService — without false expectations about DatabaseSessionService compatibility**.
+
+**Acceptance Criteria:**
+
+**Given** `pyproject.toml:4` says "drop-in replacement for DatabaseSessionService"
+**When** the description is corrected
+**Then** it reads "Encrypted session persistence for Google ADK agents" (FR-NEW-1)
+**And** the description is concise and appropriate for PyPI package metadata context
+
+**Given** `README.md:13` says "drop-in replacement for DatabaseSessionService"
+**When** the description is corrected
+**Then** it accurately describes the library as implementing BaseSessionService with encryption (FR-NEW-1)
+**And** the language is appropriate for a README audience (medium detail)
+
+**Given** `docs/index.md:13` says "drop-in replacement for ADK's DatabaseSessionService and SqliteSessionService"
+**When** the description is corrected
+**Then** it accurately describes the library as an encrypted session persistence service (FR-NEW-1)
+**And** the docs site landing page provides enough context for a first-time visitor
+
+**Given** `src/adk_secure_sessions/__init__.py:10-11` says "Drop-in replacement for DatabaseSessionService"
+**When** the module docstring is corrected
+**Then** it accurately references BaseSessionService, not DatabaseSessionService (FR-NEW-1, FR28)
+
+**Given** `src/adk_secure_sessions/services/encrypted_session.py:3,123` says "drop-in replacement for ADK's DatabaseSessionService"
+**When** the module and class docstrings are corrected
+**Then** they accurately reference BaseSessionService with field-level encryption at rest (FR-NEW-1, FR28)
+**And** the docstring is appropriate for API reference context (technical detail)
+
+**Given** `CHANGELOG.md:39` correctly says "drop-in replacement for ADK's BaseSessionService"
+**When** reviewing changelog entries
+**Then** this entry is NOT modified — it is already accurate
+
+**And** all replacement language is contextually appropriate per the target audience (PyPI short, README medium, docstrings technical, docs site explanatory)
+**And** no code logic is changed — only docstrings, descriptions, and documentation text
+
+### Story 6.2: Fix Schema Independence & Architecture Characterization Claims
+
+As a **contributor reading project conventions or planning docs**,
+I want **accurate descriptions of the schema relationship with ADK and what the library actually is**,
+So that **I don't build on false assumptions about schema independence, table counts, or the library being "just an encryption layer"**.
+
+**Acceptance Criteria:**
+
+**Given** `CLAUDE.md:11` says "own schema independent of ADK"
+**When** the description is corrected
+**Then** it accurately describes the schema as mirroring ADK V1 structure with encrypted column types, managed via raw aiosqlite (FR-NEW-2)
+
+**Given** `.claude/rules/conventions.md:35-39` "Own Our Schema" section lists only 2 tables and says "independent of ADK's internal schema"
+**When** the section is corrected
+**Then** it lists all 4 tables (`sessions`, `events`, `app_states`, `user_states`) (FR-NEW-2)
+**And** it describes the schema relationship honestly — operationally independent (own tables, own migrations) but structurally mirroring ADK V1
+**And** the "raw parametrized SQL via aiosqlite" convention is preserved as accurate-today but noted as an implementation detail that may evolve
+
+**Given** `_bmad-output/project-context.md:73` lists only `(sessions, events)`
+**When** the table list is corrected
+**Then** it lists all 4 tables: `sessions`, `events`, `app_states`, `user_states` (FR-NEW-2)
+
+**Given** `_bmad-output/planning-artifacts/prd.md:334` lists only 2 tables and says "independent of ADK's internal schema"
+**When** the description is corrected
+**Then** it lists all 4 tables and uses honest framing about the schema relationship (FR-NEW-2)
+
+**Given** `docs/ROADMAP.md:5` says "missing encryption layer"
+**When** the description is corrected
+**Then** it uses "encrypted session persistence" or equivalent accurate characterization (FR-NEW-1)
+
+**Given** `_bmad-output/planning-artifacts/prd.md:372` says "encryption layer"
+**When** the description is corrected
+**Then** it uses accurate characterization consistent with the library being a full session service (FR-NEW-1)
+
+**Given** `docs/project-overview.md:28` exposes "raw SQL via aiosqlite" as implementation detail
+**When** the dependency table is reviewed
+**Then** the implementation detail is either removed or clearly marked as internal (not user-facing contract)
+
+**Given** `docs/project-overview.md:62-68` frames schema as "independent of ADK internals"
+**When** the framing is corrected
+**Then** it accurately describes the schema as operationally independent but structurally mirroring ADK V1
+
+**Given** `docs/contributing/docstring-templates.md:51` uses "drop-in replacement for ADK's DatabaseSessionService" as a template
+**When** the template is corrected
+**Then** it uses accurate language consistent with Story 6.1's corrections
+
+**And** no code logic is changed — only documentation, conventions, and planning artifact text
+
+### Story 6.3: Add Superseded Markers to Planning Artifacts & ADRs
+
+As a **future contributor or AI agent reading planning artifacts**,
+I want **revision markers on documents that contain superseded architectural claims**,
+So that **I don't build on stale assumptions while still understanding the historical context and reasoning**.
+
+**Acceptance Criteria:**
+
+**Given** `_bmad-output/planning-artifacts/prd.md` contains multiple stale claims corrected in Story 6.2
+**When** a revision marker is added
+**Then** the marker follows the format: `> **Revision Note (2026-03-04):** [What changed] that makes [specific claim] stale. See Issue #118 and Epic 7 for the architectural evolution path.` (FR-NEW-3)
+**And** the original text is preserved (not rewritten) — the marker annotates, not replaces
+
+**Given** `_bmad-output/planning-artifacts/architecture.md` describes the direct implementation architecture
+**When** a revision marker is added
+**Then** it notes that ADK V1 changed the wrapping viability (Python-side state merging, no more `json_patch` SQL) and references Epic 7 as the evolution path (FR-NEW-3)
+**And** the original architecture description is preserved as historical context
+
+**Given** `_bmad-output/project-context.md` contains stale schema claims
+**When** a revision marker is added
+**Then** it follows the same consistent format and references Issue #118 (FR-NEW-3)
+
+**Given** `docs/adr/ADR-000-strategy-decorator-architecture.md` rejects wrapping based on V0-era `json_patch` reasoning
+**When** a revision note is added to the "Why not wrap DatabaseSessionService" section
+**Then** it acknowledges that ADK V1 changed this — `DatabaseSessionService` now merges state in Python (`dict | delta`), not SQL (FR-NEW-3)
+**And** it references Epic 7 as the path to re-evaluate wrapping
+**And** the original rejection reasoning is preserved (it was correct for V0)
+
+**Given** `docs/adr/ADR-004-adk-schema-compatibility.md` describes the "own schema" strategy
+**When** a revision note is added
+**Then** it clarifies the schema mirrors ADK V1 structure with encrypted column types, not a truly independent design (FR-NEW-3)
+**And** it references Issue #118's finding about table name collision risk
+
+**And** all revision markers use the consistent format: `> **Revision Note (YYYY-MM-DD):** ...`
+**And** all markers reference Issue #118 as the source finding
+**And** no original content is deleted — markers annotate history, they don't rewrite it
+
+---
+
+## Epic 7: Architecture Migration — DatabaseSessionService Wrapper
+
+Encrypted sessions work with any database ADK supports — SQLite, PostgreSQL, MySQL, MariaDB — with zero additional configuration beyond what ADK already provides. The ~800-line raw aiosqlite implementation is replaced by a thin wrapper around DatabaseSessionService via SQLAlchemy TypeDecorator, focused solely on encryption — the project's actual value-add. The encryption core (EncryptionBackend protocol, FernetBackend, serialization envelope) is untouched. aiosqlite is removed as a direct dependency.
+
+### Story 7.1: TypeDecorator Wrapping Spike
+
+As a **library maintainer**,
+I want **a validated proof-of-concept that wraps DatabaseSessionService via SQLAlchemy TypeDecorator for transparent encrypt/decrypt at the ORM boundary**,
+So that **I have evidence-based confidence (or a clear no-go) before committing to the architecture migration**.
+
+**Acceptance Criteria:**
+
+**Given** ADK V1's `DatabaseSessionService` merges state in Python (`dict | delta`), not via SQL `json_patch`
+**When** a prototype `TypeDecorator` is implemented that encrypts on `process_bind_param` and decrypts on `process_result_value`
+**Then** a round-trip test demonstrates: create session with state → retrieve session → state matches original (FR-NEW-4)
+**And** the prototype uses the existing `FernetBackend` and serialization envelope for encryption
+
+**Given** the prototype wraps `DatabaseSessionService`
+**When** the same inputs are provided to both the wrapped and unwrapped service
+**Then** the resulting `Session` and `Event` objects are structurally identical (same fields, same types, same values) — conformance verified
+
+**Given** the current schema reserves a `version INTEGER DEFAULT 1` column on `sessions`, `app_states`, and `user_states` (Story 1.2)
+**When** wrapping `DatabaseSessionService` inherits ADK's schema
+**Then** the spike assesses whether the `version` column reservation is preserved, lost, or can be added via schema extension
+**And** the impact on Story 4.4 (optimistic concurrency / key rotation) is documented
+
+**Given** existing users have SQLite databases with encrypted data under the current raw-aiosqlite schema
+**When** they upgrade to the wrapped version
+**Then** the spike assesses the migration path: is data migration required? Can the wrapped service read existing databases? Is a migration utility needed?
+**And** the migration assessment is documented with a recommendation
+
+**Given** the prototype exists
+**When** test feasibility is assessed
+**Then** the spike documents whether the new architecture can be tested cleanly — conformance tests, round-trip tests, and runner integration tests are all feasible
+**And** any testing challenges or limitations are documented
+
+**Given** all assessments are complete
+**When** the spike produces a findings document
+**Then** it contains a clear **go/no-go recommendation** with evidence
+**And** the findings document is saved to `_bmad-output/implementation-artifacts/`
+**And** if no-go, the document explains what blocked the approach and proposes alternatives
+
+**This story gates all subsequent Epic 7 stories. Stories 7.2-7.6 proceed only on a "go" decision.**
+
+### Story 7.2: ADR — Architecture Migration Decision
+
+As a **future contributor reading the ADR trail**,
+I want **a formal ADR documenting the decision to migrate from direct BaseSessionService implementation to DatabaseSessionService wrapping**,
+So that **I understand why the architecture changed, what evidence supported the decision, and what trade-offs were accepted**.
+
+**Acceptance Criteria:**
+
+**Given** the spike (Story 7.1) produced a go decision with evidence
+**When** a new ADR is created (e.g., `docs/adr/ADR-007-architecture-migration.md`)
+**Then** it follows the existing ADR format established by ADR-000 through ADR-006
+**And** the Context section explains: ADR-000's original rejection was based on V0-era `json_patch` SQL operations; ADK V1 changed state merging to Python-side `dict | delta`, making wrapping viable (FR-NEW-6)
+**And** the Decision section states: wrap `DatabaseSessionService` via SQLAlchemy `TypeDecorator` for transparent encrypt/decrypt at the ORM boundary
+**And** the Rationale section documents: multi-database support for free, connection pooling for free, row-level locking for free, schema migration for free, focus on encryption as sole value-add
+**And** the Consequences section documents: aiosqlite removed as direct dependency, Epic 4 Stories 4.1-4.3 superseded, existing user migration path required
+**And** the ADR references the spike findings document and Issue #118 as evidence
+**And** the ADR status is "Accepted"
+
+### Story 7.3: Rewrite EncryptedSessionService as DatabaseSessionService Wrapper
+
+As a **developer using the library**,
+I want **EncryptedSessionService to wrap DatabaseSessionService via TypeDecorator**,
+So that **I get encrypted sessions with any database ADK supports — SQLite, PostgreSQL, MySQL, MariaDB — without the library reimplementing persistence logic**.
+
+**Acceptance Criteria:**
+
+**Given** `EncryptedSessionService` currently implements ~800 lines of raw aiosqlite SQL
+**When** it is rewritten to wrap `DatabaseSessionService`
+**Then** a SQLAlchemy `TypeDecorator` handles transparent encrypt/decrypt at the ORM boundary (FR-NEW-4)
+**And** `EncryptedSessionService` still extends `BaseSessionService` (NFR20 — Runner compatibility preserved)
+**And** the public API signatures remain unchanged — `create_session`, `get_session`, `list_sessions`, `delete_session` (FR29)
+
+**Given** the rewrite uses `DatabaseSessionService` for persistence
+**When** the library is configured with a SQLite database URL
+**Then** encrypted sessions work identically to the previous implementation
+**And** when configured with a PostgreSQL, MySQL, or MariaDB URL, encrypted sessions work via DatabaseSessionService's dialect handling (FR-NEW-5, FR49)
+
+**Given** `aiosqlite` is currently a direct dependency in `pyproject.toml`
+**When** the rewrite is complete
+**Then** a grep of `src/adk_secure_sessions/` confirms no module imports `aiosqlite` directly
+**And** `aiosqlite` is removed from the direct dependency list in `pyproject.toml`
+**And** the direct runtime dependency count remains <= 5 (NFR23)
+
+**Given** the encryption core (EncryptionBackend protocol, FernetBackend, serialization envelope)
+**When** the rewrite is complete
+**Then** `protocols.py`, `backends/fernet.py`, `serialization.py`, and `exceptions.py` are untouched — zero changes to the encryption layer
+**And** the `TypeDecorator` uses the existing `encrypt_session`/`decrypt_session` functions from `serialization.py`
+
+**And** all session state and event data is encrypted at rest — no plaintext data paths exist (NFR5)
+**And** encryption keys never appear in log output, error messages, or exception tracebacks (NFR6)
+**And** the rewritten service handles the existing user migration path as determined by the spike (Story 7.1)
+
+### Story 7.4: Test Migration & Conformance Verification
+
+As a **library maintainer**,
+I want **a test suite that verifies the wrapped EncryptedSessionService is behaviorally equivalent to the previous implementation and to an unencrypted DatabaseSessionService**,
+So that **I have confidence the architecture migration introduced no regressions**.
+
+**Acceptance Criteria:**
+
+**Given** the rewritten `EncryptedSessionService` wraps `DatabaseSessionService`
+**When** conformance tests are run
+**Then** for identical inputs, the wrapped service produces the same `Session` and `Event` objects (same fields, types, values) as a raw `DatabaseSessionService` — except that persisted data is encrypted at rest
+**And** conformance tests cover: create, get, list, delete, and append_event operations
+
+**Given** the `TypeDecorator` encrypts on write and decrypts on read
+**When** round-trip encryption tests are run
+**Then** data verified at each boundary: plaintext → TypeDecorator encrypts → DB stores ciphertext → TypeDecorator decrypts → plaintext matches original
+**And** wrong-key decryption raises `DecryptionError`, never returns garbage data (NFR7)
+**And** empty state (`{}`) and empty event lists (`[]`) round-trip without error (NFR15)
+
+**Given** Story 1.6a verified ADK Runner accepts `EncryptedSessionService`
+**When** the runner integration test is re-run against the rewritten service
+**Then** the test passes — an ADK Runner can execute a complete agent turn using the wrapped service (NFR20)
+
+**Given** a database containing unencrypted `DatabaseSessionService` data (no encryption)
+**When** the wrapped `EncryptedSessionService` attempts to read that data
+**Then** it detects the unencrypted data and raises a clear error (not silent corruption or garbage data)
+**And** the error message indicates the data was not encrypted, not that decryption failed with wrong key
+
+**And** concurrent async session operations on the same database do not corrupt data (NFR25)
+**And** all async fixtures properly close database connections on teardown (NFR19)
+**And** code coverage remains >= 90% (NFR18)
+**And** the test suite passes with zero warnings (NFR16)
+
+### Story 7.5: Documentation & MkDocs Site Updates
+
+As a **developer reading the docs site after the architecture migration**,
+I want **documentation that accurately reflects the new wrapped architecture**,
+So that **I understand how encryption integrates with DatabaseSessionService and how to configure multi-database support**.
+
+**Acceptance Criteria:**
+
+**Given** the architecture has migrated from raw aiosqlite to DatabaseSessionService wrapping
+**When** the getting-started guide is updated
+**Then** it shows configuration for SQLite (default) and mentions PostgreSQL/MySQL/MariaDB as supported via DatabaseSessionService
+**And** the integration swap example reflects the new architecture
+
+**Given** `docs/project-overview.md` describes the library's architecture
+**When** it is updated
+**Then** it accurately describes the TypeDecorator wrapping approach
+**And** the dependency table reflects the removal of aiosqlite and the use of SQLAlchemy via DatabaseSessionService
+
+**Given** `docs/ARCHITECTURE.md` describes the system design
+**When** it is updated
+**Then** it reflects the new wrapper architecture with the TypeDecorator at the ORM boundary
+**And** it references ADR-007 (from Story 7.2) as the decision record
+
+**Given** the docs site has an index page and feature bullets
+**When** they are updated
+**Then** multi-database support is listed as a feature
+**And** the description matches the accurate language established in Epic 6
+
+**And** all new or modified documentation pages pass the docvet pre-commit hook
+**And** no code logic is changed — only documentation
+
+### Story 7.6: Revise Epic 4 Scope & Roadmap
+
+As a **contributor reading the backlog or roadmap**,
+I want **Epic 4's superseded stories formally closed and the roadmap updated to reflect that PostgreSQL comes for free**,
+So that **I don't waste time planning or implementing stories that have been superseded by Epic 7**.
+
+**Acceptance Criteria:**
+
+**Given** Epic 4 Stories 4.1 (Persistence Protocol), 4.2 (Encryption Coordinator), and 4.3 (PostgreSQL Backend) are superseded by Epic 7
+**When** `_bmad-output/planning-artifacts/epics.md` is updated
+**Then** Stories 4.1, 4.2, and 4.3 have `[SUPERSEDED by Epic 7]` markers (already added in Step 2)
+**And** Epic 4's goal statement is revised to reflect reduced scope: key rotation, backend docs, ops guide, Python version tracking
+**And** Epic 4's FR coverage is updated: FR49 remapped to Epic 7
+
+**Given** `docs/ROADMAP.md` describes Phase 3 capabilities
+**When** it is updated
+**Then** PostgreSQL support is listed as delivered by Epic 7 (not Epic 4)
+**And** the Phase 3 scope accurately reflects: AES-256-GCM (Epic 3) + architecture migration with multi-DB (Epic 7) + key rotation and docs (Epic 4 remainder)
+
+**And** any sprint plans or status documents referencing Epic 4 Stories 4.1-4.3 are updated or annotated
