@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.2](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.1...v1.0.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* **ci:** remove unsafe-best-match index strategy from smoke test ([592ebe1](https://github.com/Alberto-Codes/adk-secure-sessions/commit/592ebe1b427d860b81641658c77c735937e5be1b))
+* **ci:** replace TestPyPI gate with local wheel smoke test ([#97](https://github.com/Alberto-Codes/adk-secure-sessions/issues/97)) ([cf932e8](https://github.com/Alberto-Codes/adk-secure-sessions/commit/cf932e8d1d71f8a4547030dbf7c7eeeebea68908))
+* **docs:** apply code review fixes for Getting Started guide ([efb222e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/efb222e5038a54f5a49507091364ff81cb61d7ab))
+* **release:** guard fromJSON with short-circuit to prevent empty parse ([#90](https://github.com/Alberto-Codes/adk-secure-sessions/issues/90)) ([cd3eca5](https://github.com/Alberto-Codes/adk-secure-sessions/commit/cd3eca584094e57cf46aabe4dfa2788d88db28f3))
+
+
+### Documentation
+
+* **architecture:** add envelope protocol and algorithm specification pages ([#92](https://github.com/Alberto-Codes/adk-secure-sessions/issues/92)) ([f76555a](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f76555a5afa8f7a5478603b5df121c254d369474)), closes [#91](https://github.com/Alberto-Codes/adk-secure-sessions/issues/91)
+* **docstrings:** add Examples sections to 5 EncryptedSessionService ([44911c4](https://github.com/Alberto-Codes/adk-secure-sessions/commit/44911c4fecd7dfe99cf2bb64c8fbef7892e71af1))
+* **docstrings:** add fenced examples to all public APIs and enforce docvet fail-on ([#85](https://github.com/Alberto-Codes/adk-secure-sessions/issues/85)) ([44911c4](https://github.com/Alberto-Codes/adk-secure-sessions/commit/44911c4fecd7dfe99cf2bb64c8fbef7892e71af1))
+* **docstrings:** add missing See Also and Attributes sections ([44911c4](https://github.com/Alberto-Codes/adk-secure-sessions/commit/44911c4fecd7dfe99cf2bb64c8fbef7892e71af1))
+* **faq:** add FAQ page with 6 required entries and nav integration ([#96](https://github.com/Alberto-Codes/adk-secure-sessions/issues/96)) ([f3e7ade](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f3e7ade838d33f3e141b1b94acc6b185f5e93526)), closes [#95](https://github.com/Alberto-Codes/adk-secure-sessions/issues/95)
+* **getting-started:** add Getting Started guide with full example and ([efb222e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/efb222e5038a54f5a49507091364ff81cb61d7ab))
+* **getting-started:** add Getting Started guide with full example and verification ([#101](https://github.com/Alberto-Codes/adk-secure-sessions/issues/101)) ([efb222e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/efb222e5038a54f5a49507091364ff81cb61d7ab)), closes [#100](https://github.com/Alberto-Codes/adk-secure-sessions/issues/100)
+* **mkdocs:** restructure nav, add strict builds, and complete site setup ([#88](https://github.com/Alberto-Codes/adk-secure-sessions/issues/88)) ([8544448](https://github.com/Alberto-Codes/adk-secure-sessions/commit/85444486d2c58c816dbdcd03a57b07fa650dd867)), closes [#86](https://github.com/Alberto-Codes/adk-secure-sessions/issues/86)
+* **roadmap:** update completion status, add backend upgrade schedule ([#94](https://github.com/Alberto-Codes/adk-secure-sessions/issues/94)) ([1357afd](https://github.com/Alberto-Codes/adk-secure-sessions/commit/1357afd5698a1fab4c9d7f224c81962aeaa71ee1)), closes [#93](https://github.com/Alberto-Codes/adk-secure-sessions/issues/93)
+* **templates:** prescribe fenced-blocks-everywhere in ([44911c4](https://github.com/Alberto-Codes/adk-secure-sessions/commit/44911c4fecd7dfe99cf2bb64c8fbef7892e71af1))
+
 ## [1.0.1](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.0...v1.0.1) (2026-03-02)
 
 
