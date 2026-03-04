@@ -1,5 +1,13 @@
 # adk-secure-sessions
 
+[![CI](https://img.shields.io/github/actions/workflow/status/Alberto-Codes/adk-secure-sessions/ci.yml?branch=main)](https://github.com/Alberto-Codes/adk-secure-sessions/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/Alberto-Codes/adk-secure-sessions/graph/badge.svg)](https://codecov.io/gh/Alberto-Codes/adk-secure-sessions)
+[![PyPI](https://img.shields.io/pypi/v/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
+[![Python](https://img.shields.io/pypi/pyversions/adk-secure-sessions)](https://pypi.org/project/adk-secure-sessions/)
+[![License](https://img.shields.io/pypi/l/adk-secure-sessions)](https://github.com/Alberto-Codes/adk-secure-sessions/blob/main/LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![docs vetted](https://img.shields.io/badge/docs%20vetted-docvet-purple)](https://github.com/Alberto-Codes/docvet)
+
 **Encrypted session storage for Google ADK**
 
 adk-secure-sessions is a drop-in replacement for ADK's `DatabaseSessionService` and `SqliteSessionService` that encrypts session data at rest. Built for applications in healthcare, finance, and other regulated industries.

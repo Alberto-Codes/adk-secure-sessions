@@ -1,0 +1,201 @@
+/* adk-secure-sessions — Deep Navy + Teal/Cyan palette */
+
+/* Dark mode (default) */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #141b2d;
+  --md-default-bg-color--light: #1a2240;
+  --md-default-bg-color--lighter: #202a4a;
+  --md-default-bg-color--lightest: #263054;
+  --md-primary-fg-color: #16213e;
+  --md-primary-fg-color--light: #1a2744;
+  --md-primary-fg-color--dark: #0f1a2e;
+  --md-accent-fg-color: #00bcd4;
+  --md-typeset-a-color: #00bcd4;
+  --md-code-bg-color: #0f1520;
+  --md-code-hl-color: rgba(0, 188, 212, 0.15);
+  --md-footer-bg-color: #0f1520;
+  --md-footer-bg-color--dark: #0a0f1a;
+}
+
+[data-md-color-scheme="slate"] .md-header {
+  background-color: #16213e;
+}
+
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #1a2744;
+}
+
+[data-md-color-scheme="slate"] .md-nav__link--active,
+[data-md-color-scheme="slate"] .md-nav__link:hover {
+  color: #00bcd4;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: rgba(0, 188, 212, 0.10);
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: rgba(0, 188, 212, 0.07);
+  color: #4dd0e1;
+}
+
+[data-md-color-scheme="slate"] .md-search__input {
+  background-color: #252547;
+}
+
+[data-md-color-scheme="slate"] .md-header__topic {
+  font-weight: 700;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2 {
+  color: #e0f7fa;
+}
+
+/* Dark mode — admonitions */
+[data-md-color-scheme="slate"] .md-typeset .admonition.tip,
+[data-md-color-scheme="slate"] .md-typeset details.tip {
+  border-color: #00bcd4;
+}
+[data-md-color-scheme="slate"] .md-typeset .tip > .admonition-title,
+[data-md-color-scheme="slate"] .md-typeset .tip > summary {
+  background-color: rgba(0, 188, 212, 0.1);
+}
+[data-md-color-scheme="slate"] .md-typeset .tip > .admonition-title::before,
+[data-md-color-scheme="slate"] .md-typeset .tip > summary::before {
+  background-color: #00bcd4;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition.warning,
+[data-md-color-scheme="slate"] .md-typeset details.warning {
+  border-color: #ffab40;
+}
+[data-md-color-scheme="slate"] .md-typeset .warning > .admonition-title,
+[data-md-color-scheme="slate"] .md-typeset .warning > summary {
+  background-color: rgba(255, 171, 64, 0.1);
+}
+[data-md-color-scheme="slate"] .md-typeset .warning > .admonition-title::before,
+[data-md-color-scheme="slate"] .md-typeset .warning > summary::before {
+  background-color: #ffab40;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .admonition.info,
+[data-md-color-scheme="slate"] .md-typeset details.info {
+  border-color: #7b8cde;
+}
+[data-md-color-scheme="slate"] .md-typeset .info > .admonition-title,
+[data-md-color-scheme="slate"] .md-typeset .info > summary {
+  background-color: rgba(123, 140, 222, 0.1);
+}
+[data-md-color-scheme="slate"] .md-typeset .info > .admonition-title::before,
+[data-md-color-scheme="slate"] .md-typeset .info > summary::before {
+  background-color: #7b8cde;
+}
+
+/* Dark mode — card hover */
+[data-md-color-scheme="slate"] .md-typeset .grid.cards > ul > li:hover {
+  border-color: rgba(0, 188, 212, 0.4);
+}
+
+/* Dark mode — code line highlights */
+[data-md-color-scheme="slate"] .highlight .hll {
+  background-color: rgba(0, 188, 212, 0.18);
+  display: block;
+  margin: 0 -1em;
+  padding: 0 1em;
+}
+
+/* Light mode */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: #fafaf8;
+  --md-default-bg-color--light: #f5f5f2;
+  --md-default-bg-color--lighter: #eeeee9;
+  --md-default-bg-color--lightest: #e8e8e2;
+  --md-primary-fg-color: #16213e;
+  --md-primary-fg-color--light: #1a2744;
+  --md-primary-fg-color--dark: #0f1a2e;
+  --md-accent-fg-color: #007c85;
+  --md-typeset-a-color: #007c85;
+  --md-code-bg-color: #f0f4f5;
+  --md-code-hl-color: rgba(0, 124, 133, 0.15);
+  --md-footer-bg-color: #0f1520;
+  --md-footer-bg-color--dark: #0a0f1a;
+}
+
+[data-md-color-scheme="default"] .md-header {
+  background-color: #16213e;
+}
+
+[data-md-color-scheme="default"] .md-tabs {
+  background-color: #1a2744;
+}
+
+[data-md-color-scheme="default"] .md-nav__link--active,
+[data-md-color-scheme="default"] .md-nav__link:hover {
+  color: #007c85;
+}
+
+[data-md-color-scheme="default"] .md-typeset table:not([class]) th {
+  background-color: rgba(0, 124, 133, 0.08);
+}
+
+[data-md-color-scheme="default"] .md-typeset code {
+  background-color: rgba(0, 124, 133, 0.07);
+  color: #006064;
+}
+
+[data-md-color-scheme="default"] .md-search__input {
+  background-color: #e8eef0;
+}
+
+[data-md-color-scheme="default"] .md-header__topic {
+  font-weight: 700;
+}
+
+/* Light mode — code line highlights */
+[data-md-color-scheme="default"] .highlight .hll {
+  background-color: rgba(0, 124, 133, 0.15);
+  display: block;
+  margin: 0 -1em;
+  padding: 0 1em;
+}
+
+/* Light mode — admonitions */
+[data-md-color-scheme="default"] .md-typeset .admonition.tip,
+[data-md-color-scheme="default"] .md-typeset details.tip {
+  border-color: #007c85;
+}
+[data-md-color-scheme="default"] .md-typeset .tip > .admonition-title,
+[data-md-color-scheme="default"] .md-typeset .tip > summary {
+  background-color: rgba(0, 124, 133, 0.08);
+}
+[data-md-color-scheme="default"] .md-typeset .tip > .admonition-title::before,
+[data-md-color-scheme="default"] .md-typeset .tip > summary::before {
+  background-color: #007c85;
+}
+
+[data-md-color-scheme="default"] .md-typeset .admonition.warning,
+[data-md-color-scheme="default"] .md-typeset details.warning {
+  border-color: #e65100;
+}
+[data-md-color-scheme="default"] .md-typeset .warning > .admonition-title,
+[data-md-color-scheme="default"] .md-typeset .warning > summary {
+  background-color: rgba(230, 81, 0, 0.08);
+}
+[data-md-color-scheme="default"] .md-typeset .warning > .admonition-title::before,
+[data-md-color-scheme="default"] .md-typeset .warning > summary::before {
+  background-color: #e65100;
+}
+
+[data-md-color-scheme="default"] .md-typeset .admonition.info,
+[data-md-color-scheme="default"] .md-typeset details.info {
+  border-color: #4a5a9e;
+}
+[data-md-color-scheme="default"] .md-typeset .info > .admonition-title,
+[data-md-color-scheme="default"] .md-typeset .info > summary {
+  background-color: rgba(74, 90, 158, 0.08);
+}
+[data-md-color-scheme="default"] .md-typeset .info > .admonition-title::before,
+[data-md-color-scheme="default"] .md-typeset .info > summary::before {
+  background-color: #4a5a9e;
+}
