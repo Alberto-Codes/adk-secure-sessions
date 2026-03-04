@@ -152,14 +152,20 @@ You will systematically re-do the entire story creation process, but with a crit
 - **Integration pattern breaks:** Missing data flow requirements that could cause system failures
 - **Deployment failures:** Missing environment requirements that could prevent deployment
 
-#### **3.4 Regression DISASTERS**
+#### **3.4 Documentation Impact DISASTERS**
+
+- **Missing doc impact assessment:** Documentation Impact table left empty or filled with "None" without justification
+- **Stale docs:** Story changes public API, envelope protocol, or user-facing workflow but no doc pages listed for update
+- **Orphaned references:** New modules or symbols added without ensuring auto-generated reference docs will pick them up
+
+#### **3.5 Regression DISASTERS**
 
 - **Breaking changes:** Missing requirements that could break existing functionality
 - **Test failures:** Missing test requirements that could allow bugs to reach production
 - **UX violations:** Missing user experience requirements that could ruin the product
 - **Learning failures:** Missing previous story context that could repeat same mistakes
 
-#### **3.5 Implementation DISASTERS**
+#### **3.6 Implementation DISASTERS**
 
 - **Vague implementations:** Missing details that could lead to incorrect or incomplete work
 - **Completion lies:** Missing acceptance criteria that could allow fake implementations

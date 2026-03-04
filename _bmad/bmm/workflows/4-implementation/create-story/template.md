@@ -23,6 +23,16 @@ so that {{benefit}}.
 - [ ] Task 2 (AC: #)
   - [ ] Subtask 2.1
 
+### Cross-Cutting Test Maturity (Standing Task)
+
+<!-- Every story includes one small-footprint, high-risk-area test addition.
+     This is brownfield hardening — pick a gap in an area NOT related to the
+     story scope so the safety net grows steadily across epics. -->
+
+- [ ] Identify one high-risk area lacking test coverage (outside story scope)
+- [ ] Add test(s) — small footprint, meaningful assertion
+- [ ] Verify new test(s) pass in CI
+
 ## AC-to-Test Mapping
 
 <!-- Dev agent MUST fill this table before marking story done -->
