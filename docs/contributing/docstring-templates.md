@@ -48,10 +48,10 @@ See Also:
 
 ```python
 class EncryptedSessionService:
-    """Encrypted drop-in replacement for ADK's DatabaseSessionService.
+    """Encrypted session service implementing ``BaseSessionService`` with field-level encryption.
 
     Attributes:
-        db_url (str): SQLAlchemy database URL.
+        db_url (str): Database connection URL.
         backend (EncryptionBackend): Encryption backend instance.
 
     Examples:
