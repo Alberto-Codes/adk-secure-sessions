@@ -1,4 +1,4 @@
-# generated: 2026-03-03
+# generated: 2026-03-04
 # project: adk-secure-sessions
 # project_key: NOKEY
 # tracking_system: both
@@ -21,6 +21,7 @@
 #   - in-progress: Developer actively working on implementation
 #   - review: Ready for code review (via Dev's code-review workflow)
 #   - done: Story completed
+#   - superseded: Story replaced by another epic/story
 #
 # Retrospective Status:
 #   - optional: Can be completed but not required
@@ -33,7 +34,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-03-03
+generated: 2026-03-04
 project: adk-secure-sessions
 project_key: NOKEY
 tracking_system: both
@@ -76,10 +77,11 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: PostgreSQL Persistence & Key Rotation (Phase 3)
+  # NOTE: Stories 4.1, 4.2, 4.3 are SUPERSEDED by Epic 7 (Architecture Migration)
   epic-4: backlog
-  4-1-persistence-protocol-sqlite-extraction: backlog
-  4-2-encryption-coordinator-extraction: backlog
-  4-3-postgresql-persistence-backend: backlog
+  4-1-persistence-protocol-sqlite-extraction: superseded  # [SUPERSEDED by Epic 7]
+  4-2-encryption-coordinator-extraction: superseded  # [SUPERSEDED by Epic 7]
+  4-3-postgresql-persistence-backend: superseded  # [SUPERSEDED by Epic 7]
   4-4-zero-downtime-key-rotation: backlog
   4-5-backend-authoring-documentation: backlog
   4-6-operations-guide: backlog
@@ -94,3 +96,21 @@ development_status:
   5-4-hashicorp-vault-backend: backlog
   5-5-audit-logging-compliance-reporting: backlog
   epic-5-retrospective: optional
+
+  # Epic 6: Documentation Honesty (Now)
+  epic-6: in-progress
+  6-1-fix-user-facing-drop-in-replacement-claims: done
+  6-2-fix-schema-independence-architecture-characterization-claims: backlog
+  6-3-add-superseded-markers-to-planning-artifacts-adrs: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)
+  # NOTE: Story 7.1 (spike) gates all subsequent stories — proceed only on "go" decision
+  epic-7: backlog
+  7-1-typedecorator-wrapping-spike: backlog
+  7-2-adr-architecture-migration-decision: backlog
+  7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: backlog
+  7-4-test-migration-conformance-verification: backlog
+  7-5-documentation-mkdocs-site-updates: backlog
+  7-6-revise-epic-4-scope-roadmap: backlog
+  epic-7-retrospective: optional
