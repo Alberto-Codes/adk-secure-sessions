@@ -40,7 +40,7 @@ session_service = EncryptedSessionService(
 )
 ```
 
-Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/main/docs) for details.
+Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://alberto-codes.github.io/adk-secure-sessions/) for details.
 
 ## What Gets Encrypted
 
@@ -53,8 +53,7 @@ Use `session_service` exactly like any ADK session service — `create_session`,
 
 ## Links
 
-<!-- Update to https://alberto-codes.github.io/adk-secure-sessions/ when MkDocs deploys (Story 2.2) -->
-- [Documentation](https://github.com/Alberto-Codes/adk-secure-sessions/tree/main/docs)
+- [Documentation](https://alberto-codes.github.io/adk-secure-sessions/)
 - [Security Policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 - [Roadmap](docs/ROADMAP.md)
