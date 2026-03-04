@@ -1,6 +1,6 @@
 # Story 6.2: Fix Schema Independence & Architecture Characterization Claims
 
-Status: review
+Status: done
 Branch: feat/docs-6-2-fix-schema-claims
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/121
 
@@ -206,21 +206,24 @@ No peripheral config impact — this story changes only documentation, conventio
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial)
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | `.specify/memory/constitution.md:52` stale "independent of ADK" in governance principle | Fixed — added "derived from ADK's public model contract with encrypted column types, operationally independent" |
+| M2 | MEDIUM | Completion Notes grep audit incomplete — missed `.specify/memory/constitution.md` | Fixed — added constitution.md to grep audit list |
+| L1 | LOW | `prd.md:252` "encryption layer" in Kenji persona narrative | Dismissed — persona narrative context, not library characterization |
+| L2 | LOW | Unreachable dead code (line 723 temp: discard) not tracked as issue | Dismissed — documented in Dev Notes, sufficient for 3 lines of defensive code |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (178 passed)
+- [x] Quality gates re-verified (ruff clean)
 
 ## Change Log
 
@@ -228,6 +231,7 @@ No peripheral config impact — this story changes only documentation, conventio
 |------|-------------|
 | 2026-03-04 | Story created by create-story workflow |
 | 2026-03-04 | Implementation complete — all 9 ACs addressed, pre-commit passes, cross-cutting test added |
+| 2026-03-04 | Code review fixes — M1: fixed stale "independent of ADK" in `.specify/memory/constitution.md:52`; M2: updated Completion Notes grep audit; L1/L2 dismissed (persona narrative + documented dead code) |
 
 ## Dev Agent Record
 
@@ -247,7 +251,7 @@ None — clean implementation, no debugging needed.
 - "encryption layer" replaced with "encrypted session persistence" (ROADMAP) and "session encryption architecture" (PRD)
 - SQLAlchemy reclassified as transitive dependency via google-adk
 - Docstring template updated from "drop-in replacement" to "BaseSessionService with field-level encryption"
-- Grep verification: no stale "drop-in replacement" in changed files; remaining "independent of ADK" instances are in ADR-004 (accurate), CHANGELOG (historical), and reference material (appropriate)
+- Grep verification: no stale "drop-in replacement" in changed files; remaining "independent of ADK" instances are in ADR-004 (accurate), CHANGELOG (historical), `.specify/memory/constitution.md` (governance — fixed in review), and reference material (appropriate)
 - Cross-cutting test: added `test_round_trip_empty_dict` to serialization tests — verifies empty dict survives full encrypt/decrypt cycle
 - Discovery: line 723 (`temp:` key discard in `_extract_and_persist_state_delta`) is unreachable because `_trim_temp_delta_state` removes temp keys before this method is called — defensive dead code
 
@@ -263,3 +267,4 @@ None — clean implementation, no debugging needed.
 - _bmad-output/implementation-artifacts/sprint-status.yaml (modified — story status)
 - _bmad-output/implementation-artifacts/6-2-fix-schema-independence-architecture-characterization-claims.md (modified — story file)
 - tests/unit/test_serialization.py (modified — added empty dict round-trip test)
+- .specify/memory/constitution.md (modified — fixed stale "independent of ADK" in governance principle)
