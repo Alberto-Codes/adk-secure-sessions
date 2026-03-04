@@ -3,7 +3,6 @@ site_description: Encrypted session storage for Google ADK
 site_url: https://alberto-codes.github.io/adk-secure-sessions/
 repo_url: https://github.com/Alberto-Codes/adk-secure-sessions
 repo_name: Alberto-Codes/adk-secure-sessions
-edit_uri: edit/HEAD/docs/
 
 theme:
   name: material
@@ -24,7 +23,6 @@ theme:
     - search.highlight
     - content.code.copy
     - content.code.annotate
-    - content.action.edit
     - content.tooltips
   palette:
     - scheme: slate
