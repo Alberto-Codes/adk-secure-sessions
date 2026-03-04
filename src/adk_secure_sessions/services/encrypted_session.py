@@ -120,7 +120,7 @@ class EncryptedSessionService(BaseSessionService):
     """Encrypted session service implementing BaseSessionService.
 
     Provides transparent field-level encryption for session state and
-    event data. Implements ADK's ``BaseSessionService`` with field-level encryption at rest.
+    event data at rest via a pluggable encryption backend.
 
     Attributes:
         db_path (str): Path to the SQLite database file (read-only after init).
