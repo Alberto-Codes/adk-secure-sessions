@@ -7,8 +7,8 @@ Attributes:
     EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
         contract.
     FernetBackend: Fernet symmetric encryption backend.
-    EncryptedSessionService: Drop-in replacement for ADK's
-        ``DatabaseSessionService`` with transparent encryption.
+    EncryptedSessionService: Encrypted session service implementing
+        ``BaseSessionService`` with transparent encryption.
     SecureSessionError: Base exception for all library errors.
     EncryptionError: Raised when encryption fails.
     DecryptionError: Raised when decryption fails.

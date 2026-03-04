@@ -10,7 +10,7 @@
 
 **Encrypted session storage for Google ADK**
 
-adk-secure-sessions is a drop-in replacement for ADK's `DatabaseSessionService` and `SqliteSessionService` that encrypts session data at rest. Built for applications in healthcare, finance, and other regulated industries.
+adk-secure-sessions is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest. Built for applications in healthcare, finance, and other regulated industries.
 
 ## Quick Links
 

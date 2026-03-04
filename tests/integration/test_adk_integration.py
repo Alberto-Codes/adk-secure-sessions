@@ -495,6 +495,68 @@ class TestDeleteSessionIntegration:
             )
 
 
+class TestSessionRecreateAfterDelete:
+    """Cross-cutting: recreating a session after deletion returns fresh data."""
+
+    async def test_recreate_session_after_delete_has_no_stale_events(
+        self, db_path: str, fernet_backend: FernetBackend
+    ) -> None:
+        """Verify a new session shares no events with a deleted session."""
+        from google.adk.events.event import Event
+
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=fernet_backend,
+            backend_id=BACKEND_FERNET,
+        ) as service:
+            # Create session and add events
+            session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-1",
+                state={"counter": 1},
+            )
+            original_id = session.id
+
+            event = Event(
+                id="evt-old",
+                author="agent",
+                invocation_id="inv-1",
+            )
+            await service.append_event(session, event)
+
+            # Delete the session
+            await service.delete_session(
+                app_name="my-agent",
+                user_id="user-1",
+                session_id=original_id,
+            )
+
+            # Recreate with fresh state
+            new_session = await service.create_session(
+                app_name="my-agent",
+                user_id="user-1",
+                state={"counter": 99},
+            )
+
+            # Retrieve and verify fresh data
+            retrieved = await service.get_session(
+                app_name="my-agent",
+                user_id="user-1",
+                session_id=new_session.id,
+            )
+            assert retrieved is not None
+            assert retrieved.state["counter"] == 99
+            assert len(retrieved.events) == 0
+
+            # Original session should be gone
+            gone = await service.get_session(
+                app_name="my-agent",
+                user_id="user-1",
+                session_id=original_id,
+            )
+            assert gone is None
+
+
 class TestWrongKeyIntegration:
     """Integration tests for wrong encryption key scenarios."""
 

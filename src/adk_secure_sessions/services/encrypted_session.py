@@ -1,6 +1,6 @@
 """Encrypted session service implementation.
 
-Provides a drop-in replacement for ADK's ``DatabaseSessionService`` with
+Provides an encrypted session service implementing ``BaseSessionService`` with
 transparent field-level encryption for session state and event data.
 
 Examples:
@@ -120,7 +120,7 @@ class EncryptedSessionService(BaseSessionService):
     """Encrypted session service implementing BaseSessionService.
 
     Provides transparent field-level encryption for session state and
-    event data. Drop-in replacement for ADK's ``DatabaseSessionService``.
+    event data. Implements ADK's ``BaseSessionService`` with field-level encryption at rest.
 
     Attributes:
         db_path (str): Path to the SQLite database file (read-only after init).

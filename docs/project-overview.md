@@ -5,7 +5,7 @@
 
 ## Summary
 
-**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is a drop-in replacement for ADK's `DatabaseSessionService` and `SqliteSessionService` that encrypts session data at rest using pluggable encryption backends.
+**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest using pluggable encryption backends.
 
 - **Version**: 0.1.1 (Alpha)
 - **License**: Apache-2.0
