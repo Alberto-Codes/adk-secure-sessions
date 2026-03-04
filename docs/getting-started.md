@@ -179,11 +179,16 @@ try:
         backend=FernetBackend("correct-passphrase"),
         backend_id=BACKEND_FERNET,
     ) as service:
+        # get_session returns None for missing sessions.
+        # DecryptionError is raised when reading a session that
+        # was encrypted with a different key.
         session = await service.get_session(
             app_name="my-agent",
             user_id="user-123",
             session_id="some-session-id",
         )
+        if session is None:
+            print("Session not found")
 except ConfigurationError:
     print("Backend doesn't conform to EncryptionBackend protocol")
 except DecryptionError:

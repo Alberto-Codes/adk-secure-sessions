@@ -71,7 +71,7 @@ class TestGettingStartedExamples:
 
         # Strip asyncio.run() — we're already in an async event loop.
         # exec() defines main(), then we await it directly.
-        source = source.replace("asyncio.run(main())\n", "")
+        source = re.sub(r"asyncio\.run\(main\(\)\)\s*\n?", "", source)
 
         namespace: dict[str, object] = {}
         exec(compile(source, f"{doc_path}:full-example", "exec"), namespace)  # noqa: S102
