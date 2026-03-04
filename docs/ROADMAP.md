@@ -2,7 +2,7 @@
 
 ## Vision
 
-adk-secure-sessions provides the missing encryption layer for Google ADK's session storage. Any developer building ADK agents that handle sensitive data should be able to `pip install adk-secure-sessions`, swap one line, and have encrypted sessions — with the option to plug in enterprise key management when compliance demands it.
+adk-secure-sessions provides encrypted session persistence for Google ADK's session storage. Any developer building ADK agents that handle sensitive data should be able to `pip install adk-secure-sessions`, swap one line, and have encrypted sessions — with the option to plug in enterprise key management when compliance demands it.
 
 ## Backend Upgrade Schedule
 

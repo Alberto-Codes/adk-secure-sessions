@@ -34,6 +34,6 @@ This keeps us compatible across the google-adk version matrix (1.22.0 through la
 
 ## Own Our Schema
 
-We manage our own SQLite tables (`sessions`, `events`), independent of ADK's internal schema. All database access uses raw parametrized SQL via aiosqlite, not SQLAlchemy ORM.
+Our SQLite schema (`app_states`, `user_states`, `sessions`, `events`) is derived from ADK's Session/Event data model contract with encrypted column types. Operationally independent — own tables, own migrations, own encryption — but structurally coupled to ADK's public model contract. All database access uses raw parametrized SQL via aiosqlite, not SQLAlchemy ORM.
 
-This gives us full control over the storage layer — encryption, indexing, and migration — without coupling to ADK's internal database decisions. See [ADR-004: ADK Interface Compatibility Strategy](docs/adr/ADR-004-adk-schema-compatibility.md).
+This gives us full control over the storage layer — encryption, indexing, and migration — while acknowledging that our table structure follows ADK's data model. See [ADR-004: ADK Interface Compatibility Strategy](docs/adr/ADR-004-adk-schema-compatibility.md).

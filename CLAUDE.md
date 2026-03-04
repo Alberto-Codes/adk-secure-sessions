@@ -8,7 +8,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-02
 - Dev tooling: ruff (lint/format), ty (type checking), pytest + pytest-asyncio + pytest-mock
 - Docs tooling: griffe, mkdocs-gen-files (future MkDocs site)
 - Python 3.12 (per `requires-python` in pyproject.toml) + google-adk (BaseSessionService, Session, Event), aiosqlite, cryptography (006-encrypted-session-service)
-- SQLite via aiosqlite (async), own schema independent of ADK (006-encrypted-session-service)
+- SQLite via aiosqlite (async), schema derived from ADK's data model with encrypted columns (006-encrypted-session-service)
 
 ## Project Structure
 

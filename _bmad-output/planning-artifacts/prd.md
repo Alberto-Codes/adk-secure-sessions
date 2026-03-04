@@ -331,7 +331,7 @@ The user journeys above reveal that compliance is a first-class adoption driver,
 
 **ADK upstream compatibility.** The library extends `BaseSessionService` using only documented public methods (`create_session`, `get_session`, `list_sessions`, `delete_session`). It must not monkey-patch, override private methods, or redefine `Session` or `Event` types. Compatibility must be tested against the ADK version matrix (1.22.0 through latest) on every release. See ADR-004.
 
-**Own schema, no coupling.** The library manages its own SQLite tables (`sessions`, `events`), independent of ADK's internal schema. All database access uses raw parameterized SQL via aiosqlite. This gives full control over encryption, indexing, and migration without coupling to ADK's internal database decisions. See ADR-004.
+**Schema derived from ADK's data model contract.** The library manages its own SQLite tables (`app_states`, `user_states`, `sessions`, `events`) with encrypted column types. Operationally independent — own tables, own migrations, own encryption — but structurally coupled to ADK's public model contract. All database access uses raw parameterized SQL via aiosqlite. See ADR-004.
 
 **Dependency minimalism.** Runtime dependencies must remain minimal: `google-adk`, `cryptography`, `aiosqlite`. Each additional dependency expands the attack surface and complicates security audits (Diane's journey). New persistence backends (Postgres) add their driver as an optional dependency, not a required one.
 
@@ -369,7 +369,7 @@ adk-secure-sessions introduces a self-describing binary envelope: `[version_byte
 - **Multi-backend coexistence**: Different sessions can use different backends simultaneously. The service dispatches based on the header, not configuration.
 - **Operational debugging**: When a `DecryptionError` occurs, the envelope header tells operations *which backend* produced the ciphertext, narrowing root cause immediately.
 
-This is a genuine architectural innovation — it trades 2 bytes of overhead per record for a fundamentally more capable encryption layer.
+This is a genuine architectural innovation — it trades 2 bytes of overhead per record for a fundamentally more capable session encryption architecture.
 
 **3. Protocol-Based Plugin Boundary (Ecosystem Play)**
 

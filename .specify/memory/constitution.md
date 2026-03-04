@@ -49,7 +49,9 @@ key material, or plaintext.
 
 The library MUST implement `BaseSessionService` directly — not
 wrap or decorate ADK's built-in services. The library MUST own
-its own database schema, independent of ADK's internal tables.
+its own database schema, derived from ADK's public model contract
+with encrypted column types, operationally independent of ADK's
+internal tables.
 Dependencies on ADK MUST be limited to the public API surface:
 `BaseSessionService` method signatures, `Session`/`Event` models,
 and state prefix constants. CI MUST test against both the minimum

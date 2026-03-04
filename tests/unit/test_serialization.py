@@ -158,6 +158,13 @@ class TestEncryptSession:
 class TestDecryptSession:
     """User Story 2 — Decrypt session state dicts."""
 
+    async def test_round_trip_empty_dict(self) -> None:
+        """T061: Round-trip encrypt/decrypt with empty dict returns empty dict."""
+        backend = _MockBackend()
+        envelope = await encrypt_session({}, backend, BACKEND_FERNET)
+        restored = await decrypt_session(envelope, backend)
+        assert restored == {}
+
     async def test_round_trip_type_diverse(self) -> None:
         """T014: Round-trip with strings, numbers, booleans, nulls, nested."""
         backend = _MockBackend()

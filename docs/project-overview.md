@@ -25,7 +25,7 @@ Google ADK's built-in session services store all session data — including user
 | Framework | google-adk | >=1.22.0 | Upstream ADK (BaseSessionService, Session, Event) |
 | Encryption | cryptography | >=44.0.0 | Fernet symmetric encryption (AES-128-CBC + HMAC-SHA256) |
 | Database | aiosqlite | >=0.19.0 | Async SQLite access |
-| ORM | SQLAlchemy | >=2.0.0 | Listed as dependency (raw SQL via aiosqlite in practice) |
+| ORM (transitive) | SQLAlchemy | >=2.0.0 | Transitive via google-adk — not used directly; all DB access uses raw aiosqlite |
 | Linter/Formatter | ruff | >=0.13.0 | Linting + formatting (Google style) |
 | Type Checker | ty | >=0.0.1a20 | Type checking |
 | Test Framework | pytest | >=8.4.2 | Unit + integration tests |
@@ -59,7 +59,7 @@ Google ADK's built-in session services store all session data — including user
 
 ## Database Schema
 
-Own SQLite schema (independent of ADK internals):
+Own SQLite schema (derived from ADK's Session/Event data model, operationally independent with encrypted column types):
 
 - `app_states` — App-level encrypted state (keyed by `app_name`)
 - `user_states` — User-level encrypted state (keyed by `app_name`, `user_id`)

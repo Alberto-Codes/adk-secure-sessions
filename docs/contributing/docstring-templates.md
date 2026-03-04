@@ -48,10 +48,10 @@ See Also:
 
 ```python
 class EncryptedSessionService:
-    """Encrypted drop-in replacement for ADK's DatabaseSessionService.
+    """Encrypted session service implementing ``BaseSessionService`` with field-level encryption.
 
     Attributes:
-        db_url (str): SQLAlchemy database URL.
+        db_path (str): Path to the SQLite database file.
         backend (EncryptionBackend): Encryption backend instance.
 
     Examples:
@@ -59,8 +59,8 @@ class EncryptedSessionService:
 
         ```python
         service = EncryptedSessionService(
-            db_url="sqlite+aiosqlite:///./sessions.db",
-            encryption_key="your-secret-key",
+            db_path="sessions.db",
+            backend=FernetBackend(key),
         )
         session = await service.create_session(
             app_name="my_agent", user_id="user_123"

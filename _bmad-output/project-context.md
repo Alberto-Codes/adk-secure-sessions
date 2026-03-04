@@ -70,7 +70,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Serialization functions are module-level** — `encrypt_session()`, `decrypt_session()`, `encrypt_json()`, `decrypt_json()` are stateless functions, not methods
 
 #### Database Layer
-- **Own schema, independent of ADK** — we manage our own SQLite tables (`sessions`, `events`), not ADK's internal schema
+- **Schema derived from ADK's data model** — we manage our own SQLite tables (`app_states`, `user_states`, `sessions`, `events`) with encrypted column types, operationally independent of ADK's internal tables
 - **`PRAGMA foreign_keys = ON`** — always enabled at connection init
 - **Parametrized queries only** — `await conn.execute("... WHERE id = ?", (value,))`, never f-string SQL
 - **Lazy connection** — DB connection created on first use via `_get_connection()` → `_init_db()`. Always call `await self._get_connection()`, NEVER access `self._connection` directly.
