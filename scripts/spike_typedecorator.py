@@ -724,7 +724,9 @@ async def test_sync_async_verification() -> bool:
     # methods run in a worker thread — that requires the InstrumentedEncryptedJSON
     # class above to be wired into the service (deferred to Story 7.4).
     print("  Service completed async operations without blocking or deadlock")
-    print("  PASS: Indirect safety evidence — no deadlock with sync Fernet in AsyncSession")
+    print(
+        "  PASS: Indirect safety evidence — no deadlock with sync Fernet in AsyncSession"
+    )
     return True
 
 
