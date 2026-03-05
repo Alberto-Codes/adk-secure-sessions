@@ -59,7 +59,7 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 3. **Override `_prepare_tables()`** to use our `DeclarativeBase.metadata` for table creation, ensuring the encrypted models are used.
 
-4. **Sync Fernet in TypeDecorator** — `process_bind_param` and `process_result_value` call `Fernet.encrypt()`/`decrypt()` synchronously. This is safe because SQLAlchemy's `AsyncSession` runs ORM operations in a thread pool via `run_sync()`.
+4. **Sync Fernet in TypeDecorator** — `process_bind_param` and `process_result_value` call `Fernet.encrypt()`/`decrypt()` synchronously. SQLAlchemy's async layer runs these ORM hooks via greenlets in the event-loop thread, so crypto work must stay fast. Session state is typically small (< 10KB), keeping per-row overhead in the microsecond range.
 
 5. **Envelope preservation** — each encrypted value uses the existing `[version_byte][backend_id_byte][ciphertext]` binary format, enabling future key rotation and backend migration.
 
@@ -133,4 +133,4 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 - **Spike findings**: `_bmad-output/implementation-artifacts/7-1-spike-findings.md` — GO decision with 8/8 tests passing, conformance verified, all assessment criteria met
 - **Issue #118**: Documentation honesty audit that identified the architecture evolution opportunity
-- **ADR-000 Revision Note (2026-03-04)**: Acknowledged ADK V1 changed the calculus for wrapping viability
+- **ADR-000 Revision Note (2026-03-05)**: Acknowledged ADK V1 changed the calculus for wrapping viability
