@@ -20,7 +20,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - **Python** `>=3.12,<3.13` — single-version band; use 3.12 syntax only
 - **google-adk** `>=1.22.0` — upstream integration surface; extends `BaseSessionService`, uses `Session` and `Event` models. Never override ADK base methods without checking upstream signatures. CI tests against `1.22.0` and `latest` — maintain compat across that range.
 - **aiosqlite** `>=0.19.0` — async SQLite driver; all DB access uses raw parametrized SQL (`await conn.execute("...", (params,))`), NOT SQLAlchemy ORM patterns despite SQLAlchemy being in deps
-- **SQLAlchemy** `>=2.0.0` — present in deps for async engine support, not for ORM usage
+- **SQLAlchemy** `>=2.0.0` — Transitive via google-adk — not used directly; all DB access uses raw aiosqlite
 - **cryptography** `>=44.0.0` — Fernet symmetric encryption
 
 ### Build & Tooling

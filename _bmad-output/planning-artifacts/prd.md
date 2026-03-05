@@ -580,6 +580,8 @@ Items 3-7 are parallelizable. Item 8 can follow the initial publish as a fast-fo
 | Per-key random salt (PBKDF2) | Security hardening — current fixed salt is a known weakness | #17 |
 | Key rotation utilities | Kenji's journey — decrypt-with-old, encrypt-with-new | #9 |
 | PostgreSQL persistence backend | Enterprise teams need managed databases, not SQLite files | #9 |
+
+> **Revision Note (2026-03-04):** Epic 4 Stories 4.1 (Persistence Protocol & SQLite Extraction), 4.2 (Encryption Coordinator Extraction), and 4.3 (PostgreSQL Persistence Backend) are superseded by Epic 7 (Architecture Migration). ADK V1's shift to Python-side state merging makes wrapping `DatabaseSessionService` viable, collapsing the persistence extraction and PostgreSQL work into the architecture migration. Epic 4 retains Stories 4.4-4.7 only (key rotation, backend docs, ops guide, Python version tracking). See Issue #118 and Epic 7 for the architectural evolution path.
 | Performance benchmarks | Validate envelope overhead claim, establish baseline | #9 |
 | SQLAlchemy ORM migration | Technical debt — cleaner persistence layer | #20 |
 | Stale session detection | Optimistic concurrency for multi-instance deployments | #22 |
@@ -786,6 +788,8 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 - **FR47** `[Phase 3]`: Developer can derive encryption keys with per-key random salt instead of fixed salt
 - **FR48** `[Phase 3]`: Operator can rotate encryption keys with zero downtime (decrypt-with-old, encrypt-with-new)
 - **FR49** `[Phase 3]`: Developer can persist encrypted sessions to PostgreSQL as an alternative to SQLite
+
+> **Revision Note (2026-03-04):** FR49 was originally scoped to Epic 4 Story 4.3 (PostgreSQL Persistence Backend). ADK V1 changed state merging from SQL-side `json_patch` to Python-side `dict | delta`, making `DatabaseSessionService` wrapping viable. FR49 now maps to Epic 7 (Architecture Migration), where PostgreSQL support comes for free via the wrapped `DatabaseSessionService`. See Issue #118 and Epic 7 for the architectural evolution path.
 - **FR50** `[Phase 3]`: Developer can read backend authoring documentation with examples to create custom backends
 - **FR51** `[Phase 3]`: Operator can read an operations guide covering key configuration, rotation, and monitoring
 - **FR52** `[Phase 4]`: Developer can use AWS KMS as an encryption backend

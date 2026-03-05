@@ -103,6 +103,18 @@ class _BadDecryptBackend:
         raise DecryptionError("Decryption failed")
 
 
+class _BadEncryptBackend:
+    """Backend that always raises EncryptionError on encrypt."""
+
+    async def encrypt(self, plaintext: bytes) -> bytes:
+        from adk_secure_sessions.exceptions import EncryptionError
+
+        raise EncryptionError("Encryption hardware failure")
+
+    async def decrypt(self, ciphertext: bytes) -> bytes:
+        return ciphertext
+
+
 # ---------------------------------------------------------------------------
 # US1: encrypt_session
 # ---------------------------------------------------------------------------
@@ -311,3 +323,19 @@ class TestEdgeCases:
             _parse_envelope(b"\xff\x01secret-ciphertext-here")
         message = str(exc_info.value)
         assert "secret-ciphertext-here" not in message
+
+    async def test_encrypt_session_backend_failure_propagates(self) -> None:
+        """T034: Backend encryption failure propagates to caller."""
+        from adk_secure_sessions.exceptions import EncryptionError
+
+        backend = _BadEncryptBackend()
+        with pytest.raises(EncryptionError, match="Encryption hardware failure"):
+            await encrypt_session({"key": "value"}, backend, BACKEND_FERNET)
+
+    async def test_encrypt_json_backend_failure_propagates(self) -> None:
+        """T035: Backend encryption failure in encrypt_json propagates."""
+        from adk_secure_sessions.exceptions import EncryptionError
+
+        backend = _BadEncryptBackend()
+        with pytest.raises(EncryptionError, match="Encryption hardware failure"):
+            await encrypt_json('{"key": "value"}', backend, BACKEND_FERNET)

@@ -25,6 +25,8 @@ Adopt an **interface tracking + self-describing encrypted values** approach.
 
 1. **We own our schema.** We define our own database tables. Our schema is independent of ADK's `DatabaseSessionService` or `SqliteSessionService` schemas. We never need to run ADK's migration scripts.
 
+> **Revision Note (2026-03-04):** "Own our schema" is more precisely characterized as "schema derived from ADK's data model contract with encrypted column types." Our tables (`app_states`, `user_states`, `sessions`, `events`) mirror ADK's public Session/Event data model — operationally independent (own tables, own migrations, own encryption) but structurally coupled to ADK's model contract. This applies to current Phase 1-2; Epic 7 (Architecture Migration) may change the schema ownership model by wrapping `DatabaseSessionService` instead of reimplementing storage. See Issue #118 and Epic 7 for the architectural evolution path.
+
 2. **We depend on `BaseSessionService`'s interface, not internals.** The four abstract methods and the `Session`/`Event` models are our contract. We pin to `google-adk>=1.22.0` because that's when the current `BaseSessionService` interface stabilized.
 
 3. **Encrypted value format is self-describing.** Each encrypted blob includes a version prefix so we can decrypt data regardless of when or how it was encrypted:
