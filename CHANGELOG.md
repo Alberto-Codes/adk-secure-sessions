@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.3](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.2...v1.0.3) (2026-03-05)
+
+
+### Bug Fixes
+
+* address code review findings for story 6.2 ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994))
+* correct docstring template db_url to db_path ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994))
+* correct schema independence claims and architecture ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994))
+* **docs:** address code review findings for story 6.2 ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994))
+* **docs:** correct docstring template db_url to db_path ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994))
+* **docs:** correct schema independence claims and architecture characterization ([#123](https://github.com/Alberto-Codes/adk-secure-sessions/issues/123)) ([3ebeb6d](https://github.com/Alberto-Codes/adk-secure-sessions/commit/3ebeb6dd5866ab6424e3b7dbecdd92d7a37f9994)), closes [#121](https://github.com/Alberto-Codes/adk-secure-sessions/issues/121)
+* **docs:** remove edit pencil icons from docs site ([8f44167](https://github.com/Alberto-Codes/adk-secure-sessions/commit/8f441672801d3bfa1bcc421de221133c556193f4))
+* **docs:** replace inaccurate 'drop-in replacement' claims with BaseSessionService references ([f323d5e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f323d5e0ac8112a01fdc865d37169c32c410f84d))
+
+
+### Documentation
+
+* add superseded revision markers to planning artifacts and ADRs ([#125](https://github.com/Alberto-Codes/adk-secure-sessions/issues/125)) ([afbb53e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/afbb53e228ea2e7c76b13a6256bf73d7b5f86fc5)), closes [#124](https://github.com/Alberto-Codes/adk-secure-sessions/issues/124)
+* **branding:** add custom palette, logo, favicon, badges, and social links ([d71a38b](https://github.com/Alberto-Codes/adk-secure-sessions/commit/d71a38b568e53253d254928694391be62420ac91))
+
 ## [1.0.2](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.1...v1.0.2) (2026-03-04)
 
 
