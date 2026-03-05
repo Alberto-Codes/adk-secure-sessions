@@ -362,3 +362,22 @@ class TestEdgeCases:
         assert restored == data
         assert restored["L1"]["L2"]["L3"]["L4"]["L5"]["L6"]["value"] == "deep"
         assert restored["L1"]["L2"]["L3"]["L4"]["L5"]["list"][1]["inner"] is True
+
+    async def test_tampered_envelope_header_raises(self) -> None:
+        """T037: Tampered envelope version/backend_id bytes raise DecryptionError."""
+        backend = _MockBackend()
+        valid_envelope = await encrypt_session(
+            {"secret": "data"}, backend, BACKEND_FERNET
+        )
+
+        # Flip version byte (position 0) to invalid value
+        tampered_version = bytearray(valid_envelope)
+        tampered_version[0] = 0xFF
+        with pytest.raises(DecryptionError, match="Unsupported envelope version"):
+            _parse_envelope(bytes(tampered_version))
+
+        # Flip backend_id byte (position 1) to invalid value
+        tampered_backend = bytearray(valid_envelope)
+        tampered_backend[1] = 0xFF
+        with pytest.raises(DecryptionError, match="Unsupported encryption backend"):
+            _parse_envelope(bytes(tampered_backend))
