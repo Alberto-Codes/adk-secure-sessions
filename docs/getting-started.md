@@ -36,7 +36,7 @@ python -c "from importlib.metadata import version; print(version('adk-secure-ses
 ## Quick Start
 
 If you already have an ADK agent using `DatabaseSessionService`, the swap is
-three imports and one constructor change:
+just two changes:
 
 ```python
 # Before (ADK default — unencrypted):
