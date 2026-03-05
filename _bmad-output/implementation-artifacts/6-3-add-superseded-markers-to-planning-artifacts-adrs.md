@@ -133,7 +133,7 @@ This is the core "what changed" narrative for ADR-000 and architecture.md marker
 - **No code logic changes** — only documentation and planning artifact text. If `git diff --stat` shows any `.py` source file under `src/`, something went wrong.
 - **Do NOT rewrite original content** — only ADD revision markers via blockquote
 - **Do NOT touch these files** (verified unaffected): ADR-001 through ADR-003, ADR-005, ADR-006
-- **Do NOT change sprint-status.yaml** — superseded markers already in place
+- **Do NOT change Epic 4 superseded entries in sprint-status.yaml** — 4-1, 4-2, 4-3 markers already in place (story lifecycle updates like backlog→done are normal)
 
 ### Previous Story Intelligence (6.2)
 
