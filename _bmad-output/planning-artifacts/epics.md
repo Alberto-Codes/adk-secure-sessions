@@ -627,6 +627,23 @@ So that **I can go from install to encrypted sessions in under 5 minutes with co
 **And** the example uses realistic session state (not empty dict or trivial placeholder)
 **And** docvet pre-commit hook passes on all new documentation files
 
+### Story 2.7: GitHub Pages Deployment
+
+As a **developer evaluating the library**,
+I want **the documentation site published to GitHub Pages at `alberto-codes.github.io/adk-secure-sessions`**,
+So that **I can browse API references, architecture decisions, and guides without cloning the repo**.
+
+**Acceptance Criteria:**
+
+**Given** the MkDocs site builds successfully with `mkdocs build --strict`
+**When** a release is published (via release-please)
+**Then** the documentation site is deployed to GitHub Pages automatically
+**And** the deployment is also triggerable via `workflow_dispatch` for manual deploys
+**And** the existing PR verification build job (`docs.yml`) continues to run on pull requests
+**And** GitHub Pages is configured on the repository (source: GitHub Actions)
+**And** the site is accessible at `https://alberto-codes.github.io/adk-secure-sessions/`
+**And** a `concurrency: group: pages` guard prevents concurrent deployments
+
 ---
 
 ## Epic 3: AES-256-GCM Backend & Security Hardening (Phase 3)
