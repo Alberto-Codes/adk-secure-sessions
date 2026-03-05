@@ -1,6 +1,6 @@
 # Story 2.6: Getting Started Guide
 
-Status: review
+Status: done
 Branch: feat/docs-2-6-getting-started-guide
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/100
 
@@ -257,21 +257,23 @@ Recent commits on `main`:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) + Party Mode consensus (Paige, Amelia, Murat)
+- **Outcome:** Approved with 1 fix applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | Verification step requires `sqlite3` CLI not listed in Prerequisites | Fixed — added Python-first verification snippet as primary method, sqlite3 CLI as alternative |
+| L1 | LOW | Quick Start swap lacks `async with` cleanup reminder | Dropped — deliberate pedagogical progression, mirrors README |
+| L2 | LOW | Demo script missing `if __name__ == "__main__":` guard | Dropped — tutorial convention for standalone scripts, not a library module |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -279,6 +281,7 @@ Recent commits on `main`:
 |------|-------------|
 | 2026-03-04 | Story created by create-story workflow. Primary: create `docs/getting-started.md` with install, full async example, verification step, What's Next links. Add to MkDocs nav + index.md grid card. Bonus: fix test review P1 — `BACKEND_REGISTRY` monkeypatch in `test_adk_integration.py`. |
 | 2026-03-04 | Implementation complete. Created Getting Started guide with Prerequisites, Installation, Quick Start swap pattern, Full Working Example (asyncio.run, FernetBackend, realistic state), Verify Encryption (sqlite3 hex inspection + envelope table), What's Next links, and Related footer. Added nav entry in mkdocs.yml and grid card in docs/index.md. Fixed BACKEND_REGISTRY try/finally to monkeypatch.setitem in test_adk_integration.py. All quality gates pass. |
+| 2026-03-04 | Code review complete. 1 MEDIUM finding (sqlite3 CLI prerequisite gap) fixed — added Python-first verification snippet. 2 LOW findings dropped by party mode consensus (L1: pedagogical progression by design; L2: tutorial convention). All quality gates re-verified. Status → done. |
 
 ## Dev Agent Record
 

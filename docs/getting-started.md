@@ -125,14 +125,25 @@ asyncio.run(main())
 After running the example above, the SQLite file `getting_started.db` contains
 your session — but the state is stored as encrypted bytes, not readable JSON.
 
-Inspect it with the `sqlite3` CLI:
+Inspect it with Python (no extra tools needed):
+
+```python
+import sqlite3
+
+conn = sqlite3.connect("getting_started.db")
+row = conn.execute("SELECT state FROM sessions LIMIT 1").fetchone()
+print(row[0][:20].hex())  # e.g. 0101674141...
+conn.close()
+```
+
+Or, if you have the `sqlite3` CLI available:
 
 ```bash
 sqlite3 getting_started.db "SELECT hex(substr(state, 1, 20)) FROM sessions LIMIT 1;"
 ```
 
-You will see a hex string like `0101674141...` — not your plaintext JSON. The
-first two bytes are the envelope header:
+Either way, you will see a hex string like `0101674141...` — not your plaintext
+JSON. The first two bytes are the envelope header:
 
 | Byte | Meaning | Value |
 |------|---------|-------|
