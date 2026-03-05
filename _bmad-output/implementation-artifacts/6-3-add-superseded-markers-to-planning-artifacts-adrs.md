@@ -1,6 +1,6 @@
 # Story 6.3: Add Superseded Markers to Planning Artifacts & ADRs
 
-Status: review
+Status: done
 Branch: feat/docs-6-3-superseded-markers
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/124
 
@@ -181,21 +181,23 @@ No peripheral config impact — this story changes only documentation, planning 
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial)
+- **Outcome:** Changes Requested — 2 fixes applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| H1 | HIGH | prd.md revision marker inserted between table rows breaks table rendering (GFM spec: tables terminate at blank lines/block elements) | Fixed — relocated marker to after table close |
+| M1 | MEDIUM | prd.md revision marker inserted between FR list items breaks list continuity | Fixed — relocated marker to after FR55 |
+| L1 | LOW | Commit scope `docs(adr)` too narrow — only 2 of 9 files are ADRs | Deferred — fix at PR title (squash-merge subject overrides) |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -203,6 +205,7 @@ No peripheral config impact — this story changes only documentation, planning 
 |------|-------------|
 | 2026-03-04 | Story created by create-story workflow |
 | 2026-03-04 | Implementation complete — 5 revision markers added, 1 characterization fix, 2 cross-cutting tests added |
+| 2026-03-04 | Code review: 1 HIGH + 1 MEDIUM fixed (prd.md marker placement broke table and list rendering), 1 LOW deferred to PR title |
 
 ## Dev Agent Record
 

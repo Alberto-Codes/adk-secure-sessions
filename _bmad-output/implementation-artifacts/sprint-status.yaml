@@ -101,7 +101,7 @@ development_status:
   epic-6: in-progress
   6-1-fix-user-facing-drop-in-replacement-claims: done
   6-2-fix-schema-independence-architecture-characterization-claims: done
-  6-3-add-superseded-markers-to-planning-artifacts-adrs: review
+  6-3-add-superseded-markers-to-planning-artifacts-adrs: done
   epic-6-retrospective: optional
 
   # Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)
