@@ -98,10 +98,10 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Documentation Honesty (Now)
-  epic-6: in-progress
+  epic-6: done
   6-1-fix-user-facing-drop-in-replacement-claims: done
   6-2-fix-schema-independence-architecture-characterization-claims: done
-  6-3-add-superseded-markers-to-planning-artifacts-adrs: backlog
+  6-3-add-superseded-markers-to-planning-artifacts-adrs: done
   epic-6-retrospective: optional
 
   # Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)

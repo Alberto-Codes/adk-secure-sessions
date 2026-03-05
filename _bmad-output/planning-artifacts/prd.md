@@ -589,6 +589,8 @@ Items 3-7 are parallelizable. Item 8 can follow the initial publish as a fast-fo
 | Python 3.13+ support | Track google-adk version matrix updates | — |
 | Blog post / dev.to article | Proper tutorial with package URL, after package is live | — |
 
+> **Revision Note (2026-03-04):** The "PostgreSQL persistence backend" row above and related Epic 4 Stories 4.1 (Persistence Protocol & SQLite Extraction), 4.2 (Encryption Coordinator Extraction), and 4.3 (PostgreSQL Persistence Backend) are superseded by Epic 7 (Architecture Migration). ADK V1's shift to Python-side state merging makes wrapping `DatabaseSessionService` viable, collapsing the persistence extraction and PostgreSQL work into the architecture migration. Epic 4 retains Stories 4.4-4.7 only (key rotation, backend docs, ops guide, Python version tracking). See Issue #118 and Epic 7 for the architectural evolution path.
+
 ### Phase 4: Enterprise — Vision
 
 **Additional User Journeys Supported:**
@@ -792,6 +794,8 @@ Security and technical risks (key leakage, data corruption, dependency vulnerabi
 - **FR53** `[Phase 4]`: Developer can use GCP Cloud KMS as an encryption backend
 - **FR54** `[Phase 4]`: Developer can use HashiCorp Vault as an encryption backend
 - **FR55** `[Phase 4]`: Operator can access audit logs of encryption operations for compliance reporting
+
+> **Revision Note (2026-03-04):** FR49 above was originally scoped to Epic 4 Story 4.3 (PostgreSQL Persistence Backend). ADK V1 changed state merging from SQL-side `json_patch` to Python-side `dict | delta`, making `DatabaseSessionService` wrapping viable. FR49 now maps to Epic 7 (Architecture Migration), where PostgreSQL support comes for free via the wrapped `DatabaseSessionService`. See Issue #118 and Epic 7 for the architectural evolution path.
 
 ## Non-Functional Requirements
 
