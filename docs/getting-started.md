@@ -29,7 +29,7 @@ This installs three runtime dependencies: `google-adk`, `cryptography`, and
 ## Quick Start
 
 If you already have an ADK agent using `DatabaseSessionService`, the swap is
-two lines:
+just two changes:
 
 ```python
 # Before (unencrypted):
