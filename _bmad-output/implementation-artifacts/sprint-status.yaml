@@ -102,12 +102,12 @@ development_status:
   6-1-fix-user-facing-drop-in-replacement-claims: done
   6-2-fix-schema-independence-architecture-characterization-claims: done
   6-3-add-superseded-markers-to-planning-artifacts-adrs: done
-  epic-6-retrospective: optional
+  epic-6-retrospective: done
 
   # Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)
   # NOTE: Story 7.1 (spike) gates all subsequent stories — proceed only on "go" decision
-  epic-7: backlog
-  7-1-typedecorator-wrapping-spike: backlog
+  epic-7: in-progress
+  7-1-typedecorator-wrapping-spike: review
   7-2-adr-architecture-migration-decision: backlog
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: backlog
   7-4-test-migration-conformance-verification: backlog

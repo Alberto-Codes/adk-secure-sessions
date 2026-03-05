@@ -339,3 +339,26 @@ class TestEdgeCases:
         backend = _BadEncryptBackend()
         with pytest.raises(EncryptionError, match="Encryption hardware failure"):
             await encrypt_json('{"key": "value"}', backend, BACKEND_FERNET)
+
+    async def test_deeply_nested_dict_round_trip(self) -> None:
+        """T036: Session state with 6+ levels of nesting round-trips correctly."""
+        backend = _MockBackend()
+        data = {
+            "L1": {
+                "L2": {
+                    "L3": {
+                        "L4": {
+                            "L5": {
+                                "L6": {"value": "deep", "num": 42},
+                                "list": [1, {"inner": True}],
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        envelope = await encrypt_session(data, backend, BACKEND_FERNET)
+        restored = await decrypt_session(envelope, backend)
+        assert restored == data
+        assert restored["L1"]["L2"]["L3"]["L4"]["L5"]["L6"]["value"] == "deep"
+        assert restored["L1"]["L2"]["L3"]["L4"]["L5"]["list"][1]["inner"] is True
