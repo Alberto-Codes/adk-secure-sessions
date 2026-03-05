@@ -1,6 +1,6 @@
 # Story 7.1: TypeDecorator Wrapping Spike
 
-Status: review
+Status: done
 Branch: feat/spike-7-1-typedecorator-wrapping
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/129
 
@@ -208,21 +208,26 @@ No peripheral config impact — this story creates prototype code in `scripts/` 
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Adversarial code review (Claude Opus 4.6) + party mode consensus
+- **Outcome:** Approved with fixes
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | 2 files in git not in story File List (`epic-6-retro`, `test-review.md`) | Fixed — added to File List |
+| M2 | MEDIUM | `test_sync_async_verification` overstates conclusion (InstrumentedEncryptedJSON never wired in) | Fixed — reworded print messages to be honest about indirect evidence |
+| M3 | MEDIUM | Duplicated envelope constants instead of importing from package | Fixed — imports from `adk_secure_sessions.serialization` |
+| L1 | LOW | `cache_ok = True` needs rationale comment | Deferred to Story 7.3 |
+| L2 | LOW | `_SchemaClasses.__new__` bypass fragile | Deferred to Story 7.3 (already in findings doc Section 7) |
+| L3 | LOW | No engine cleanup in spike tests | Dismissed — in-memory SQLite, no real leak |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved (none found)
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (8/8 spike, 181 pytest)
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -232,6 +237,7 @@ No peripheral config impact — this story creates prototype code in `scripts/` 
 | 2026-03-05 | Party mode review: 6 adjustments applied (sync API clarification, schema config check-first, approach A priority, lightweight migration, bold go/no-go, no tests/spike dir) |
 | 2026-03-05 | Implementation complete: 8/8 spike tests pass, GO decision, findings document produced, T036 cross-cutting test added (181 tests, 99.68% coverage) |
 | 2026-03-05 | Post-implementation party mode review: 6 findings applied to findings document (wrong-key error propagation, _SchemaClasses bypass, shared instance, sentinel test, sync/async note, changelog) |
+| 2026-03-05 | Code review: 6 findings (0 HIGH, 3 MEDIUM, 3 LOW). 3 MEDIUM fixed (File List, sync/async test honesty, constant imports). 2 LOW deferred to 7.3, 1 LOW dismissed. |
 
 ## Dev Agent Record
 
@@ -261,3 +267,5 @@ None — spike executed cleanly, 8/8 tests passed on second run (first run had a
 | `_bmad-output/implementation-artifacts/sprint-status.yaml` | Modified — 7-1 status: ready-for-dev → review |
 | `_bmad-output/implementation-artifacts/7-1-typedecorator-wrapping-spike.md` | Modified — tasks marked done, AC-to-Test mapping filled, quality gates checked |
 | `tests/unit/test_serialization.py` | Modified — added T036 deeply nested dict round-trip test (cross-cutting) |
+| `_bmad-output/implementation-artifacts/epic-6-retro-2026-03-05.md` | Created — Epic 6 retrospective (committed alongside spike) |
+| `_bmad-output/test-artifacts/test-review.md` | Modified — TEA test-review output (cross-cutting test source) |

@@ -36,9 +36,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import String, TypeDecorator
 
-# --- Envelope format constants (from adk_secure_sessions.serialization) ---
-ENVELOPE_VERSION_1 = 0x01
-BACKEND_FERNET = 0x01
+from adk_secure_sessions.serialization import BACKEND_FERNET, ENVELOPE_VERSION_1
 
 
 # ============================================================================
@@ -721,10 +719,12 @@ async def test_sync_async_verification() -> bool:
         state={"test": "sync_check"},
     )
 
-    # The key verification: the service worked without blocking the event loop.
-    # If sync Fernet calls were unsafe, we'd get an error or deadlock.
-    print("  Service operations completed without event loop blocking")
-    print("  PASS: Sync Fernet in TypeDecorator is safe with AsyncSession!")
+    # Indirect verification: the service completed async operations without
+    # deadlocking or blocking the event loop. This does NOT prove TypeDecorator
+    # methods run in a worker thread — that requires the InstrumentedEncryptedJSON
+    # class above to be wired into the service (deferred to Story 7.4).
+    print("  Service completed async operations without blocking or deadlock")
+    print("  PASS: Indirect safety evidence — no deadlock with sync Fernet in AsyncSession")
     return True
 
 
