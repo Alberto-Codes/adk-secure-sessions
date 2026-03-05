@@ -130,7 +130,7 @@ We implement the four abstract methods and `append_event`:
 
 ### Simple Inheritance of `DatabaseSessionService`
 
-**Rejected.** Subclassing `DatabaseSessionService` couples us to its internal SQLAlchemy schema, `_SchemaClasses` version logic, and `StorageSession` / `StorageEvent` models. When ADK refactors internals (as they did in v1.22.0 with the V0→V1 schema migration), our subclass breaks.
+**Rejected.** Subclassing `DatabaseSessionService` couples us to its internal SQLAlchemy schema, `_SchemaClasses` version logic, and `StorageSession` / `StorageEvent` models. When ADK refactors internals (as they did in v1.22.0 with the V0→V1 schema migration), our subclass breaks. (See [ADR-007](ADR-007-architecture-migration.md) for how TypeDecorator-based subclassing differs from this rejected approach — it intercepts at the ORM column boundary rather than overriding CRUD methods.)
 
 ### Middleware/Pipeline Pattern
 

@@ -108,7 +108,7 @@ development_status:
   # NOTE: Story 7.1 (spike) gates all subsequent stories — proceed only on "go" decision
   epic-7: in-progress
   7-1-typedecorator-wrapping-spike: done
-  7-2-adr-architecture-migration-decision: in-progress
+  7-2-adr-architecture-migration-decision: done
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: backlog
   7-4-test-migration-conformance-verification: backlog
   7-5-documentation-mkdocs-site-updates: backlog

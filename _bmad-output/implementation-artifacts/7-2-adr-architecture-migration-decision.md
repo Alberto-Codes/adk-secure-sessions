@@ -1,6 +1,6 @@
 # Story 7.2: ADR — Architecture Migration Decision
 
-Status: review
+Status: done
 Branch: feat/adr-7-2-architecture-migration
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/131
 
@@ -197,7 +197,7 @@ No CI, pyproject.toml, or pre-commit changes needed.
 
 - New file: `docs/adr/ADR-007-architecture-migration.md` — follows naming convention of existing ADRs
 - Modified files: `docs/adr/ADR-000-*.md`, `docs/adr/ADR-004-*.md`, `mkdocs.yml`, `docs/adr/index.md`
-- No changes to `src/adk_secure_sessions/` or test files
+- No changes to `src/adk_secure_sessions/`; one test file modified (`tests/unit/test_serialization.py`)
 - Alignment with unified project structure confirmed — all ADRs live in `docs/adr/`
 
 ### References
@@ -221,21 +221,26 @@ No CI, pyproject.toml, or pre-commit changes needed.
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (Claude Opus 4.6)
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | Medium | "~800 lines of raw SQL" inconsistent phrasing (lines 95, 117) | Fixed — aligned to "~800-line raw aiosqlite implementation" |
+| M2 | Medium | `serialization.py` listed as fully "kept" is imprecise | Fixed — replaced with specific envelope helpers and constants |
+| M3 | Medium | AC5 content (aiosqlite removal, Epic 4 supersession) missing from Consequences | Fixed — added dependency simplification bullet + Epic 4 supersession sentence |
+| L1 | Low | "replacing our manual concurrency handling" — no such code exists | Fixed — changed to "available out of the box" |
+| L2 | Low | ADR-000 "Simple Inheritance" rejection lacks ADR-007 cross-reference | Fixed — added parenthetical referencing ADR-007 TypeDecorator approach |
+| L3 | Low | Story Dev Notes line 200 contradicts File List (test file modified) | Fixed — updated to reflect test file modification |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -245,6 +250,7 @@ No CI, pyproject.toml, or pre-commit changes needed.
 | 2026-03-05 | Party mode review: 7 adjustments applied (mkdocs nav task, index.md task, peripheral config fix, doc impact table fix, AC-to-Test verification guidance, ADR-000 status directive, TEA cross-cutting reference) |
 | 2026-03-05 | Party mode consensus: cross-cutting test = tampered envelope header bytes (P3-2) — security-critical, small footprint, durable across migration |
 | 2026-03-05 | Implementation complete: ADR-007 created, ADR-000/ADR-004 revision notes updated, mkdocs nav + index updated, T037 cross-cutting test added (182 tests, 99.68% coverage) |
+| 2026-03-05 | Code review: 3 MEDIUM + 3 LOW findings (party mode consensus). All 6 fixed — claim precision, AC5 content placement, ADR-000 cross-ref. 182 tests pass, 9/9 hooks pass. |
 
 ## Dev Agent Record
 

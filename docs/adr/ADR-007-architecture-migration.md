@@ -73,7 +73,7 @@ SQLite / PostgreSQL / MySQL / MariaDB
 | `EncryptionBackend` protocol | Public API contract for pluggable backends (ADR-001) |
 | Envelope format constants | Used by TypeDecorator for envelope construction |
 | Exception hierarchy | `DecryptionError`, `ConfigurationError` still needed |
-| `serialization.py` | Envelope format logic reused by TypeDecorator |
+| Envelope helpers (`_build_envelope`, `_parse_envelope`, constants) | Envelope format logic reused by TypeDecorator |
 
 ### What We Replace
 
@@ -90,9 +90,10 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 - **Multi-database support** — SQLite, PostgreSQL, MySQL, and MariaDB work via `DatabaseSessionService`'s dialect handling. No additional code needed.
 - **Connection pooling** — SQLAlchemy's connection pool is inherited automatically.
-- **Row-level locking** — database-native locking via SQLAlchemy, replacing our manual concurrency handling.
+- **Row-level locking** — database-native locking via SQLAlchemy, available out of the box.
 - **Schema migration** — SQLAlchemy + Alembic can manage schema changes. No custom migration utilities needed.
-- **Maintenance** — ~800 lines of raw SQL replaced by a thin wrapper focused solely on encryption, the project's actual value-add.
+- **Maintenance** — ~800-line raw aiosqlite implementation replaced by a thin wrapper focused solely on encryption, the project's actual value-add.
+- **Dependency simplification** — aiosqlite removed as a direct dependency; all database access goes through SQLAlchemy (via ADK).
 - **Feature parity** — new `DatabaseSessionService` features (query filters, pagination) are inherited automatically.
 
 ### What becomes harder
@@ -107,6 +108,7 @@ SQLite / PostgreSQL / MySQL / MariaDB
 - **Internal method dependency** — `_get_schema_classes` and `_prepare_tables` are not public API. The risk is mitigated by: (a) ADK version pinning (`>=1.22.0`), (b) sentinel tests in CI that fail immediately on signature changes, (c) these methods are stable across v1.x.
 - **Model class isolation** — custom encrypted models use a separate `DeclarativeBase`. Both ADK's models and ours must never share the same engine to avoid table name conflicts.
 - **Migration path** — existing databases (raw aiosqlite, BLOB columns) are incompatible with the new architecture (SQLAlchemy, TEXT columns). Fresh databases required. Acceptable because we have no existing users with production data (confirmed in Epic 6 retrospective).
+- **Epic 4 Stories 4.1-4.3 superseded** — the direct persistence protocol extraction and PostgreSQL backend stories are no longer needed; multi-database support comes for free via `DatabaseSessionService`.
 
 ## Alternatives Considered
 
@@ -114,7 +116,7 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 **Rejected.** The current `EncryptedSessionService` works but carries significant costs:
 
-- ~800 lines of raw SQL reimplementing persistence logic that ADK provides
+- ~800-line raw aiosqlite implementation reimplementing persistence logic that ADK provides
 - Feature parity burden — every new `DatabaseSessionService` feature must be manually replicated
 - SQLite-only — no path to PostgreSQL, MySQL, or MariaDB without writing additional persistence backends (Epic 4 Stories 4.1-4.3)
 - The raw aiosqlite approach was correct when wrapping wasn't viable (ADK V0), but ADK V1's change to Python-side state merging eliminates the technical barrier
