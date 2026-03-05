@@ -167,6 +167,7 @@ nav:
           - ADK Schema Compatibility: adr/ADR-004-adk-schema-compatibility.md
           - Exception Hierarchy: adr/ADR-005-exception-hierarchy.md
           - Configuration Error: adr/ADR-006-configuration-error.md
+          - Architecture Migration: adr/ADR-007-architecture-migration.md
   - Roadmap: ROADMAP.md
   - FAQ: faq.md
   - Changelog: changelog.md

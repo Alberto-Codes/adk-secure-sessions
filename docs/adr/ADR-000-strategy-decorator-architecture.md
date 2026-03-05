@@ -48,7 +48,7 @@ We initially planned a decorator approach. Reading the actual ADK source reveale
 
 3. **No community precedent.** Every third-party session service (`adk-extra-services`, `google-adk-redis`) subclasses `BaseSessionService` directly. Nobody wraps the built-in services.
 
-> **Revision Note (2026-03-04):** The rejection reasoning above was correct for ADK V0. ADK V1 changed state merging from SQL-side `json_patch` operations to Python-side `dict | delta`, removing the interception barrier described in point 1. `DatabaseSessionService` wrapping is now viable via `TypeDecorator`-based column encryption. Epic 7 explores this path — see Issue #118 and Epic 7 for the architectural evolution path.
+> **Revision Note (2026-03-05):** The rejection reasoning above was correct for ADK V0. ADK V1 changed state merging from SQL-side `json_patch` operations to Python-side `dict | delta`, removing the interception barrier described in point 1. `DatabaseSessionService` wrapping is now viable via `TypeDecorator`-based column encryption. **ADR-007** formalizes the decision to migrate to this architecture — see [ADR-007](ADR-007-architecture-migration.md) and Issue #118. This ADR's "Direct Implementation" approach is superseded by ADR-007; the "Strategy" portion (pluggable backends) remains valid.
 
 ### Strategy Pattern (Extensibility)
 
