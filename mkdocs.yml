@@ -141,7 +141,7 @@ not_in_nav: |
 
 nav:
   - Home: index.md
-  # Story 2.6 adds: - Getting Started: getting-started.md
+  - Getting Started: getting-started.md
   - API Reference:
       - Overview: reference/index.md
       - Full Module Index: reference/adk_secure_sessions/index.md

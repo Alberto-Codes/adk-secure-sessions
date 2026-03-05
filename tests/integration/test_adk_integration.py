@@ -293,7 +293,9 @@ class TestDatabaseEncryption:
 class TestProtocolConformance:
     """T048: Tests with mock EncryptionBackend to verify protocol."""
 
-    async def test_works_with_custom_backend(self, db_path: str) -> None:
+    async def test_works_with_custom_backend(
+        self, db_path: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Verify service works with any EncryptionBackend-conformant object."""
 
         class MockBackend:
@@ -314,39 +316,32 @@ class TestProtocolConformance:
         mock_backend = MockBackend()
         mock_backend_id = 0xFF  # Hypothetical backend ID
 
-        # Note: This will fail on envelope parsing since our backend ID
-        # isn't registered, but we can test the protocol conformance works
-        # by using a registered backend ID
+        # Register our mock backend — monkeypatch auto-reverts on teardown
         from adk_secure_sessions.serialization import BACKEND_REGISTRY
 
-        # Temporarily register our mock backend
-        BACKEND_REGISTRY[mock_backend_id] = "MockXOR"
+        monkeypatch.setitem(BACKEND_REGISTRY, mock_backend_id, "MockXOR")
 
-        try:
-            async with EncryptedSessionService(
-                db_path=db_path,
-                backend=mock_backend,
-                backend_id=mock_backend_id,
-            ) as service:
-                # Create session
-                session = await service.create_session(
-                    app_name="test",
-                    user_id="user",
-                    state={"key": "value"},
-                )
+        async with EncryptedSessionService(
+            db_path=db_path,
+            backend=mock_backend,
+            backend_id=mock_backend_id,
+        ) as service:
+            # Create session
+            session = await service.create_session(
+                app_name="test",
+                user_id="user",
+                state={"key": "value"},
+            )
 
-                # Retrieve session
-                retrieved = await service.get_session(
-                    app_name="test",
-                    user_id="user",
-                    session_id=session.id,
-                )
+            # Retrieve session
+            retrieved = await service.get_session(
+                app_name="test",
+                user_id="user",
+                session_id=session.id,
+            )
 
-                assert retrieved is not None
-                assert retrieved.state == {"key": "value"}
-        finally:
-            # Cleanup registry
-            del BACKEND_REGISTRY[mock_backend_id]
+            assert retrieved is not None
+            assert retrieved.state == {"key": "value"}
 
     async def test_backend_protocol_is_runtime_checkable(self) -> None:
         """Verify EncryptionBackend protocol is runtime checkable."""

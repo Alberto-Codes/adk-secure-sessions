@@ -8,6 +8,10 @@ adk-secure-sessions is a drop-in replacement for ADK's `DatabaseSessionService` 
 
 <div class="grid cards" markdown>
 
+- :material-rocket-launch: **[Getting Started](getting-started.md)**
+
+    Install, integrate, and verify encryption in under 5 minutes.
+
 - :material-lock: **[API Reference](reference/index.md)**
 
     Auto-generated documentation for all modules, classes, and functions.
