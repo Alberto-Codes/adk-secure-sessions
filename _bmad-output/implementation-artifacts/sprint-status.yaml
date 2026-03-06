@@ -76,7 +76,7 @@ development_status:
   3-4-published-performance-benchmarks: backlog
   epic-3-retrospective: optional
 
-  # Epic 4: PostgreSQL Persistence & Key Rotation (Phase 3)
+  # Epic 4: Key Rotation & Operational Documentation (Phase 3)
   # NOTE: Stories 4.1, 4.2, 4.3 are SUPERSEDED by Epic 7 (Architecture Migration)
   epic-4: backlog
   4-1-persistence-protocol-sqlite-extraction: superseded  # [SUPERSEDED by Epic 7]
@@ -112,5 +112,5 @@ development_status:
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: done
   7-4-test-migration-conformance-verification: done
   7-5-documentation-mkdocs-site-updates: done
-  7-6-revise-epic-4-scope-roadmap: backlog
+  7-6-revise-epic-4-scope-roadmap: done
   epic-7-retrospective: optional
