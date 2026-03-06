@@ -131,7 +131,6 @@ dev = [
     "pytest-timeout>=2.4.0",
     "ruff>=0.13.0",
     "ty>=0.0.1a20",
-    "google-adk>=1.23.0",
     "griffe>=1.15.0",
     "mkdocs-gen-files>=0.6.0",
     "mkdocs-material>=9.7.1",
@@ -150,4 +149,5 @@ dev = [
     "docvet>=1.7.0",
     "pip-audit>=2.9.0",
     "uv-secure>=0.17.0",
+    "litellm>=1.82.0",
 ]

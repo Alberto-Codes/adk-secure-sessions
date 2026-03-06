@@ -53,6 +53,19 @@ Use `session_service` exactly like any ADK session service — `create_session`,
 | `session_id`, `app_name`, `user_id` | No | Needed for lookups and filtering |
 | `create_time`, `update_time` | No | Needed for expiration/cleanup |
 
+## Examples
+
+See [`examples/`](examples/) for runnable scripts. The
+[basic usage example](examples/basic_usage.py) runs a multi-turn ADK agent
+conversation with Ollama and proves that state and conversation history are
+encrypted at rest.
+
+```bash
+uv run python examples/basic_usage.py
+```
+
+Requires `OLLAMA_API_BASE` in your environment or `.env` file.
+
 ## Links
 
 - [Documentation](https://alberto-codes.github.io/adk-secure-sessions/)
