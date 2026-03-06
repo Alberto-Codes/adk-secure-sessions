@@ -266,9 +266,9 @@ Enterprise security teams approve unconditionally with AES-256-GCM. Per-key rand
 **FRs covered:** FR21, FR46, FR47
 **NFRs served:** NFR4, NFR11
 
-### Epic 4: PostgreSQL Persistence & Key Rotation (Phase 3)
+### Epic 4: Key Rotation & Operational Documentation (Phase 3)
 
-Teams run encrypted sessions on managed PostgreSQL. Operators rotate keys with zero downtime. Backend authors and operators get dedicated documentation.
+Operators rotate encryption keys with zero downtime. Backend authors and operators get dedicated documentation. Python version compatibility is tracked across the google-adk version matrix.
 
 **FRs covered:** FR48, ~~FR49~~ _(remapped to Epic 7)_, FR50, FR51
 **NFRs served:** NFR24, NFR26, NFR27
@@ -763,9 +763,9 @@ So that **I can make an informed decision about which backend to use based on re
 
 ---
 
-## Epic 4: PostgreSQL Persistence & Key Rotation (Phase 3)
+## Epic 4: Key Rotation & Operational Documentation (Phase 3)
 
-Teams run encrypted sessions on managed PostgreSQL. Operators rotate keys with zero downtime. Backend authors and operators get dedicated documentation. The service architecture is decomposed for extensibility.
+Operators rotate encryption keys with zero downtime. Backend authors and operators get dedicated documentation. Python version compatibility is tracked across the google-adk version matrix.
 
 > **Revision Note (2026-03-04):** Epic 4's scope has been reduced. Stories 4.1 (Persistence Protocol & SQLite Extraction), 4.2 (Encryption Coordinator Extraction), and 4.3 (PostgreSQL Persistence Backend) are superseded by Epic 7 (Architecture Migration). ADK V1 changed state merging from SQL-side `json_patch` to Python-side `dict | delta`, making `DatabaseSessionService` wrapping viable and collapsing the persistence extraction work into the architecture migration. Epic 4 retains Stories 4.4 (Key Rotation), 4.5 (Backend Docs), 4.6 (Ops Guide), and 4.7 (Python Version Tracking). See Issue #118 and Epic 7 for the architectural evolution path.
 

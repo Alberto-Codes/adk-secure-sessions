@@ -129,17 +129,13 @@ No critical issues detected.
 
 This eliminated the only HIGH-severity violation and improved the maintainability score from 79 to 85.
 
-### 2. Extract shared service fixture in integration tests
+### 2. ~~Extract shared service fixture in integration tests~~ RESOLVED
 
-**Severity**: P2 (Medium)
-**Location**: `tests/integration/test_adk_crud.py`, `test_adk_encryption.py`, `test_adk_conformance.py` (~20 occurrences total)
-**Criterion**: Fixture Patterns / DRY
-**Knowledge Base**: [fixture-architecture.md](../../../testarch/knowledge/fixture-architecture.md)
+**Status**: Completed in Story 7.6. Refactored 9 tests across 2 files to use the `encrypted_service` fixture from `conftest.py`:
+- `test_adk_crud.py`: 7 tests refactored (1 kept inline — cascade delete needs raw DB read)
+- `test_adk_conformance.py`: 2 tests refactored
 
-**Issue Description**:
-The pattern `async with EncryptedSessionService(db_url=..., backend=...) as service:` appears ~20 times across the split integration test files. The `conftest.py` already provides an `encrypted_service` fixture -- many of these could use it instead. The `test_conformance.py` correctly uses dedicated fixtures (`enc_service`, `unencrypted_service`) rather than duplicating inline instantiation.
-
-**Benefits**: Eliminates ~150 lines of boilerplate, consistent with unit test patterns and the pattern established by `test_conformance.py`.
+Tests requiring custom configuration (wrong-key tests, raw DB reads, shared-DB tests) were correctly preserved with inline service creation. Files not refactored: `test_adk_encryption.py` (all tests need custom keys or raw DB), `test_encryption_boundary.py` (all tests need raw DB reads).
 
 ### 3. Define module-level constants for repeated test strings
 
