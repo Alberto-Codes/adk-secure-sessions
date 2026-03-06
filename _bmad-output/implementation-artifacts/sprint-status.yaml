@@ -106,11 +106,11 @@ development_status:
 
   # Epic 7: Architecture Migration — DatabaseSessionService Wrapper (Phase 3, spike-gated)
   # NOTE: Story 7.1 (spike) gates all subsequent stories — proceed only on "go" decision
-  epic-7: in-progress
+  epic-7: done
   7-1-typedecorator-wrapping-spike: done
   7-2-adr-architecture-migration-decision: done
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: done
   7-4-test-migration-conformance-verification: done
   7-5-documentation-mkdocs-site-updates: done
   7-6-revise-epic-4-scope-roadmap: done
-  epic-7-retrospective: optional
+  epic-7-retrospective: done
