@@ -32,6 +32,8 @@ See Also:
     Encryption backend protocol definition.
 """
 
+from sqlalchemy.exc import DontWrapMixin
+
 
 class SecureSessionError(Exception):
     """Base exception for all adk-secure-sessions errors.
@@ -52,8 +54,11 @@ class SecureSessionError(Exception):
     """
 
 
-class EncryptionError(SecureSessionError):
+class EncryptionError(SecureSessionError, DontWrapMixin):
     """Raised when encryption fails.
+
+    Inherits ``DontWrapMixin`` so SQLAlchemy propagates this directly
+    instead of wrapping it in ``StatementError``.
 
     Possible causes include invalid plaintext input or backend-specific
     errors. Error messages intentionally exclude key material, plaintext,
@@ -71,8 +76,11 @@ class EncryptionError(SecureSessionError):
     """
 
 
-class DecryptionError(SecureSessionError):
+class DecryptionError(SecureSessionError, DontWrapMixin):
     """Raised when decryption fails.
+
+    Inherits ``DontWrapMixin`` so SQLAlchemy propagates this directly
+    instead of wrapping it in ``StatementError``.
 
     Possible causes include a wrong key, tampered ciphertext, or
     malformed input. Error messages intentionally exclude key material,
@@ -90,8 +98,11 @@ class DecryptionError(SecureSessionError):
     """
 
 
-class SerializationError(SecureSessionError):
+class SerializationError(SecureSessionError, DontWrapMixin):
     """Raised when data cannot be serialized to JSON.
+
+    Inherits ``DontWrapMixin`` so SQLAlchemy propagates this directly
+    instead of wrapping it in ``StatementError``.
 
     This indicates a caller bug — the input contains types that are not
     JSON-serializable (e.g., ``datetime``, custom objects). This is
@@ -124,9 +135,8 @@ class ConfigurationError(SecureSessionError):
         ```python
         try:
             service = EncryptedSessionService(
-                db_path="sessions.db",
+                db_url="sqlite+aiosqlite:///sessions.db",
                 backend=my_backend,
-                backend_id=BACKEND_FERNET,
             )
         except ConfigurationError as exc:
             log.error("Service misconfigured: %s", exc)

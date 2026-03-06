@@ -1,7 +1,7 @@
 """Shared test fixtures for adk-secure-sessions.
 
 Provides common fixtures used across unit and integration test suites,
-including encryption backends, database paths, and service instances.
+including encryption backends, database URLs, and service instances.
 
 Performance note:
     Key fixtures use pre-generated Fernet keys to skip PBKDF2 derivation
@@ -10,9 +10,9 @@ Performance note:
 
 Typical usage::
 
-    async def test_encrypt_decrypt(fernet_backend, db_path):
+    async def test_encrypt_decrypt(fernet_backend, db_url):
         # fernet_backend is a FernetBackend instance
-        # db_path is a temporary SQLite database path
+        # db_url is a temporary SQLite connection string
         ...
 
 See Also:
@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING
 import pytest
 from cryptography.fernet import Fernet
 
-from adk_secure_sessions import BACKEND_FERNET, EncryptedSessionService, FernetBackend
+from adk_secure_sessions import EncryptedSessionService, FernetBackend
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -105,24 +105,39 @@ def db_path(tmp_path: Path) -> str:
     Examples:
         ```python
         async def test_with_db(db_path):
-            import aiosqlite
+            import sqlite3
 
-            async with aiosqlite.connect(db_path) as conn:
-                ...
+            conn = sqlite3.connect(db_path)
+            ...
         ```
     """
     return str(tmp_path / "test_sessions.db")
 
 
 @pytest.fixture
+def db_url(db_path: str) -> str:
+    """A SQLAlchemy connection string for a temporary SQLite database.
+
+    Uses the ``db_path`` fixture to create a ``sqlite+aiosqlite:///``
+    connection string.
+
+    Examples:
+        ```python
+        async def test_with_url(db_url):
+            service = EncryptedSessionService(db_url=db_url, backend=backend)
+        ```
+    """
+    return f"sqlite+aiosqlite:///{db_path}"
+
+
+@pytest.fixture
 async def encrypted_service(
-    db_path: str, fernet_backend: FernetBackend
+    db_url: str, fernet_backend: FernetBackend
 ) -> AsyncGenerator[EncryptedSessionService, None]:
     """An initialized EncryptedSessionService with cleanup.
 
     Creates a service backed by a real FernetBackend and temporary
-    SQLite database. Initializes the database schema before yielding
-    and closes the connection after the test completes.
+    SQLite database. Closes the engine after the test completes.
 
     Note: This is an integration-grade fixture (real backend + real DB).
     Unit tests requiring isolation should mock the backend or DB instead.
@@ -138,10 +153,8 @@ async def encrypted_service(
         ```
     """
     svc = EncryptedSessionService(
-        db_path=db_path,
+        db_url=db_url,
         backend=fernet_backend,
-        backend_id=BACKEND_FERNET,
     )
-    await svc._init_db()
     yield svc
     await svc.close()

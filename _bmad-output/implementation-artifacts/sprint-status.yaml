@@ -109,7 +109,7 @@ development_status:
   epic-7: in-progress
   7-1-typedecorator-wrapping-spike: done
   7-2-adr-architecture-migration-decision: done
-  7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: backlog
+  7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: done
   7-4-test-migration-conformance-verification: backlog
   7-5-documentation-mkdocs-site-updates: backlog
   7-6-revise-epic-4-scope-roadmap: backlog

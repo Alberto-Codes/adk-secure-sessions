@@ -12,7 +12,6 @@ name = "adk-secure-sessions"
 version = "1.0.3"
 source = { editable = "." }
 dependencies = [
-    { name = "aiosqlite" },
     { name = "cryptography" },
     { name = "google-adk" },
 ]
@@ -49,7 +48,6 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiosqlite", specifier = ">=0.19.0" },
     { name = "cryptography", specifier = ">=44.0.0" },
     { name = "google-adk", specifier = ">=1.22.0" },
 ]

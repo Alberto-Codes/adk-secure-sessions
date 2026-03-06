@@ -10,7 +10,7 @@
 
 The compliance gateway for [Google ADK](https://github.com/google/adk-python) — add encrypted sessions in 5 minutes.
 
-ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is an encrypted session service implementing ADK's `BaseSessionService` that encrypts state and conversation history at rest, so you can close the encryption-at-rest gap without changing your agent code.
+ADK's built-in session services store all data unencrypted. If your agents handle PHI, PII, or financial data, that's a compliance gap. **adk-secure-sessions** is an encrypted session service wrapping ADK's `DatabaseSessionService` that encrypts state and conversation history at rest, so you can close the encryption-at-rest gap without changing your agent code.
 
 ## Install
 
@@ -24,23 +24,25 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add adk-secure-sessions
 ```
 
-**3 direct runtime dependencies**: google-adk, cryptography, aiosqlite.
+**2 direct runtime dependencies**: google-adk, cryptography.
 
 ## Quick Start
 
 ```python
 # Before (ADK default — unencrypted):
 from google.adk.sessions import DatabaseSessionService
-session_service = DatabaseSessionService(db_url="sqlite:///sessions.db")
+session_service = DatabaseSessionService(db_url="sqlite+aiosqlite:///sessions.db")
 
 # After (encrypted — swap the import and constructor):
-from adk_secure_sessions import EncryptedSessionService, FernetBackend, BACKEND_FERNET
+from adk_secure_sessions import EncryptedSessionService, FernetBackend
 session_service = EncryptedSessionService(
-    db_path="sessions.db", backend=FernetBackend("your-secret-key"), backend_id=BACKEND_FERNET
+    db_url="sqlite+aiosqlite:///sessions.db", backend=FernetBackend("your-secret-key")
 )
 ```
 
 Use `session_service` exactly like any ADK session service — `create_session`, `get_session`, `list_sessions`, `delete_session`, and `append_event` all work the same way. Wrap in `async with` for automatic cleanup — see [Documentation](https://alberto-codes.github.io/adk-secure-sessions/) for details.
+
+> **Migration note (v1.1.0):** The constructor API changed from `(db_path, backend, backend_id)` to `(db_url, backend)`. Existing databases from v1.0.x are incompatible — create a fresh database when upgrading.
 
 ## What Gets Encrypted
 
