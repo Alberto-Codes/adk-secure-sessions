@@ -29,6 +29,7 @@ See Also:
 from __future__ import annotations
 
 import base64
+import binascii
 import json
 from collections.abc import Callable
 from typing import Any
@@ -138,16 +139,25 @@ class EncryptedJSON(TypeDecorator[dict[str, Any]]):
 
         Raises:
             DecryptionError: If decryption fails due to wrong key,
-                tampered ciphertext, or malformed input.
+                tampered ciphertext, malformed input, or unencrypted
+                data (invalid envelope format).
         """
         if value is None:
             return None
 
         try:
-            envelope = base64.b64decode(value.encode("ascii"))
+            envelope = base64.b64decode(value.encode("ascii"), validate=True)
             _version, _backend_id, ciphertext = _parse_envelope(envelope)
             plaintext = self._decrypt_fn(ciphertext)
             return json.loads(plaintext)
         except InvalidToken:
             msg = "Decryption failed: invalid token or wrong key"
+            raise DecryptionError(msg) from None
+        except DecryptionError:
+            raise
+        except (binascii.Error, UnicodeEncodeError):
+            msg = (
+                "Decryption failed: data does not appear to be encrypted "
+                "(invalid envelope format)"
+            )
             raise DecryptionError(msg) from None
