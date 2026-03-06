@@ -135,9 +135,8 @@ class ConfigurationError(SecureSessionError):
         ```python
         try:
             service = EncryptedSessionService(
-                db_path="sessions.db",
+                db_url="sqlite+aiosqlite:///sessions.db",
                 backend=my_backend,
-                backend_id=BACKEND_FERNET,
             )
         except ConfigurationError as exc:
             log.error("Service misconfigured: %s", exc)

@@ -10,7 +10,6 @@ See Also:
 from __future__ import annotations
 
 import base64
-import json
 
 import pytest
 from cryptography.fernet import Fernet
@@ -104,9 +103,7 @@ class TestProcessResultValue:
 class TestNonePassthrough:
     """Tests for None value handling."""
 
-    def test_bind_param_none_returns_none(
-        self, encrypted_json: EncryptedJSON
-    ) -> None:
+    def test_bind_param_none_returns_none(self, encrypted_json: EncryptedJSON) -> None:
         """T006: process_bind_param passes None through."""
         assert encrypted_json.process_bind_param(None, dialect=None) is None
 

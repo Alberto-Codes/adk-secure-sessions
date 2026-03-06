@@ -182,8 +182,7 @@ class TestEncryptionRoundTrip:
             session_id=session.id,
         )
         assert retrieved is not None
-        # Session state may include merged app/user state, but no extra keys
-        # should appear from empty initialization
+        assert isinstance(retrieved.state, dict)
 
 
 class TestWrongKeyDecryption:
@@ -280,6 +279,20 @@ class TestADKSentinels:
         """T: DatabaseSessionService.__init__ accepts db_url parameter."""
         sig = inspect.signature(DatabaseSessionService.__init__)
         assert "db_url" in sig.parameters
+
+    def test_encrypted_service_has_tables_created(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: EncryptedSessionService instance has _tables_created attribute."""
+        service = EncryptedSessionService(db_url=db_url, backend=fernet_backend)
+        assert hasattr(service, "_tables_created")
+
+    def test_encrypted_service_has_table_creation_lock(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: EncryptedSessionService instance has _table_creation_lock attribute."""
+        service = EncryptedSessionService(db_url=db_url, backend=fernet_backend)
+        assert hasattr(service, "_table_creation_lock")
 
     def test_encrypted_service_zero_crud_overrides(self) -> None:
         """T: EncryptedSessionService does not override any CRUD methods."""

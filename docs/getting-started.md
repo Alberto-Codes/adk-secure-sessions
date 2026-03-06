@@ -41,7 +41,7 @@ just two changes:
 ```python
 # Before (ADK default — unencrypted):
 from google.adk.sessions import DatabaseSessionService
-session_service = DatabaseSessionService(db_url="sqlite:///sessions.db")
+session_service = DatabaseSessionService(db_url="sqlite+aiosqlite:///sessions.db")
 
 # After (encrypted — swap the import and constructor):
 from adk_secure_sessions import EncryptedSessionService, FernetBackend

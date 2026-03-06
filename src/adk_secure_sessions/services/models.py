@@ -25,7 +25,7 @@ See Also:
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from google.adk.events.event import Event
@@ -139,13 +139,9 @@ def create_encrypted_models(
             default=lambda: str(uuid.uuid4()),
         )
 
-        state: Mapped[dict[str, Any]] = mapped_column(
-            encrypted_json, default={}
-        )
+        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
 
-        create_time: Mapped[datetime] = mapped_column(
-            DateTime, default=func.now()
-        )
+        create_time: Mapped[datetime] = mapped_column(DateTime, default=func.now())
         update_time: Mapped[datetime] = mapped_column(
             DateTime, default=func.now(), onupdate=func.now()
         )
@@ -196,9 +192,7 @@ def create_encrypted_models(
                 Update time as a float POSIX timestamp.
             """
             if is_sqlite:
-                return self.update_time.replace(
-                    tzinfo=__import__("datetime").timezone.utc
-                ).timestamp()
+                return self.update_time.replace(tzinfo=timezone.utc).timestamp()
             return self.update_time.timestamp()
 
         def __repr__(self) -> str:
@@ -212,9 +206,7 @@ def create_encrypted_models(
         app_name: Mapped[str] = mapped_column(
             String(_DEFAULT_MAX_KEY_LENGTH), primary_key=True
         )
-        state: Mapped[dict[str, Any]] = mapped_column(
-            encrypted_json, default={}
-        )
+        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
         update_time: Mapped[datetime] = mapped_column(
             DateTime, default=func.now(), onupdate=func.now()
         )
@@ -230,9 +222,7 @@ def create_encrypted_models(
         user_id: Mapped[str] = mapped_column(
             String(_DEFAULT_MAX_KEY_LENGTH), primary_key=True
         )
-        state: Mapped[dict[str, Any]] = mapped_column(
-            encrypted_json, default={}
-        )
+        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
         update_time: Mapped[datetime] = mapped_column(
             DateTime, default=func.now(), onupdate=func.now()
         )
@@ -255,12 +245,8 @@ def create_encrypted_models(
             String(_DEFAULT_MAX_KEY_LENGTH), primary_key=True
         )
 
-        invocation_id: Mapped[str] = mapped_column(
-            String(_DEFAULT_MAX_VARCHAR_LENGTH)
-        )
-        timestamp: Mapped[datetime] = mapped_column(
-            DateTime, default=func.now()
-        )
+        invocation_id: Mapped[str] = mapped_column(String(_DEFAULT_MAX_VARCHAR_LENGTH))
+        timestamp: Mapped[datetime] = mapped_column(DateTime, default=func.now())
         event_data: Mapped[dict[str, Any] | None] = mapped_column(
             encrypted_json, nullable=True
         )
@@ -285,17 +271,17 @@ def create_encrypted_models(
                 ADK Event object reconstructed from stored data.
             """
             data = self.event_data or {}
-            return Event.model_validate({
-                **data,
-                "id": self.id,
-                "invocation_id": self.invocation_id,
-                "timestamp": self.timestamp.timestamp(),
-            })
+            return Event.model_validate(
+                {
+                    **data,
+                    "id": self.id,
+                    "invocation_id": self.invocation_id,
+                    "timestamp": self.timestamp.timestamp(),
+                }
+            )
 
         @classmethod
-        def from_event(
-            cls, session: Session, event: Event
-        ) -> EncryptedStorageEvent:
+        def from_event(cls, session: Session, event: Event) -> EncryptedStorageEvent:
             """Create an EncryptedStorageEvent from an ADK Event.
 
             Args:
