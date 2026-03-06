@@ -1,16 +1,16 @@
 ---
 stepsCompleted: ['step-01-load-context', 'step-02-discover-tests', 'step-03a-subprocess-determinism', 'step-03b-subprocess-isolation', 'step-03c-subprocess-maintainability', 'step-03e-subprocess-performance', 'step-03f-aggregate-scores', 'step-04-generate-report']
 lastStep: 'step-04-generate-report'
-lastSaved: '2026-03-05'
+lastSaved: '2026-03-06'
 workflowType: 'testarch-test-review'
-inputDocuments: ['tests/unit/test_protocols.py', 'tests/unit/test_exceptions.py', 'tests/unit/test_fernet_backend.py', 'tests/unit/test_serialization.py', 'tests/unit/test_encrypted_session_service.py', 'tests/unit/test_type_decorator.py', 'tests/unit/test_public_api.py', 'tests/integration/test_adk_integration.py', 'tests/integration/test_docs_examples.py', 'tests/integration/test_concurrent_writes.py', 'tests/integration/test_adk_runner.py', 'tests/integration/test_conformance.py', 'tests/integration/test_encryption_boundary.py', 'tests/benchmarks/test_encryption_overhead.py']
+inputDocuments: ['tests/unit/test_protocols.py', 'tests/unit/test_exceptions.py', 'tests/unit/test_fernet_backend.py', 'tests/unit/test_serialization.py', 'tests/unit/test_encrypted_session_service.py', 'tests/unit/test_type_decorator.py', 'tests/unit/test_public_api.py', 'tests/integration/test_adk_conformance.py', 'tests/integration/test_adk_encryption.py', 'tests/integration/test_adk_crud.py', 'tests/integration/test_docs_examples.py', 'tests/integration/test_concurrent_writes.py', 'tests/integration/test_adk_runner.py', 'tests/integration/test_conformance.py', 'tests/integration/test_encryption_boundary.py', 'tests/benchmarks/test_encryption_overhead.py']
 ---
 
-# Test Quality Review: Full Suite (Post-Story 7.4)
+# Test Quality Review: Full Suite (Post-Story 7.5)
 
-**Quality Score**: 93/100 (A - Excellent)
-**Review Date**: 2026-03-05
-**Review Scope**: suite (14 files, 171 tests, ~3,866 LOC)
+**Quality Score**: 95/100 (A - Excellent)
+**Review Date**: 2026-03-06
+**Review Scope**: suite (16 files, 171 tests, 3,940 LOC)
 **Reviewer**: TEA Agent (Test Architect)
 
 ---
@@ -26,22 +26,21 @@ Coverage mapping and coverage gates are out of scope here. Use `trace` for cover
 
 ### Key Strengths
 
-- Story 7.4 adds two high-value integration test files: `test_conformance.py` (8 tests, side-by-side encrypted vs. unencrypted service comparison) and `test_encryption_boundary.py` (8 tests, gold-standard raw-DB ciphertext verification across all 4 tables)
-- Unencrypted data detection tests (`TestUnencryptedDataDetection`) verify that plaintext written by raw `DatabaseSessionService` raises `DecryptionError` with a message that does NOT say "wrong key" -- critical for operational diagnostics
-- Tampered ciphertext detection (`TestTamperedCiphertextAtRest`) proves the security boundary: modifying raw DB state causes `DecryptionError` on read
+- Story 7.5 completes the split of `test_adk_integration.py` (768 lines) into 3 focused files: `test_adk_conformance.py` (103), `test_adk_encryption.py` (341), `test_adk_crud.py` (410) -- resolving the long-standing P1 HIGH violation
+- Conformance tests (`test_conformance.py`) provide side-by-side encrypted vs. unencrypted service comparison; unencrypted data detection verifies `DecryptionError` messages distinguish wrong-key from plaintext data
+- Gold-standard encryption boundary tests (`test_encryption_boundary.py`) verify ciphertext at rest across all 4 tables via raw sqlite3 reads, plus tampered ciphertext detection
 - Metadata plaintext verification confirms `session_id`, `app_name`, `user_id` remain queryable while state columns are ciphertext
 - All previous strengths preserved: 6 ADK compatibility sentinels, DontWrapMixin verification, async generator fixtures with proper teardown, living documentation smoke test
 
 ### Key Weaknesses
 
-- `test_adk_integration.py` remains at 768 lines (2.5x the 300-line threshold) -- carry-over from previous reviews
-- 4 additional files marginally exceed 300 lines (384, 368, 357, 310) -- individually acceptable but collectively indicate integration tests are growing
+- 7 files marginally exceed 300 lines (309-410) -- individually acceptable but collectively indicate integration tests are growing
 - Duplicated service instantiation pattern in integration tests (~20 occurrences of `async with EncryptedSessionService(...)`) still present
 - No formal data factory module (inline helper classes adequate but not scalable)
 
 ### Summary
 
-The adk-secure-sessions test suite continues at excellent quality after Story 7.4. The two new integration test files add 16 tests covering conformance verification (side-by-side comparison with raw `DatabaseSessionService`) and encryption boundary verification (raw-DB ciphertext checks across sessions, events, app_states, and user_states). The suite now has 171 tests across 14 files (~3,866 LOC), up from 154/12/3,443. All 4 quality dimensions score 79+, with determinism, isolation, and performance at 98. The full suite runs in 4.69s with zero flakiness. The only structural concern remains `test_adk_integration.py` at 768 lines; the 4 marginally-over-threshold files are well-organized and don't warrant splitting. Score holds steady at 93/100 (A).
+The adk-secure-sessions test suite reaches its highest quality score after Story 7.5. The split of `test_adk_integration.py` (768 lines) into 3 focused files eliminates the only HIGH-severity violation, improving maintainability from 79 to 85. The suite has 171 tests across 16 files (3,940 LOC). All 4 quality dimensions score 85+, with determinism, isolation, and performance at 98. No file exceeds 410 lines (1.37x threshold). Score improves from 93 to 95/100 (A).
 
 ---
 
@@ -55,15 +54,15 @@ The adk-secure-sessions test suite continues at excellent quality after Story 7.
 | Hard Waits (sleep, waitForTimeout)   | PASS  | 0          | No `time.sleep()` or `asyncio.sleep()` found anywhere |
 | Determinism (no conditionals)        | PASS  | 0          | No test flow control; `pytest.skip` in boundary tests is justified (ADK may not populate state tables) |
 | Isolation (cleanup, no shared state) | PASS  | 0          | Per-test DB, async generator fixtures, context managers; `shared_db_encrypted_service` is intentionally shared for unencrypted detection |
-| Fixture Patterns                     | PASS  | 0          | Clean factory-to-fixture pattern; new conformance fixtures (`enc_service`, `unencrypted_service`, `shared_db_encrypted_service`) follow async generator + teardown pattern |
+| Fixture Patterns                     | PASS  | 0          | Clean factory-to-fixture pattern; conformance fixtures (`enc_service`, `unencrypted_service`, `shared_db_encrypted_service`) follow async generator + teardown pattern |
 | Data Factories                       | WARN  | 0          | Inline helper classes -- adequate but no formal factory module |
 | Network-First Pattern                | N/A      | -          | Library tests, no network/browser interactions |
-| Explicit Assertions                  | PASS  | 0          | Multi-field, negative, type-checking assertions throughout; new tests add AC-4 message content assertions |
-| Test Length (<=300 lines)            | WARN  | 1          | 768 LOC file (carry-over); 4 files marginally over (310-384) |
+| Explicit Assertions                  | PASS  | 0          | Multi-field, negative, type-checking assertions throughout; AC-4 message content assertions in conformance tests |
+| Test Length (<=300 lines)            | WARN  | 0          | No file over 500 lines; 7 files marginally over 300 (309-410) |
 | Test Duration (<=1.5 min)            | PASS  | 0          | Full suite: 4.69s. Slowest individual test: ~0.2s |
 | Flakiness Patterns                   | PASS  | 0          | No race conditions, no order dependencies |
 
-**Total Violations**: 0 Critical, 1 High, 2 Medium, 5 Low
+**Total Violations**: 0 Critical, 0 High, 2 Medium, 8 Low
 
 ---
 
@@ -75,10 +74,10 @@ The adk-secure-sessions test suite continues at excellent quality after Story 7.
 Dimension Scores:
   Determinism:       98/100 (A)  x 0.30 = 29.4
   Isolation:         98/100 (A)  x 0.30 = 29.4
-  Maintainability:   79/100 (B)  x 0.25 = 19.8
+  Maintainability:   85/100 (B+) x 0.25 = 21.3
   Performance:       98/100 (A)  x 0.15 = 14.7
                                          ------
-  Weighted Total:                         93/100
+  Weighted Total:                         95/100
 
 Grade: A
 ```
@@ -88,11 +87,11 @@ Grade: A
 ```
 Starting Score:          100
 Critical Violations:     -0 x 10 = -0
-High Violations:         -1 x 5  = -5
+High Violations:         -0 x 5  = -0
 Medium Violations:       -2 x 2  = -4
-Low Violations:          -5 x 1  = -5
+Low Violations:          -8 x 1  = -8
                                    ----
-Subtotal:                          86
+Subtotal:                          88
 
 Bonus Points:
   Comprehensive Fixtures: +5 (async generators, session-scoped keys, proper teardown)
@@ -101,14 +100,15 @@ Bonus Points:
   Sentinel Tests:         +3 (6 ADK compatibility sentinels catch upstream drift)
   Test Level Markers:     +2 (unit, integration, benchmark markers on all files)
   Conformance Pattern:    +3 (side-by-side encrypted vs. unencrypted comparison)
+  File Split Discipline:  +2 (768-line file split into 3 focused files per review recommendation)
                           --------
-Total Bonus:             +18
+Total Bonus:             +20
 
-Final Score:             104 -> capped at 100/100
+Final Score:             108 -> capped at 100/100
 Grade:                   A
 ```
 
-**Official Score: 93/100 (A)** (dimension-weighted, per TEA methodology)
+**Official Score: 95/100 (A)** (dimension-weighted, per TEA methodology)
 
 ---
 
@@ -120,53 +120,35 @@ No critical issues detected.
 
 ## Recommendations (Should Fix)
 
-### 1. Split test_adk_integration.py (768 lines)
+### 1. ~~Split test_adk_integration.py (768 lines)~~ RESOLVED
 
-**Severity**: P1 (High)
-**Location**: `tests/integration/test_adk_integration.py:1-768`
-**Criterion**: Test Length (<=300 lines)
-**Knowledge Base**: [test-quality.md](../../../testarch/knowledge/test-quality.md)
+**Status**: Completed in Story 7.5. The 768-line file was split into:
+- `test_adk_conformance.py` (103 lines) -- interface checks, protocol conformance
+- `test_adk_encryption.py` (341 lines) -- DB encryption, wrong-key tests
+- `test_adk_crud.py` (410 lines) -- round-trip, list, delete, state merge
 
-**Issue Description**:
-At 768 lines, this file is 2.5x the 300-line threshold. This is a carry-over from the previous two reviews. With Story 7.4 extracting conformance and boundary tests into dedicated files, the remaining content in `test_adk_integration.py` is a mix of interface checks, round-trip workflows, DB encryption checks, list/delete, wrong-key, state merge, and user state encryption. The new `test_conformance.py` and `test_encryption_boundary.py` demonstrate the correct pattern -- focused files with clear scope.
-
-**Recommended Split**:
-
-```
-tests/integration/
-  test_adk_integration.py    -> test_adk_conformance.py (~250 lines)
-                                TestBaseSessionServiceInterface, TestRoundTripWorkflow,
-                                TestProtocolConformance
-                              -> test_adk_encryption.py (~280 lines)
-                                TestDatabaseEncryption, TestWrongKeyIntegration,
-                                TestUserStateEncryption, TestWrongKeyOnStateTables
-                              -> test_adk_crud.py (~240 lines)
-                                TestListSessionsIntegration, TestDeleteSessionIntegration,
-                                TestSessionRecreateAfterDelete, TestStateMergePrecedence
-```
-
-**Priority**: Address in a future cleanup PR. Not blocking.
+This eliminated the only HIGH-severity violation and improved the maintainability score from 79 to 85.
 
 ### 2. Extract shared service fixture in integration tests
 
 **Severity**: P2 (Medium)
-**Location**: `tests/integration/test_adk_integration.py` (~20 occurrences)
+**Location**: `tests/integration/test_adk_crud.py`, `test_adk_encryption.py`, `test_adk_conformance.py` (~20 occurrences total)
 **Criterion**: Fixture Patterns / DRY
 **Knowledge Base**: [fixture-architecture.md](../../../testarch/knowledge/fixture-architecture.md)
 
 **Issue Description**:
-The pattern `async with EncryptedSessionService(db_url=..., backend=...) as service:` appears ~20 times in integration tests. The `conftest.py` already provides an `encrypted_service` fixture -- many of these could use it instead. Note: the new `test_conformance.py` correctly uses dedicated fixtures (`enc_service`, `unencrypted_service`) rather than duplicating inline instantiation.
+The pattern `async with EncryptedSessionService(db_url=..., backend=...) as service:` appears ~20 times across the split integration test files. The `conftest.py` already provides an `encrypted_service` fixture -- many of these could use it instead. The `test_conformance.py` correctly uses dedicated fixtures (`enc_service`, `unencrypted_service`) rather than duplicating inline instantiation.
 
 **Benefits**: Eliminates ~150 lines of boilerplate, consistent with unit test patterns and the pattern established by `test_conformance.py`.
 
 ### 3. Define module-level constants for repeated test strings
 
 **Severity**: P2 (Medium)
-**Location**: `tests/integration/test_adk_integration.py` (11+ occurrences of `"my-agent"`, 15+ of `"user-1"`)
+**Location**: `tests/integration/test_adk_crud.py`, `test_adk_encryption.py` (11+ occurrences of `"my-agent"`, 15+ of `"user-1"`)
 **Criterion**: Maintainability / DRY
 
 **Issue Description**:
-Magic strings repeated throughout. `test_concurrent_writes.py` and `test_adk_runner.py` correctly define `APP_NAME` and `USER_ID` at module level. Apply same pattern to `test_adk_integration.py`.
+Magic strings repeated throughout. `test_concurrent_writes.py` and `test_adk_runner.py` correctly define `APP_NAME` and `USER_ID` at module level. Apply same pattern to the split files.
 
 ### 4. Refactor runner fixtures to parameterized factory
 
@@ -190,11 +172,11 @@ Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `c
 ### 6. Monitor marginally-over-threshold files
 
 **Severity**: P3 (Low)
-**Location**: `tests/unit/test_serialization.py` (384), `tests/integration/test_conformance.py` (368), `tests/integration/test_adk_runner.py` (357), `tests/integration/test_encryption_boundary.py` (310)
+**Location**: `tests/integration/test_adk_crud.py` (410), `tests/unit/test_serialization.py` (383), `tests/integration/test_conformance.py` (367), `tests/integration/test_adk_runner.py` (356), `tests/integration/test_adk_encryption.py` (341), `tests/unit/test_encrypted_session_service.py` (312), `tests/integration/test_encryption_boundary.py` (309)
 **Criterion**: Test Length (<=300 lines)
 
 **Issue Description**:
-Four files are marginally over the 300-line threshold (310-384 lines). Each is well-organized with clear test class boundaries and doesn't warrant splitting today. However, if any grows further (e.g., adding more conformance or boundary tests), consider splitting at the class boundary. This is informational, not actionable.
+Seven files are over the 300-line threshold (309-410 lines). Each is well-organized with clear test class boundaries. `test_adk_crud.py` at 410 lines is the largest but is logically grouped by CRUD operation. No file warrants splitting today. However, if any grows past 500 lines, split at the class boundary. This is informational, not actionable.
 
 ### 7. Consider adding DontWrapMixin test coverage
 
@@ -287,20 +269,22 @@ Extracts code blocks from `docs/getting-started.md` using sentinel comments and 
 
 | File | Path | Lines | Tests | Classes | Markers | Grade |
 |------|------|-------|-------|---------|---------|-------|
-| test_protocols.py | `tests/unit/` | 100 | 6 | 2 | `unit` | A |
-| test_exceptions.py | `tests/unit/` | 269 | 28+ | 5 | `unit` | A |
-| test_fernet_backend.py | `tests/unit/` | 267 | 22 | 5 | `unit` | A |
-| test_serialization.py | `tests/unit/` | 384 | 25 | 7 | `unit` | B |
-| test_encrypted_session_service.py | `tests/unit/` | 313 | 17 | 5 | `unit` | A |
-| test_type_decorator.py | `tests/unit/` | 154 | 9 | 5 | `unit` | A |
+| test_protocols.py | `tests/unit/` | 99 | 6 | 2 | `unit` | A |
+| test_exceptions.py | `tests/unit/` | 268 | 28+ | 5 | `unit` | A |
+| test_fernet_backend.py | `tests/unit/` | 266 | 22 | 5 | `unit` | A |
+| test_serialization.py | `tests/unit/` | 383 | 25 | 7 | `unit` | B |
+| test_encrypted_session_service.py | `tests/unit/` | 312 | 17 | 5 | `unit` | A |
+| test_type_decorator.py | `tests/unit/` | 153 | 9 | 5 | `unit` | A |
 | test_public_api.py | `tests/unit/` | 76 | 6 | 3 | `unit` | A |
-| test_adk_integration.py | `tests/integration/` | 768 | 20 | 11 | `integration` | C |
-| test_docs_examples.py | `tests/integration/` | 79 | 1 | 1 | `integration` | A |
-| test_concurrent_writes.py | `tests/integration/` | 249 | 4 | 2 | `integration` | A |
-| test_adk_runner.py | `tests/integration/` | 357 | 6 | 3 | `integration` | B |
-| test_conformance.py | `tests/integration/` | 368 | 8 | 8 | `integration` | B |
-| test_encryption_boundary.py | `tests/integration/` | 310 | 8 | 8 | `integration` | A |
-| test_encryption_overhead.py | `tests/benchmarks/` | 172 | 1 | 0 | `benchmark` | A |
+| test_adk_conformance.py | `tests/integration/` | 103 | 4 | 2 | `integration` | A |
+| test_adk_encryption.py | `tests/integration/` | 341 | 8 | 4 | `integration` | B |
+| test_adk_crud.py | `tests/integration/` | 410 | 8 | 5 | `integration` | B |
+| test_docs_examples.py | `tests/integration/` | 78 | 1 | 1 | `integration` | A |
+| test_concurrent_writes.py | `tests/integration/` | 248 | 4 | 2 | `integration` | A |
+| test_adk_runner.py | `tests/integration/` | 356 | 6 | 3 | `integration` | B |
+| test_conformance.py | `tests/integration/` | 367 | 8 | 8 | `integration` | B |
+| test_encryption_boundary.py | `tests/integration/` | 309 | 8 | 8 | `integration` | A |
+| test_encryption_overhead.py | `tests/benchmarks/` | 171 | 1 | 0 | `benchmark` | A |
 
 ### Test Framework
 
@@ -338,7 +322,7 @@ Extracts code blocks from `docs/getting-started.md` using sentinel comments and 
 
 ### Related Artifacts
 
-- **Story**: 7-4-conformance-verification (current branch)
+- **Story**: 7-5-architecture-migration-docs (current branch)
 - **Architecture**: `docs/ARCHITECTURE.md` -- Protocol-based plugin architecture, field-level encryption
 - **ADRs**: ADR-000 through ADR-007 documenting key design decisions
 
@@ -365,28 +349,29 @@ Fragments skipped (not applicable to Python/pytest backend): Playwright Utils, P
 
 ### Immediate Actions (Before Next Epic)
 
-1. **Split `test_adk_integration.py`** into 3 focused files + extract shared fixture
-   - Priority: P1
-   - Owner: Dev agent
-   - Impact: Reduces from 768 to ~250-280 each, eliminates ~150 lines of boilerplate
+None. All P1 items are resolved.
 
 ### Follow-up Actions (Backlog)
 
-1. **Define module-level constants** for repeated test strings in integration tests
+1. **Extract shared service fixture** to reduce duplicated `async with EncryptedSessionService(...)` pattern
    - Priority: P2
-   - Target: Part of file split PR
+   - Target: Backlog
 
-2. **Add DontWrapMixin unit tests** in `test_exceptions.py`
+2. **Define module-level constants** for repeated test strings in split integration files
+   - Priority: P2
+   - Target: Backlog
+
+3. **Add DontWrapMixin unit tests** in `test_exceptions.py`
    - Priority: P3
    - Target: Backlog
 
-3. **Refactor runner fixtures** to parameterized factory
+4. **Refactor runner fixtures** to parameterized factory
    - Priority: P3
    - Target: Backlog
 
 ### Re-Review Needed?
 
-No re-review needed. The suite scores 93/100 (A) with zero critical issues. The single high-severity finding (`test_adk_integration.py` length) is a carry-over from the previous two reviews that has not worsened. The new Story 7.4 test files are well-structured and follow established patterns. Schedule a re-review after the file split is completed.
+No re-review needed. The suite scores 95/100 (A) with zero critical or high-severity issues. The Story 7.5 file split resolved the only HIGH finding. Schedule a re-review if any file exceeds 500 lines or a new test dimension is added.
 
 ---
 
@@ -396,7 +381,7 @@ No re-review needed. The suite scores 93/100 (A) with zero critical issues. The 
 
 **Rationale**:
 
-Test quality is excellent with a 93/100 weighted score (Grade A), holding steady from the previous review. Story 7.4 adds 16 new tests across 2 well-structured files: `test_conformance.py` provides side-by-side behavioral equivalence verification against raw `DatabaseSessionService`, and `test_encryption_boundary.py` delivers gold-standard raw-DB ciphertext verification across all 4 encrypted tables. The unencrypted data detection tests (AC-4) and tampered ciphertext detection add meaningful security boundary coverage. All 4 quality dimensions score 79+, with determinism, isolation, and performance at 98. The full suite runs in 4.69s (171 tests) with zero flakiness. The only remaining structural concern is `test_adk_integration.py` at 768 lines, which should be addressed in a future cleanup PR but does not block approval.
+Test quality is excellent with a 95/100 weighted score (Grade A), up from 93 after Story 7.5. The split of `test_adk_integration.py` (768 lines) into `test_adk_conformance.py` (103), `test_adk_encryption.py` (341), and `test_adk_crud.py` (410) resolves the only HIGH-severity violation and improves maintainability from 79 to 85. All 4 quality dimensions now score 85+, with determinism, isolation, and performance at 98. The full suite runs in 4.69s (171 tests across 16 files, 3,940 LOC) with zero flakiness. No critical or high-severity issues remain. The remaining P2/P3 items (shared fixture extraction, magic string constants) are backlog improvements.
 
 ---
 
@@ -406,12 +391,16 @@ Test quality is excellent with a 93/100 weighted score (Grade A), holding steady
 
 | File | Line | Severity | Dimension | Issue | Fix |
 |------|------|----------|-----------|-------|-----|
-| `test_adk_integration.py` | 1-768 | HIGH | Maintainability | 768 lines (2.5x threshold) | Split into 3 files |
-| `test_adk_integration.py` | multiple | MEDIUM | Maintainability | ~20x duplicated service instantiation | Extract fixture |
-| `test_adk_integration.py` | multiple | MEDIUM | Maintainability | Repeated "my-agent", "user-1" strings | Define constants |
-| `test_serialization.py` | 1-384 | LOW | Maintainability | 384 lines (marginally over) | Monitor |
-| `test_conformance.py` | 1-368 | LOW | Maintainability | 368 lines (marginally over) | Monitor |
-| `test_adk_runner.py` | 1-357 | LOW | Maintainability | 357 lines (marginally over) | Monitor |
+| ~~`test_adk_integration.py`~~ | ~~1-768~~ | ~~HIGH~~ | ~~Maintainability~~ | ~~768 lines (2.5x threshold)~~ | ~~RESOLVED: Split into 3 files in Story 7.5~~ |
+| `test_adk_crud.py` + others | multiple | MEDIUM | Maintainability | ~20x duplicated service instantiation | Extract fixture |
+| `test_adk_crud.py` + others | multiple | MEDIUM | Maintainability | Repeated "my-agent", "user-1" strings | Define constants |
+| `test_adk_crud.py` | 1-410 | LOW | Maintainability | 410 lines (1.37x threshold) | Monitor |
+| `test_serialization.py` | 1-383 | LOW | Maintainability | 383 lines (marginally over) | Monitor |
+| `test_conformance.py` | 1-367 | LOW | Maintainability | 367 lines (marginally over) | Monitor |
+| `test_adk_runner.py` | 1-356 | LOW | Maintainability | 356 lines (marginally over) | Monitor |
+| `test_adk_encryption.py` | 1-341 | LOW | Maintainability | 341 lines (marginally over) | Monitor |
+| `test_encrypted_session_service.py` | 1-312 | LOW | Maintainability | 312 lines (marginally over) | Monitor |
+| `test_encryption_boundary.py` | 1-309 | LOW | Maintainability | 309 lines (marginally over) | Monitor |
 | `test_adk_runner.py` | 56-110 | LOW | Maintainability | 3 near-identical runner fixtures | Parameterize |
 | `test_encryption_overhead.py` | 35 | LOW | Maintainability | Magic constants without rationale | Add comments |
 
@@ -423,6 +412,7 @@ Test quality is excellent with a 93/100 weighted score (Grade A), holding steady
 | 2026-03-05  | 87/100 | B   | 0               | 11    | 180   | 4,049 | (down) -3pts (maintainability) |
 | 2026-03-05  | 93/100 | A   | 0               | 12    | 154   | 3,443 | (up) +6pts (Story 7.3 rewrite) |
 | 2026-03-05  | 93/100 | A   | 0               | 14    | 171   | 3,866 | (stable) +0pts (Story 7.4 conformance) |
+| 2026-03-06  | 95/100 | A   | 0               | 16    | 171   | 3,940 | (up) +2pts (Story 7.5 file split) |
 
 ### Related Reviews
 
@@ -435,7 +425,9 @@ Test quality is excellent with a 93/100 weighted score (Grade A), holding steady
 | test_encrypted_session_service.py | 98/100 | A | 0 | Approved |
 | test_type_decorator.py | 100/100 | A | 0 | Approved |
 | test_public_api.py | 100/100 | A | 0 | Approved |
-| test_adk_integration.py | 65/100 | D | 0 | Approve with Comments |
+| test_adk_conformance.py | 100/100 | A | 0 | Approved |
+| test_adk_encryption.py | 92/100 | A | 0 | Approved |
+| test_adk_crud.py | 88/100 | B | 0 | Approved |
 | test_docs_examples.py | 100/100 | A | 0 | Approved |
 | test_concurrent_writes.py | 98/100 | A | 0 | Approved |
 | test_adk_runner.py | 90/100 | A | 0 | Approved |
@@ -443,7 +435,7 @@ Test quality is excellent with a 93/100 weighted score (Grade A), holding steady
 | test_encryption_boundary.py | 98/100 | A | 0 | Approved |
 | test_encryption_overhead.py | 96/100 | A | 0 | Approved |
 
-**Suite Average**: 93/100 (A) -- dimension-weighted
+**Suite Average**: 95/100 (A) -- dimension-weighted
 
 ---
 
@@ -451,9 +443,9 @@ Test quality is excellent with a 93/100 weighted score (Grade A), holding steady
 
 **Generated By**: BMad TEA Agent (Test Architect)
 **Workflow**: testarch-test-review v5.0
-**Review ID**: test-review-suite-20260305-post-7.4
-**Timestamp**: 2026-03-05
-**Version**: 4.0
+**Review ID**: test-review-suite-20260306-post-7.5
+**Timestamp**: 2026-03-06
+**Version**: 5.0
 
 ---
 

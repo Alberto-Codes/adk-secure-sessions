@@ -18,3 +18,4 @@ story_file: "" # Explicit story path; auto-discovered if empty
 implementation_artifacts: "{config_source}:implementation_artifacts"
 sprint_status: "{implementation_artifacts}/sprint-status.yaml"
 project_context: "**/project-context.md"
+test_review_file: "{project-root}/_bmad-output/test-artifacts/test-review.md"

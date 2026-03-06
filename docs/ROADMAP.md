@@ -34,7 +34,7 @@ Build the core encryption engine: `EncryptedSessionService` with Fernet encrypti
   - [x] `delete_session`
   - [x] `append_event` with encrypted state delta + event data
 - [x] Integration test: full round-trip (create → append events → get → verify decryption)
-- [x] CI: GitHub Actions (lint, type check, 174 tests at 99 % coverage)
+- [x] CI: GitHub Actions (lint, type check, 171 tests at 90 %+ coverage)
 - [x] Connection pooling and cleanup (`close()`, `__aenter__`/`__aexit__`)
 
 ### Phase 2: Ship — PyPI Launch
@@ -60,10 +60,11 @@ Features that make the library competitive and enterprise-ready.
 - [ ] AES-256-GCM encryption backend (#16)
 - [ ] Per-key random salt replacing fixed PBKDF2 salt (#17)
 - [ ] Key rotation support with envelope-based backend migration (#9)
-- [ ] PostgreSQL persistence backend (#9)
+- [x] Multi-database support (SQLite, PostgreSQL, MySQL, MariaDB) — delivered via Epic 7 (DatabaseSessionService wrapper)
 - [ ] Performance benchmarks and optimization (#9)
 - [ ] Stale session detection with optimistic concurrency (#22)
 - [x] CI matrix: test against `google-adk` min + latest
+- ~~PostgreSQL persistence backend (#9)~~ — superseded by Epic 7 (multi-database support via DatabaseSessionService)
 - [ ] Backend authoring documentation and contribution guide
 - [ ] Operations guide (key configuration, rotation runbook, monitoring)
 - [ ] Test file refactoring (#38, #39)

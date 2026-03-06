@@ -5,9 +5,9 @@
 
 ## Summary
 
-**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest using pluggable encryption backends.
+**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest. Currently ships with `FernetBackend`; the `EncryptionBackend` protocol enables custom backends in future releases (see Roadmap).
 
-- **Version**: 0.1.1 (Alpha)
+- **Version**: 1.0.3
 - **License**: Apache-2.0
 - **Python**: 3.12 (strictly required)
 - **Repository type**: Monolith (single `src/` layout package)
@@ -24,8 +24,7 @@ Google ADK's built-in session services store all session data — including user
 | Language | Python | 3.12 | Runtime |
 | Framework | google-adk | >=1.22.0 | Upstream ADK (BaseSessionService, Session, Event) |
 | Encryption | cryptography | >=44.0.0 | Fernet symmetric encryption (AES-128-CBC + HMAC-SHA256) |
-| Database | aiosqlite | >=0.19.0 | Async SQLite access |
-| ORM (transitive) | SQLAlchemy | >=2.0.0 | Transitive via google-adk — not used directly; all DB access uses raw aiosqlite |
+| ORM | SQLAlchemy | >=2.0.0 | Used directly via DatabaseSessionService; TypeDecorator (`EncryptedJSON`) provides transparent encryption at the ORM boundary |
 | Linter/Formatter | ruff | >=0.13.0 | Linting + formatting (Google style) |
 | Type Checker | ty | >=0.0.1a20 | Type checking |
 | Test Framework | pytest | >=8.4.2 | Unit + integration tests |
@@ -40,13 +39,14 @@ Google ADK's built-in session services store all session data — including user
 
 ## Architecture Pattern
 
-**Protocol-based plugin architecture** with async-first design:
+**TypeDecorator wrapping** with protocol-based plugin architecture and async-first design:
 
-- `EncryptionBackend` protocol (PEP 544 `@runtime_checkable`) defines the contract
-- Concrete backends (e.g., `FernetBackend`) conform via structural subtyping — no inheritance required
-- `EncryptedSessionService` directly implements ADK's `BaseSessionService` ABC
-- Encryption happens at the JSON serialization boundary (field-level, not full-database)
+- `EncryptedSessionService` subclasses ADK's `DatabaseSessionService`, adding transparent encryption via a custom SQLAlchemy `TypeDecorator` (`EncryptedJSON`)
+- `EncryptionBackend` protocol (PEP 544 `@runtime_checkable`) defines the encryption contract; currently only `FernetBackend` is supported — generalized multi-backend dispatch is planned for Epic 3
+- Concrete backends conform via structural subtyping — no inheritance required
+- Encryption happens at the ORM boundary — the `EncryptedJSON` TypeDecorator encrypts on write and decrypts on read, transparent to `DatabaseSessionService`
 - Self-describing binary envelope: `[version_byte][backend_id_byte][ciphertext]`
+- Multi-database support: SQLite, PostgreSQL, MySQL, and MariaDB via `DatabaseSessionService`'s dialect handling
 
 ## Encryption Boundary
 
@@ -59,13 +59,7 @@ Google ADK's built-in session services store all session data — including user
 
 ## Database Schema
 
-Own SQLite schema (derived from ADK's Session/Event data model, operationally independent with encrypted column types):
-
-- `app_states` — App-level encrypted state (keyed by `app_name`)
-- `user_states` — User-level encrypted state (keyed by `app_name`, `user_id`)
-- `sessions` — Session records with encrypted state blob
-- `events` — Event records with encrypted event_data blob, FK to sessions with CASCADE delete
-- `idx_events_timestamp` — Index for efficient event queries
+ADK's `DatabaseSessionService` manages the schema; `EncryptedSessionService` replaces ADK's `DynamicJSON` columns with `EncryptedJSON` TypeDecorators on state and event data columns. The encrypted models use a separate `DeclarativeBase` to avoid table conflicts with ADK's default models.
 
 ## Public API Surface
 
@@ -90,28 +84,39 @@ Own SQLite schema (derived from ADK's Session/Event data model, operationally in
 | Test File | Scope | Tests |
 |-----------|-------|-------|
 | `tests/unit/test_protocols.py` | Protocol conformance, runtime validation | 6 |
-| `tests/unit/test_exceptions.py` | Exception hierarchy, chaining, safe messages | 15 |
-| `tests/unit/test_fernet_backend.py` | Encrypt/decrypt, key handling, type guards | 14 |
-| `tests/unit/test_serialization.py` | Envelope, round-trips, edge cases | 18 |
-| `tests/unit/test_encrypted_session_service.py` | CRUD, events, context manager, edge cases | 22 |
-| `tests/integration/test_adk_integration.py` | BaseSessionService conformance, DB encryption | 11 |
+| `tests/unit/test_exceptions.py` | Exception hierarchy, chaining, safe messages | 35 |
+| `tests/unit/test_fernet_backend.py` | Encrypt/decrypt, key handling, type guards | 20 |
+| `tests/unit/test_serialization.py` | Envelope, round-trips, edge cases | 30 |
+| `tests/unit/test_encrypted_session_service.py` | CRUD, events, context manager, sentinels | 17 |
+| `tests/unit/test_type_decorator.py` | EncryptedJSON TypeDecorator unit tests | 9 |
+| `tests/unit/test_public_api.py` | Public API surface validation | 6 |
+| `tests/integration/test_adk_conformance.py` | Interface & protocol conformance | 4 |
+| `tests/integration/test_adk_encryption.py` | DB encryption verification, wrong-key tests | 10 |
+| `tests/integration/test_adk_crud.py` | Round-trip workflows, list/delete, state merge | 6 |
+| `tests/integration/test_docs_examples.py` | Living documentation smoke test | 1 |
+| `tests/integration/test_concurrent_writes.py` | Concurrent write safety | 5 |
+| `tests/integration/test_adk_runner.py` | ADK Runner integration | 6 |
+| `tests/integration/test_conformance.py` | Side-by-side encrypted vs unencrypted conformance | 8 |
+| `tests/integration/test_encryption_boundary.py` | Raw-DB ciphertext verification | 8 |
+| `tests/benchmarks/test_encryption_overhead.py` | Encryption performance overhead | 1 |
 
 CI enforces: `--cov-fail-under=90`
 
 ## Roadmap Status
 
 - **Phase 1 (Core + Fernet MVP)**: Complete
-- **Phase 2 (Hardening + PostgreSQL)**: In progress (key rotation, Postgres, stale session detection pending)
-- **Phase 3 (KMS Backends)**: Planned (AWS KMS, GCP KMS, Vault, SQLCipher)
-- **Phase 4 (Docs + PyPI)**: Partially done (MkDocs site exists, PyPI publish pending)
+- **Phase 2 (Ship — PyPI Launch)**: Complete
+- **Phase 3 (Expand — Growth Features)**: In progress (multi-database support delivered via Epic 7; AES-256-GCM, key rotation, benchmarks pending)
+- **Phase 4 (Enterprise — KMS Backends + Compliance)**: Planned (AWS KMS, GCP KMS, Vault, SQLCipher)
 
 ## Design Decisions (ADRs)
 
 | ADR | Decision |
 |-----|----------|
-| ADR-000 | Direct implementation of BaseSessionService, not a decorator |
+| ADR-000 | Strategy + direct implementation (partially superseded by ADR-007) |
 | ADR-001 | typing.Protocol over ABC for backend interfaces |
 | ADR-002 | Async-first design matching ADK's runtime |
 | ADR-003 | Field-level encryption as default, not full-database |
-| ADR-004 | Own schema, no coupling to ADK internals |
+| ADR-004 | Own schema, no coupling to ADK internals (narrowed by ADR-007) |
 | ADR-005 | Focused exception hierarchy |
+| ADR-007 | Architecture migration — DatabaseSessionService wrapping via TypeDecorator |

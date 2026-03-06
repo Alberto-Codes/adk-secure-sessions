@@ -33,9 +33,10 @@ for the full rationale.
 
 ## Can I use a different encryption backend?
 
-Yes, and you can do it today. Any class that conforms to the `EncryptionBackend`
-protocol (two async methods: `encrypt` and `decrypt`) works as a drop-in
-backend. Phase 3 adds an AES-256-GCM backend, and Phase 4 adds AWS KMS, GCP
+Not yet, but the architecture is designed for it. Currently only `FernetBackend`
+is supported; `EncryptedSessionService` extracts sync primitives from
+`FernetBackend` internals. Generalized multi-backend dispatch via the
+`EncryptionBackend` protocol is planned for Epic 3. Phase 3 adds an AES-256-GCM backend, and Phase 4 adds AWS KMS, GCP
 Cloud KMS, and HashiCorp Vault backends. The
 [envelope protocol](envelope-protocol.md) tags every ciphertext with a backend
 identifier, so existing Fernet data (backend ID `0x01`) coexists with data from
@@ -61,6 +62,34 @@ in plaintext for querying and filtering. This means `list_sessions` can filter
 by `app_name` and `user_id` without decrypting every row. See
 [ADR-003: Field-Level Encryption](adr/ADR-003-field-level-encryption.md) for the
 encryption boundary diagram and trade-off analysis.
+
+## Can I use PostgreSQL instead of SQLite?
+
+Yes. `EncryptedSessionService` wraps ADK's `DatabaseSessionService`, which
+supports any SQLAlchemy-compatible async database. Install the appropriate async
+driver (`pip install asyncpg` for PostgreSQL, `pip install aiomysql` for
+MySQL/MariaDB) and pass a connection string to the `db_url` parameter:
+
+```python
+from adk_secure_sessions import EncryptedSessionService, FernetBackend
+
+# PostgreSQL
+service = EncryptedSessionService(
+    db_url="postgresql+asyncpg://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+
+# MySQL / MariaDB
+service = EncryptedSessionService(
+    db_url="mysql+aiomysql://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+```
+
+Only SQLite is tested in CI. PostgreSQL, MySQL, and MariaDB support is
+inherited from `DatabaseSessionService` but not independently verified by this
+project. See the [Getting Started guide](getting-started.md#multi-database-support)
+for more details.
 
 ## Related
 

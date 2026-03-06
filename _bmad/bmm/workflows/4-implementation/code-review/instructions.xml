@@ -120,6 +120,26 @@
       <action>Continue review without SonarQube findings — do not block the review</action>
     </check>
 
+    <!-- Cross-Cutting Test Maturity Verification -->
+    <action>Locate the "### Cross-Cutting Test Maturity (Standing Task)" section in the story file</action>
+    <check if="cross-cutting section contains a specific test review item (not generic/N/A)">
+      <action>Verify the recommendation was actually implemented:
+        1. Read the **Test Review Item** title and **Location** from the story
+        2. Check if the described change exists in the codebase (new/modified test files, refactored code)
+        3. Verify the task checkboxes: "Implement the test review recommendation" should be [x]
+        4. If marked [x] but NOT actually done → CRITICAL finding (same as any false task completion)
+        5. If genuinely implemented → verify test(s) pass
+      </action>
+      <action>Check if the item was marked done in test-review.md:
+        1. Load {test_review_file} (path: _bmad-output/test-artifacts/test-review.md)
+        2. Find the recommendation matching the story's test review item
+        3. If implementation is verified but test-review.md still shows `<!-- ASSIGNED -->` instead of `<!-- DONE -->` → LOW finding (bookkeeping)
+      </action>
+    </check>
+    <check if="cross-cutting section is generic or N/A">
+      <action>Note as MEDIUM finding: "Cross-cutting test maturity item not sourced from test-review.md — verify test-review.md was unavailable or fully exhausted"</action>
+    </check>
+
     <check if="total_issues_found lt 3">
       <critical>NOT LOOKING HARD ENOUGH - Find more problems!</critical>
       <action>Re-examine code for:

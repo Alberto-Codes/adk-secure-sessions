@@ -14,6 +14,7 @@
 - [ ] Code quality review performed on changed files
 - [ ] Factual claims in docs/comments verified against actual code (no unsubstantiated assertions)
 - [ ] Documentation impact assessed — which doc pages does this change affect? (API ref, ADRs, README, guides)
+- [ ] Cross-cutting test maturity item verified: recommendation implemented and test-review.md updated
 - [ ] Security review performed on changed files and dependencies
 - [ ] Outcome decided (Approve/Changes Requested/Blocked)
 - [ ] Review notes appended under "Senior Developer Review (AI)"

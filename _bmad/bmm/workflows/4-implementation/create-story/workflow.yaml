@@ -25,6 +25,7 @@ architecture_file: "{planning_artifacts}/architecture.md" # Fallback for constra
 ux_file: "{planning_artifacts}/*ux*.md" # Fallback for UX requirements (if not in epics file)
 story_title: "" # Will be elicited if not derivable
 project_context: "**/project-context.md"
+test_review_file: "{project-root}/_bmad-output/test-artifacts/test-review.md"
 default_output_file: "{implementation_artifacts}/{{story_key}}.md"
 
 # Smart input file references - Simplified for enhanced approach
