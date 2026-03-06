@@ -2,7 +2,7 @@
 
 ## Overview
 
-adk-secure-sessions wraps ADK's `DatabaseSessionService` with transparent encryption via a custom SQLAlchemy `TypeDecorator` (`EncryptedJSON`). Encryption backends are pluggable via the `EncryptionBackend` protocol (PEP 544). See [ADR-007](adr/ADR-007-architecture-migration.md) for the migration decision record.
+adk-secure-sessions wraps ADK's `DatabaseSessionService` with transparent encryption via a custom SQLAlchemy `TypeDecorator` (`EncryptedJSON`). The `EncryptionBackend` protocol (PEP 544) defines the backend contract; currently only `FernetBackend` is supported, with generalized multi-backend dispatch planned for Epic 3. See [ADR-007](adr/ADR-007-architecture-migration.md) for the migration decision record.
 
 !!! info "Color Legend"
     - **Green** — Implemented and tested
@@ -13,9 +13,9 @@ graph TD
     UC[User Code] --> ESS[EncryptedSessionService]
     ESS -->|subclasses| DSS[ADK DatabaseSessionService]
     DSS -->|ORM operations| TD[TypeDecorator — EncryptedJSON]
-    TD -->|encrypts/decrypts| EB[EncryptionBackend Protocol]
-    EB --> FB[FernetBackend]
-    EB --> CB[Custom Backend]
+    TD -->|encrypts/decrypts| FB[FernetBackend]
+    FB -.->|implements| EB[EncryptionBackend Protocol]
+    EB -.-> CB[Custom Backend — planned]
     TD -->|reads/writes| DB[(SQLite / PostgreSQL / MySQL / MariaDB)]
 
     style EB fill:#2e7d32,stroke:#1b5e20,color:#fff
@@ -91,7 +91,7 @@ graph LR
     ESS2 -->|depends on| EB2
     ESS2 -->|uses| TD2
     ESS2 -->|uses| MOD2
-    TD2 -->|delegates to| EB2
+    TD2 -->|sync callables from| FB2
     TD2 -->|uses| SER
     FB2 -->|implements| EB2
 
@@ -124,6 +124,7 @@ graph LR
   - All CRUD operations (`create_session`, `get_session`, `list_sessions`, `delete_session`) delegated to `DatabaseSessionService`
   - Transparent encryption via `EncryptedJSON` TypeDecorator on state and event data columns
   - Multi-database support (SQLite, PostgreSQL, MySQL, MariaDB) via `DatabaseSessionService`'s dialect handling
+  - **Current limitation:** `EncryptedSessionService` extracts sync encrypt/decrypt callables from `FernetBackend._fernet`; custom backends that only implement the `EncryptionBackend` protocol are not yet supported (tracked in Epic 3 TODO)
 - **`__init__.py`** — Exports all public symbols (protocols, backends, exceptions, serialization functions, services, constants)
 
 **Planned** (see [Roadmap](ROADMAP.md)):

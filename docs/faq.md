@@ -33,9 +33,10 @@ for the full rationale.
 
 ## Can I use a different encryption backend?
 
-Yes, and you can do it today. Any class that conforms to the `EncryptionBackend`
-protocol (two async methods: `encrypt` and `decrypt`) works as a drop-in
-backend. Phase 3 adds an AES-256-GCM backend, and Phase 4 adds AWS KMS, GCP
+Not yet, but the architecture is designed for it. Currently only `FernetBackend`
+is supported; `EncryptedSessionService` extracts sync primitives from
+`FernetBackend` internals. Generalized multi-backend dispatch via the
+`EncryptionBackend` protocol is planned for Epic 3. Phase 3 adds an AES-256-GCM backend, and Phase 4 adds AWS KMS, GCP
 Cloud KMS, and HashiCorp Vault backends. The
 [envelope protocol](envelope-protocol.md) tags every ciphertext with a backend
 identifier, so existing Fernet data (backend ID `0x01`) coexists with data from
@@ -65,8 +66,9 @@ encryption boundary diagram and trade-off analysis.
 ## Can I use PostgreSQL instead of SQLite?
 
 Yes. `EncryptedSessionService` wraps ADK's `DatabaseSessionService`, which
-supports any SQLAlchemy-compatible async database. Pass a connection string for
-your database to the `db_url` parameter:
+supports any SQLAlchemy-compatible async database. Install the appropriate async
+driver (`pip install asyncpg` for PostgreSQL, `pip install aiomysql` for
+MySQL/MariaDB) and pass a connection string to the `db_url` parameter:
 
 ```python
 from adk_secure_sessions import EncryptedSessionService, FernetBackend

@@ -5,7 +5,7 @@
 
 ## Summary
 
-**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest using pluggable encryption backends.
+**adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest. Currently ships with `FernetBackend`; the `EncryptionBackend` protocol enables custom backends in future releases (see Roadmap).
 
 - **Version**: 1.0.3
 - **License**: Apache-2.0
@@ -42,8 +42,8 @@ Google ADK's built-in session services store all session data — including user
 **TypeDecorator wrapping** with protocol-based plugin architecture and async-first design:
 
 - `EncryptedSessionService` subclasses ADK's `DatabaseSessionService`, adding transparent encryption via a custom SQLAlchemy `TypeDecorator` (`EncryptedJSON`)
-- `EncryptionBackend` protocol (PEP 544 `@runtime_checkable`) defines the encryption contract
-- Concrete backends (e.g., `FernetBackend`) conform via structural subtyping — no inheritance required
+- `EncryptionBackend` protocol (PEP 544 `@runtime_checkable`) defines the encryption contract; currently only `FernetBackend` is supported — generalized multi-backend dispatch is planned for Epic 3
+- Concrete backends conform via structural subtyping — no inheritance required
 - Encryption happens at the ORM boundary — the `EncryptedJSON` TypeDecorator encrypts on write and decrypts on read, transparent to `DatabaseSessionService`
 - Self-describing binary envelope: `[version_byte][backend_id_byte][ciphertext]`
 - Multi-database support: SQLite, PostgreSQL, MySQL, and MariaDB via `DatabaseSessionService`'s dialect handling

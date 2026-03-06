@@ -194,7 +194,16 @@ except DecryptionError:
 
 `EncryptedSessionService` wraps ADK's `DatabaseSessionService`, which supports
 any SQLAlchemy-compatible async database. Pass a different connection string to
-`db_url` to use PostgreSQL, MySQL, or MariaDB:
+`db_url` to use PostgreSQL, MySQL, or MariaDB.
+
+Install the appropriate async driver for your database:
+
+```bash
+pip install asyncpg        # PostgreSQL
+pip install aiomysql       # MySQL / MariaDB
+```
+
+Connection string examples:
 
 ```python
 # PostgreSQL
