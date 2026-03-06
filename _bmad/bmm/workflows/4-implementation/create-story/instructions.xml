@@ -215,6 +215,59 @@
     </action>
   </step>
 
+  <step n="4b" goal="Select cross-cutting test maturity item from test-review.md">
+    <critical>Every story includes one cross-cutting test improvement sourced from the TEA test review backlog</critical>
+
+    <action>Check if {test_review_file} exists</action>
+
+    <check if="test-review.md exists">
+      <action>Load {test_review_file}</action>
+      <action>Locate the "## Recommendations (Should Fix)" section</action>
+      <action>Scan each numbered recommendation (### 1, ### 2, etc.) for assignment markers</action>
+      <action>An item is already assigned if it contains a line matching: `<!-- ASSIGNED: story X.Y -->`</action>
+      <action>An item is done if it contains a line matching: `<!-- DONE: story X.Y -->`</action>
+
+      <action>Select the FIRST recommendation that has NO assignment marker and NO done marker</action>
+
+      <check if="unassigned recommendation found">
+        <action>Set {{test_review_item_title}} = recommendation title (e.g., "Split test_adk_integration.py (768 lines)")</action>
+        <action>Set {{test_review_item_severity}} = recommendation severity (e.g., "P1 (High)")</action>
+        <action>Set {{test_review_item_location}} = recommendation location</action>
+        <action>Set {{test_review_item_description}} = recommendation description and guidance (the full recommendation body)</action>
+
+        <action>Add assignment marker to the selected recommendation in {test_review_file}:
+          Insert `<!-- ASSIGNED: story {{epic_num}}.{{story_num}} -->` on the line immediately after the recommendation title (### N line)
+        </action>
+        <action>Save {test_review_file}</action>
+        <output>Selected cross-cutting test item: {{test_review_item_title}} ({{test_review_item_severity}})</output>
+      </check>
+
+      <check if="all recommendations are assigned or done">
+        <action>Also scan the "### Violation Summary by Location" appendix table for rows not yet assigned</action>
+        <check if="unassigned violation found">
+          <action>Set test_review_item fields from the violation row</action>
+          <action>Add `<!-- ASSIGNED: story {{epic_num}}.{{story_num}} -->` after the violation table</action>
+          <action>Save {test_review_file}</action>
+        </check>
+        <check if="no unassigned items remain anywhere">
+          <output>All test-review.md items are assigned or done. Cross-cutting section will use generic task.</output>
+          <action>Set {{test_review_item_title}} = "No pending items — identify one high-risk area lacking test coverage (outside story scope)"</action>
+          <action>Set {{test_review_item_severity}} = "N/A"</action>
+          <action>Set {{test_review_item_location}} = "Developer's choice"</action>
+          <action>Set {{test_review_item_description}} = "All test-review.md recommendations have been addressed. Pick a gap area not related to the story scope."</action>
+        </check>
+      </check>
+    </check>
+
+    <check if="test-review.md does NOT exist">
+      <output>No test-review.md found. Cross-cutting section will use generic task.</output>
+      <action>Set {{test_review_item_title}} = "No test review available — identify one high-risk area lacking test coverage (outside story scope)"</action>
+      <action>Set {{test_review_item_severity}} = "N/A"</action>
+      <action>Set {{test_review_item_location}} = "Developer's choice"</action>
+      <action>Set {{test_review_item_description}} = "Run `test-review` workflow to generate the test review backlog, then re-run create-story."</action>
+    </check>
+  </step>
+
   <step n="5" goal="Create comprehensive story file">
     <critical>📝 CREATE ULTIMATE STORY FILE - The developer's master implementation guide!</critical>
 
@@ -297,53 +350,6 @@
       <action>Verify current status is "backlog" (expected previous state)</action>
       <action>Update development_status[{{story_key}}] = "ready-for-dev"</action>
       <action>Save file, preserving ALL comments and structure including STATUS DEFINITIONS</action>
-    </check>
-
-    <!-- GitHub issue creation (conditional on tracking_system) -->
-    <check if="{tracking_system} == 'github' OR {tracking_system} == 'both'">
-      <action>Search for existing GitHub issue:
-        gh search issues "Story {{epic_num}}.{{story_num}}:" --repo {github_repository} --json number,title,url
-      </action>
-
-      <check if="no existing issue found">
-        <action>Determine epic title from {epics_content} for epic {{epic_num}}</action>
-        <action>Extract the user story statement (As a... I want... so that...) from the generated story</action>
-        <action>Extract the acceptance criteria list from the generated story</action>
-        <action>Create GitHub issue using the story template structure (see .github/ISSUE_TEMPLATE/04-story.yml):
-          gh issue create \
-            --repo {github_repository} \
-            --title "Story {{epic_num}}.{{story_num}}: {{story_title_human_readable}}" \
-            --label "story,epic-{{epic_num}}" \
-            --body "$(cat &lt;&lt;'EOF'
-          ## User Story
-
-          [The As a / I want / so that statement from the story]
-
-          ## Acceptance Criteria
-
-          [Each AC as a markdown checklist item: - [ ] Given/When/Then summary (FR/NFR refs)]
-
-          ## Context
-
-          - **Epic**: {{epic_num}} — {{epic_title}}
-          - **Story file**: {{story_file}}
-          - **Branch**: `feat/{{story_key}}`
-          EOF
-          )"
-        </action>
-        <action>Capture issue URL from gh output</action>
-        <action>Update story file GitHub Issue field with the issue URL</action>
-        <output>📌 GitHub issue created and linked to story file</output>
-      </check>
-
-      <check if="existing issue found">
-        <action>Update story file GitHub Issue field with the existing issue URL</action>
-        <output>📌 Existing GitHub issue found and linked to story file</output>
-      </check>
-    </check>
-
-    <check if="{tracking_system} == 'file-system'">
-      <action>Set GitHub Issue field to "N/A — file-system tracking only"</action>
     </check>
 
     <action>Report completion</action>

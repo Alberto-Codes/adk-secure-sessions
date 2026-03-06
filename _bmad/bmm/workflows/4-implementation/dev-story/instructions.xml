@@ -340,6 +340,18 @@
       <action>HALT if unable to fix validation failures</action>
     </check>
 
+    <!-- Cross-Cutting Test Maturity: update test-review.md when item is completed -->
+    <check if="completed task is under 'Cross-Cutting Test Maturity (Standing Task)' section">
+      <action>Read the **Test Review Item** title from the story's cross-cutting section</action>
+      <check if="test review item is a specific recommendation (not generic/N/A)">
+        <action>Load {test_review_file}</action>
+        <action>Find the recommendation matching the test review item title</action>
+        <action>Replace `<!-- ASSIGNED: story {{epic_num}}.{{story_num}} -->` with `<!-- DONE: story {{epic_num}}.{{story_num}} -->`</action>
+        <action>Save {test_review_file}</action>
+        <action>Add to Dev Agent Record: "Updated test-review.md: marked recommendation as DONE"</action>
+      </check>
+    </check>
+
     <check if="review_continuation == true and {{resolved_review_items}} is not empty">
       <action>Count total resolved review items in this session</action>
       <action>Add Change Log entry: "Addressed code review findings - {{resolved_count}} items resolved (Date: {{date}})"</action>

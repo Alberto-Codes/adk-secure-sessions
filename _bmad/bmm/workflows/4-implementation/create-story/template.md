@@ -25,13 +25,18 @@ so that {{benefit}}.
 
 ### Cross-Cutting Test Maturity (Standing Task)
 
-<!-- Every story includes one small-footprint, high-risk-area test addition.
-     This is brownfield hardening — pick a gap in an area NOT related to the
-     story scope so the safety net grows steadily across epics. -->
+<!-- Sourced from test-review.md recommendations. The create-story workflow
+     picks the next unaddressed item and assigns it here. -->
 
-- [ ] Identify one high-risk area lacking test coverage (outside story scope)
-- [ ] Add test(s) — small footprint, meaningful assertion
-- [ ] Verify new test(s) pass in CI
+**Test Review Item**: {{test_review_item_title}}
+**Severity**: {{test_review_item_severity}}
+**Location**: {{test_review_item_location}}
+
+{{test_review_item_description}}
+
+- [ ] Implement the test review recommendation above
+- [ ] Verify new/changed test(s) pass in CI
+- [ ] Mark item as done in `_bmad-output/test-artifacts/test-review.md`
 
 ## AC-to-Test Mapping
 
