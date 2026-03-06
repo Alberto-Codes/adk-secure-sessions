@@ -1,11 +1,11 @@
 """Session service implementations for adk-secure-sessions.
 
-This module provides encrypted session storage services that implement
-ADK's ``BaseSessionService`` interface with transparent field-level
-encryption.
+This module provides encrypted session storage services that wrap
+ADK's ``DatabaseSessionService`` with transparent field-level
+encryption via SQLAlchemy TypeDecorator column encryption.
 
 Attributes:
-    EncryptedSessionService: Drop-in replacement for ADK's
+    EncryptedSessionService: Encrypted wrapper around ADK's
         ``DatabaseSessionService`` with transparent encryption.
 
 Examples:

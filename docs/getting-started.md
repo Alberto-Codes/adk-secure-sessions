@@ -19,7 +19,7 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv add adk-secure-sessions
 ```
 
-**3 direct runtime dependencies**: google-adk, cryptography, aiosqlite.
+**2 direct runtime dependencies**: google-adk, cryptography.
 
 Verify the install:
 
@@ -44,11 +44,10 @@ from google.adk.sessions import DatabaseSessionService
 session_service = DatabaseSessionService(db_url="sqlite:///sessions.db")
 
 # After (encrypted — swap the import and constructor):
-from adk_secure_sessions import EncryptedSessionService, FernetBackend, BACKEND_FERNET
+from adk_secure_sessions import EncryptedSessionService, FernetBackend
 session_service = EncryptedSessionService(
-    db_path="sessions.db",
+    db_url="sqlite+aiosqlite:///sessions.db",
     backend=FernetBackend("your-secret-passphrase"),
-    backend_id=BACKEND_FERNET,
 )
 ```
 
@@ -66,7 +65,6 @@ Copy it into a file and run it directly.
 import asyncio
 
 from adk_secure_sessions import (
-    BACKEND_FERNET,
     EncryptedSessionService,
     FernetBackend,
 )
@@ -76,9 +74,8 @@ async def main():
     backend = FernetBackend("my-secret-passphrase")
 
     async with EncryptedSessionService(
-        db_path="sessions.db",
+        db_url="sqlite+aiosqlite:///sessions.db",
         backend=backend,
-        backend_id=BACKEND_FERNET,
     ) as service:
         # Create a session with realistic sensitive state
         session = await service.create_session(
@@ -133,10 +130,10 @@ keep the data), inspect the SQLite database to confirm state is encrypted.
 **Using the `sqlite3` CLI:**
 
 ```bash
-sqlite3 sessions.db "SELECT hex(state) FROM sessions LIMIT 1;"
+sqlite3 sessions.db "SELECT state FROM sessions LIMIT 1;"
 ```
 
-You'll see hex-encoded binary data — the encrypted envelope — not readable JSON.
+You'll see a base64-encoded string — the encrypted envelope — not readable JSON.
 
 **Using Python's `sqlite3` module:**
 
@@ -145,12 +142,12 @@ import sqlite3
 
 conn = sqlite3.connect("sessions.db")
 row = conn.execute("SELECT state FROM sessions LIMIT 1").fetchone()
-print(type(row[0]))  # <class 'bytes'>
-print(row[0][:20])   # First 20 bytes of encrypted envelope
+print(type(row[0]))  # <class 'str'>
+print(row[0][:40])   # First 40 chars of base64-encoded envelope
 conn.close()
 ```
 
-The `state` column contains raw bytes (the encrypted envelope), not plaintext
+The `state` column contains a base64-encoded encrypted envelope, not plaintext
 JSON. By contrast, ADK's unencrypted `DatabaseSessionService` stores session
 state as readable JSON text — anyone with database access can read it.
 
@@ -166,7 +163,6 @@ adk-secure-sessions raises specific exceptions so errors are never silent:
 
 ```python
 from adk_secure_sessions import (
-    BACKEND_FERNET,
     ConfigurationError,
     DecryptionError,
     EncryptedSessionService,
@@ -175,9 +171,8 @@ from adk_secure_sessions import (
 
 try:
     async with EncryptedSessionService(
-        db_path="sessions.db",
+        db_url="sqlite+aiosqlite:///sessions.db",
         backend=FernetBackend("correct-passphrase"),
-        backend_id=BACKEND_FERNET,
     ) as service:
         # get_session returns None for missing sessions.
         # DecryptionError is raised when reading a session that

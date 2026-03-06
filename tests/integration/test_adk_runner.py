@@ -18,9 +18,9 @@ See Also:
 
 from __future__ import annotations
 
+import sqlite3
 from collections.abc import AsyncGenerator
 
-import aiosqlite
 import pytest
 from google.adk.agents import LlmAgent
 from google.adk.runners import Runner
@@ -178,30 +178,29 @@ class TestADKRunnerIntegration:
         ]
         assert "Agent response" in agent_texts
 
-        # 4. Raw-DB encryption assertion
-        async with aiosqlite.connect(db_path) as conn:
-            cursor = await conn.execute("SELECT state FROM sessions")
-            row = await cursor.fetchone()
-            assert row is not None
-            raw_state = row[0]
-            assert isinstance(raw_state, bytes)
-            raw_str = raw_state.decode("latin-1")
-            assert "initial" not in raw_str
+        # 4. Raw-DB encryption assertion (TEXT column, base64-encoded)
+        conn = sqlite3.connect(db_path)
+        cursor = conn.execute("SELECT state FROM sessions")
+        row = cursor.fetchone()
+        assert row is not None
+        raw_state = row[0]
+        assert isinstance(raw_state, str)
+        assert "initial" not in raw_state
 
-            # Verify event data is also encrypted in raw database
-            evt_cursor = await conn.execute("SELECT event_data FROM events")
-            evt_rows = await evt_cursor.fetchall()
-            assert len(evt_rows) > 0
-            for evt_row in evt_rows:
-                raw_event = evt_row[0]
-                assert isinstance(raw_event, bytes)
-                raw_evt_str = raw_event.decode("latin-1")
-                # No plaintext agent or user messages should be visible
-                assert "Agent response" not in raw_evt_str
-                assert "Hello" not in raw_evt_str
-                # No obvious JSON structure markers
-                assert '"author"' not in raw_evt_str
-                assert '"parts"' not in raw_evt_str
+        # Verify event data is also encrypted in raw database
+        evt_cursor = conn.execute("SELECT event_data FROM events")
+        evt_rows = evt_cursor.fetchall()
+        conn.close()
+        assert len(evt_rows) > 0
+        for evt_row in evt_rows:
+            raw_event = evt_row[0]
+            assert isinstance(raw_event, str)
+            # No plaintext agent or user messages should be visible
+            assert "Agent response" not in raw_event
+            assert "Hello" not in raw_event
+            # No obvious JSON structure markers
+            assert '"author"' not in raw_event
+            assert '"parts"' not in raw_event
 
         # 5. Delete session
         await encrypted_service.delete_session(
@@ -274,15 +273,15 @@ class TestStateDeltas:
             pass
 
         # Raw DB should not contain plaintext state values
-        async with aiosqlite.connect(db_path) as conn:
-            cursor = await conn.execute("SELECT state FROM sessions")
-            row = await cursor.fetchone()
-            assert row is not None
-            raw_state = row[0]
-            assert isinstance(raw_state, bytes)
-            raw_str = raw_state.decode("latin-1")
-            assert "agent_ran" not in raw_str
-            assert "agent_response_count" not in raw_str
+        conn = sqlite3.connect(db_path)
+        cursor = conn.execute("SELECT state FROM sessions")
+        row = cursor.fetchone()
+        conn.close()
+        assert row is not None
+        raw_state = row[0]
+        assert isinstance(raw_state, str)
+        assert "agent_ran" not in raw_state
+        assert "agent_response_count" not in raw_state
 
 
 class TestMultiTurnConversation:
