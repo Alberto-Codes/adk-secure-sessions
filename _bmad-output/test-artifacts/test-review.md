@@ -121,6 +121,7 @@ No critical issues detected.
 ## Recommendations (Should Fix)
 
 ### 1. Split test_adk_integration.py (768 lines)
+<!-- DONE: story 7.5 -->
 
 **Severity**: P1 (High)
 **Location**: `tests/integration/test_adk_integration.py:1-768`

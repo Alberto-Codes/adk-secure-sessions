@@ -62,6 +62,33 @@ by `app_name` and `user_id` without decrypting every row. See
 [ADR-003: Field-Level Encryption](adr/ADR-003-field-level-encryption.md) for the
 encryption boundary diagram and trade-off analysis.
 
+## Can I use PostgreSQL instead of SQLite?
+
+Yes. `EncryptedSessionService` wraps ADK's `DatabaseSessionService`, which
+supports any SQLAlchemy-compatible async database. Pass a connection string for
+your database to the `db_url` parameter:
+
+```python
+from adk_secure_sessions import EncryptedSessionService, FernetBackend
+
+# PostgreSQL
+service = EncryptedSessionService(
+    db_url="postgresql+asyncpg://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+
+# MySQL / MariaDB
+service = EncryptedSessionService(
+    db_url="mysql+aiomysql://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+```
+
+Only SQLite is tested in CI. PostgreSQL, MySQL, and MariaDB support is
+inherited from `DatabaseSessionService` but not independently verified by this
+project. See the [Getting Started guide](getting-started.md#multi-database-support)
+for more details.
+
 ## Related
 
 - [Algorithm Documentation](algorithms.md) — encryption algorithms, parameters, and NIST compliance mapping

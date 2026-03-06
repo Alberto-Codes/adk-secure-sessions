@@ -190,6 +190,38 @@ except DecryptionError:
     print("Wrong key — cannot decrypt session data")
 ```
 
+## Multi-Database Support
+
+`EncryptedSessionService` wraps ADK's `DatabaseSessionService`, which supports
+any SQLAlchemy-compatible async database. Pass a different connection string to
+`db_url` to use PostgreSQL, MySQL, or MariaDB:
+
+```python
+# PostgreSQL
+service = EncryptedSessionService(
+    db_url="postgresql+asyncpg://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+
+# MySQL
+service = EncryptedSessionService(
+    db_url="mysql+aiomysql://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+
+# MariaDB
+service = EncryptedSessionService(
+    db_url="mariadb+aiomysql://user:pass@host/dbname",
+    backend=FernetBackend("your-secret-passphrase"),
+)
+```
+
+!!! note "Only SQLite is tested in CI"
+
+    PostgreSQL, MySQL, and MariaDB support is inherited from
+    `DatabaseSessionService` but not independently verified by this project.
+    Contributions welcome!
+
 ## What's Next?
 
 - [API Reference](reference/index.md) — full module documentation

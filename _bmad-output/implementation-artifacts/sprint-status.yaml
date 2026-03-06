@@ -111,6 +111,6 @@ development_status:
   7-2-adr-architecture-migration-decision: done
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: done
   7-4-test-migration-conformance-verification: done
-  7-5-documentation-mkdocs-site-updates: backlog
+  7-5-documentation-mkdocs-site-updates: review
   7-6-revise-epic-4-scope-roadmap: backlog
   epic-7-retrospective: optional

@@ -32,10 +32,11 @@ adk-secure-sessions is an encrypted session persistence service implementing ADK
 
 ## Features
 
-- **Drop-in Replacement**: Implements ADK's `BaseSessionService` ABC
+- **BaseSessionService Implementation**: Implements ADK's `BaseSessionService` — use it anywhere ADK expects a session service
 - **Pluggable Backends**: `EncryptionBackend` protocol — any class with `encrypt`/`decrypt` works
 - **Field-Level Encryption**: State values and events encrypted; IDs and timestamps stay queryable
-- **Async-First**: Built on `aiosqlite`, matching ADK's async runtime
+- **Multi-Database Support**: SQLite, PostgreSQL, MySQL, and MariaDB via `DatabaseSessionService`
+- **Async-First**: Wraps ADK's `DatabaseSessionService`, matching ADK's async runtime
 - **Well-Documented**: Google-style docstrings with 95%+ coverage
 
 ## Installation
@@ -58,9 +59,8 @@ backend = FernetBackend("your-secret-passphrase")
 
 # Use as async context manager
 async with EncryptedSessionService(
-    db_path="sessions.db",
+    db_url="sqlite+aiosqlite:///sessions.db",
     backend=backend,
-    backend_id=BACKEND_FERNET,
 ) as service:
     # Create encrypted session
     session = await service.create_session(
