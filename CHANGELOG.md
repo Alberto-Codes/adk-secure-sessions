@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.3...v1.1.0) (2026-03-06)
+
+
+### Features
+
+* create EncryptedJSON TypeDecorator for transparent column ([dc70d5c](https://github.com/Alberto-Codes/adk-secure-sessions/commit/dc70d5c1b44ca8d444e761c4e787f70c8b30262a))
+* **examples:** add encrypted ADK agent example with Ollama ([f898849](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f8988490181c97d9018d7b0d0f269d7b61a8ccfb))
+* **examples:** add encrypted ADK agent example with Ollama ([#139](https://github.com/Alberto-Codes/adk-secure-sessions/issues/139)) ([f898849](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f8988490181c97d9018d7b0d0f269d7b61a8ccfb))
+* **session:** rewrite EncryptedSessionService as DatabaseSessionService wrapper ([#134](https://github.com/Alberto-Codes/adk-secure-sessions/issues/134)) ([dc70d5c](https://github.com/Alberto-Codes/adk-secure-sessions/commit/dc70d5c1b44ca8d444e761c4e787f70c8b30262a)), closes [#133](https://github.com/Alberto-Codes/adk-secure-sessions/issues/133)
+* **spike:** TypeDecorator wrapping spike — GO decision for Epic 7 ([#130](https://github.com/Alberto-Codes/adk-secure-sessions/issues/130)) ([b9919df](https://github.com/Alberto-Codes/adk-secure-sessions/commit/b9919df8cd8ae4c00f0535ef2dd371900fc56db2)), closes [#129](https://github.com/Alberto-Codes/adk-secure-sessions/issues/129)
+
+
+### Documentation
+
+* **adr:** add ADR-007 Architecture Migration decision ([#132](https://github.com/Alberto-Codes/adk-secure-sessions/issues/132)) ([d94f883](https://github.com/Alberto-Codes/adk-secure-sessions/commit/d94f88329c8768b8e2d151247483557586331a83)), closes [#131](https://github.com/Alberto-Codes/adk-secure-sessions/issues/131)
+* **examples:** reference basic usage example in README and ([f898849](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f8988490181c97d9018d7b0d0f269d7b61a8ccfb))
+* **getting-started:** clarify swap is two changes, not three imports ([#127](https://github.com/Alberto-Codes/adk-secure-sessions/issues/127)) ([9296ae3](https://github.com/Alberto-Codes/adk-secure-sessions/commit/9296ae3f97cfa54758470a9f0208fb1c3ce24365))
+* **session:** Epic 7 retrospective and sprint status update ([f898849](https://github.com/Alberto-Codes/adk-secure-sessions/commit/f8988490181c97d9018d7b0d0f269d7b61a8ccfb))
+* **session:** revise Epic 4 scope and extract shared test fixture ([#138](https://github.com/Alberto-Codes/adk-secure-sessions/issues/138)) ([252ad4e](https://github.com/Alberto-Codes/adk-secure-sessions/commit/252ad4e74655f148727fa26898111c83614c2401))
+* **session:** update docs for Epic 7 architecture migration ([#137](https://github.com/Alberto-Codes/adk-secure-sessions/issues/137)) ([c810c56](https://github.com/Alberto-Codes/adk-secure-sessions/commit/c810c56d7d925355772d298d8d1b08d38046420b))
+
 ## [1.0.3](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.2...v1.0.3) (2026-03-05)
 
 
