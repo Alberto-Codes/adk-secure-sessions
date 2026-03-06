@@ -123,7 +123,16 @@ def create_encrypted_models(
         pass
 
     class EncryptedStorageSession(_Base):
-        """Encrypted session storage model."""
+        """Encrypted session storage model.
+
+        Examples:
+            Created internally by ``create_encrypted_models``:
+
+            ```python
+            base, schema = create_encrypted_models(encrypted_json)
+            obj = schema.StorageSession(app_name="app", user_id="u1")
+            ```
+        """
 
         __tablename__ = "sessions"
 
@@ -199,7 +208,16 @@ def create_encrypted_models(
             return f"<EncryptedStorageSession(id={self.id}, update_time={self.update_time})>"
 
     class EncryptedStorageAppState(_Base):
-        """Encrypted app state storage model."""
+        """Encrypted app state storage model.
+
+        Examples:
+            Created internally by ``create_encrypted_models``:
+
+            ```python
+            base, schema = create_encrypted_models(encrypted_json)
+            obj = schema.StorageAppState(app_name="app")
+            ```
+        """
 
         __tablename__ = "app_states"
 
@@ -212,7 +230,16 @@ def create_encrypted_models(
         )
 
     class EncryptedStorageUserState(_Base):
-        """Encrypted user state storage model."""
+        """Encrypted user state storage model.
+
+        Examples:
+            Created internally by ``create_encrypted_models``:
+
+            ```python
+            base, schema = create_encrypted_models(encrypted_json)
+            obj = schema.StorageUserState(app_name="app", user_id="u1")
+            ```
+        """
 
         __tablename__ = "user_states"
 
@@ -228,7 +255,22 @@ def create_encrypted_models(
         )
 
     class EncryptedStorageEvent(_Base):
-        """Encrypted event storage model."""
+        """Encrypted event storage model.
+
+        Examples:
+            Created internally by ``create_encrypted_models``:
+
+            ```python
+            base, schema = create_encrypted_models(encrypted_json)
+            event = schema.StorageEvent(
+                id="e1",
+                app_name="app",
+                user_id="u1",
+                session_id="s1",
+                invocation_id="inv-1",
+            )
+            ```
+        """
 
         __tablename__ = "events"
 

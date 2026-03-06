@@ -91,6 +91,8 @@ class EncryptedSessionService(DatabaseSessionService):
             db_url: SQLAlchemy connection string (e.g.,
                 ``"sqlite+aiosqlite:///sessions.db"``).
             backend: Any object conforming to ``EncryptionBackend`` protocol.
+
+        Other Parameters:
             **kwargs: Additional keyword arguments passed to
                 ``DatabaseSessionService.__init__``.
 
