@@ -112,5 +112,5 @@ development_status:
   7-3-rewrite-encryptedsessionservice-as-databasesessionservice-wrapper: done
   7-4-test-migration-conformance-verification: done
   7-5-documentation-mkdocs-site-updates: done
-  7-6-revise-epic-4-scope-roadmap: review
+  7-6-revise-epic-4-scope-roadmap: done
   epic-7-retrospective: optional
