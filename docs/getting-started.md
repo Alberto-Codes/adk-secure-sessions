@@ -116,6 +116,13 @@ async def main():
 asyncio.run(main())
 ```
 
+!!! tip "Run a real agent with encrypted sessions"
+
+    For a complete multi-turn agent example using Ollama, see
+    [`examples/basic_usage.py`](https://github.com/Alberto-Codes/adk-secure-sessions/blob/main/examples/basic_usage.py).
+    It demonstrates an ADK Runner conversation where state and conversation
+    history are encrypted at rest.
+
 !!! warning "Never hardcode secrets in production"
 
     In production, load your passphrase from an environment variable or secret
