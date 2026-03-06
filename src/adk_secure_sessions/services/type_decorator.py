@@ -138,8 +138,8 @@ class EncryptedJSON(TypeDecorator[dict[str, Any]]):
 
         Raises:
             DecryptionError: If decryption fails due to wrong key,
-                tampered ciphertext, malformed input, or data that
-                does not appear to be encrypted (invalid envelope).
+                tampered ciphertext, malformed input, or unencrypted
+                data (invalid envelope format).
         """
         if value is None:
             return None
@@ -152,9 +152,9 @@ class EncryptedJSON(TypeDecorator[dict[str, Any]]):
         except InvalidToken:
             msg = "Decryption failed: invalid token or wrong key"
             raise DecryptionError(msg) from None
-        except (ValueError, Exception) as exc:
-            if isinstance(exc, DecryptionError):
-                raise
+        except DecryptionError:
+            raise
+        except Exception:
             msg = (
                 "Decryption failed: data does not appear to be encrypted "
                 "(invalid envelope format)"

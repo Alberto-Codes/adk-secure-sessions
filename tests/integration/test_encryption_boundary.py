@@ -17,7 +17,6 @@ See Also:
 
 from __future__ import annotations
 
-import json
 import sqlite3
 
 import pytest
@@ -59,11 +58,9 @@ class TestStateCiphertextAtRest:
         raw_value = row[0]
         assert isinstance(raw_value, str)
 
-        # Must NOT be parseable as JSON — it's base64-encoded ciphertext
-        with pytest.raises((json.JSONDecodeError, UnicodeDecodeError, ValueError)):
-            parsed = json.loads(raw_value)
-            # If it somehow parses, it must not contain our plaintext
-            assert "classified" not in str(parsed)
+        # Raw value must not contain plaintext — it's base64-encoded ciphertext
+        assert "classified" not in raw_value
+        assert "secret" not in raw_value
 
 
 class TestEventCiphertextAtRest:
@@ -218,7 +215,8 @@ class TestEmptyStateRoundTrip:
                 app_name="app", user_id="user-1", session_id=session.id
             )
             assert retrieved is not None
-            assert isinstance(retrieved.state, dict)
+            assert retrieved.state == {}
+            assert len(retrieved.events) == 0
 
 
 class TestComplexNestedStateRoundTrip:

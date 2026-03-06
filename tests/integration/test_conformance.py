@@ -250,9 +250,10 @@ class TestAppendEventConformance:
         enc_event = enc_retrieved.events[0]
         plain_event = plain_retrieved.events[0]
 
-        # Event content dict equality
+        # Event content and action equality
         assert enc_event.author == plain_event.author
         assert enc_event.invocation_id == plain_event.invocation_id
+        assert enc_event.actions == plain_event.actions
 
 
 class TestStateMergeConformance:
@@ -325,12 +326,14 @@ class TestUnencryptedDataDetection:
         # Error may be "does not appear to be encrypted" (base64 decode failure)
         # or "Unsupported envelope version" (partial base64 decode succeeds
         # but envelope header is invalid)
-        with pytest.raises(DecryptionError):
+        with pytest.raises(DecryptionError) as exc_info:
             await enc_svc.get_session(
                 app_name="app",
                 user_id="user-1",
                 session_id=plain_session.id,
             )
+        # AC-4: message must indicate unencrypted data, not wrong key
+        assert "wrong key" not in str(exc_info.value)
 
     async def test_unencrypted_event_data_detected(
         self,
@@ -354,9 +357,11 @@ class TestUnencryptedDataDetection:
         await plain_svc.append_event(plain_session, event)
 
         # Reading the session should fail because event/state data is unencrypted
-        with pytest.raises(DecryptionError):
+        with pytest.raises(DecryptionError) as exc_info:
             await enc_svc.get_session(
                 app_name="evtapp",
                 user_id="user-1",
                 session_id=plain_session.id,
             )
+        # AC-4: message must indicate unencrypted data, not wrong key
+        assert "wrong key" not in str(exc_info.value)

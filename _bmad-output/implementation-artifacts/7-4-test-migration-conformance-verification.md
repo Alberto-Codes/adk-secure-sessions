@@ -1,6 +1,6 @@
 # Story 7.4: Test Migration & Conformance Verification
 
-Status: review
+Status: done
 Branch: feat/test-7-4-conformance-verification
 GitHub Issue: https://github.com/Alberto-Codes/adk-secure-sessions/issues/135
 
@@ -255,21 +255,27 @@ New files follow existing test organization:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Alberto-Codes (BMAD adversarial review + party mode consensus)
+- **Outcome:** Changes Requested → Fixed → Approved
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | HIGH | AC-4 error message not verified — tests only assert `DecryptionError` raised, not message content | Fixed: added `assert "wrong key" not in str(exc_info.value)` to both unencrypted detection tests |
+| 2 | MEDIUM | Redundant `except (ValueError, Exception)` in type_decorator.py (SonarQube S5713) | Fixed: refactored to ordered `except DecryptionError: raise` then `except Exception:` |
+| 3 | LOW | `pytest.raises` + `json.loads` anti-pattern in boundary test | Fixed: simplified to `assert "classified" not in raw_value` matching other boundary tests |
+| 4 | MEDIUM | `TestAppendEventConformance` missing `actions` equality check (party mode consensus gap) | Fixed: added `assert enc_event.actions == plain_event.actions` |
+| 5 | MEDIUM | `TestEmptyStateRoundTrip` weak assertion (`isinstance` not `== {}`) | Fixed: changed to `assert retrieved.state == {}` + `assert len(retrieved.events) == 0` |
+| 6 | LOW | `sqlite3.connect()` without context manager | Skipped: `with sqlite3.connect()` manages transactions not connections; explicit `.close()` is correct |
+| 7 | LOW | Test names say "fifty" but NUM_COROUTINES=10 | Skipped: pre-existing from Story 1.6b, out of scope |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (171 passed, 98.88% coverage)
+- [x] Quality gates re-verified (ruff clean, zero warnings, SonarQube zero issues on modified source)
 
 ## Change Log
 
@@ -278,6 +284,7 @@ New files follow existing test organization:
 | 2026-03-05 | Story created by SM agent — comprehensive context for test migration |
 | 2026-03-05 | Party mode review (Architect + Dev + Test Architect) — added conformance strategy consensus, fixture architecture decisions, AC-4 error path investigation task, `app_states`/`user_states` population caveat, relaxed source constraint for AC-4 |
 | 2026-03-05 | Implementation complete — all 6 tasks done, 171 tests pass, 98.88% coverage |
+| 2026-03-05 | Code review: 5 findings fixed (1 HIGH, 2 MEDIUM, 2 LOW), 2 skipped (out of scope). SonarQube S5713 resolved. All quality gates pass. |
 
 ## Dev Agent Record
 
