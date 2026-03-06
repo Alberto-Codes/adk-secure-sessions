@@ -206,3 +206,43 @@ class TestConcurrentEventAppends:
                         event_texts.add(part.text)
         assert len(event_texts) == NUM_COROUTINES
         assert len(event_authors) == NUM_COROUTINES
+
+    async def test_concurrent_event_appends_all_encrypted(
+        self, encrypted_service: EncryptedSessionService, db_path: str
+    ) -> None:
+        """All concurrently appended events are ciphertext at rest in raw DB."""
+        session = await encrypted_service.create_session(
+            app_name=APP_NAME, user_id=USER_ID, state={"base": True}
+        )
+
+        session = await encrypted_service.get_session(
+            app_name=APP_NAME, user_id=USER_ID, session_id=session.id
+        )
+        assert session is not None
+
+        async def _append_one(index: int) -> Event:
+            event = Event(
+                invocation_id=f"inv-enc-{index}",
+                author=f"agent-enc-{index}",
+                content=types.Content(
+                    parts=[types.Part(text=f"Encrypted event {index}")]
+                ),
+            )
+            return await encrypted_service.append_event(session, event)
+
+        tasks = [_append_one(i) for i in range(NUM_COROUTINES)]
+        await asyncio.gather(*tasks)
+
+        # Read raw DB rows — all event_data must be ciphertext
+        conn = sqlite3.connect(db_path)
+        rows = conn.execute("SELECT event_data FROM events").fetchall()
+        conn.close()
+
+        assert len(rows) == NUM_COROUTINES
+        for row in rows:
+            raw_event = row[0]
+            assert isinstance(raw_event, str)
+            # No plaintext content should be visible
+            assert "Encrypted event" not in raw_event
+            assert '"author"' not in raw_event
+            assert '"invocation_id"' not in raw_event
