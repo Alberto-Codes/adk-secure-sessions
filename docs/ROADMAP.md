@@ -34,7 +34,7 @@ Build the core encryption engine: `EncryptedSessionService` with Fernet encrypti
   - [x] `delete_session`
   - [x] `append_event` with encrypted state delta + event data
 - [x] Integration test: full round-trip (create → append events → get → verify decryption)
-- [x] CI: GitHub Actions (lint, type check, 174 tests at 99 % coverage)
+- [x] CI: GitHub Actions (lint, type check, 171 tests at 90 %+ coverage)
 - [x] Connection pooling and cleanup (`close()`, `__aenter__`/`__aexit__`)
 
 ### Phase 2: Ship — PyPI Launch

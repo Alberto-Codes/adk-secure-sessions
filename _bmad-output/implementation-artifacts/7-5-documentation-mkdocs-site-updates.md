@@ -1,6 +1,6 @@
 # Story 7.5: Documentation & MkDocs Site Updates
 
-Status: review
+Status: done
 Branch: feat/docs-7-5-architecture-migration-docs
 GitHub Issue:
 
@@ -220,21 +220,26 @@ Note: Only SQLite is tested in CI. PostgreSQL/MySQL/MariaDB support is inherited
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) + Party Mode consensus (5 agents)
+- **Outcome:** Approved with fixes applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | `project-overview.md:10` version "0.1.1 (Alpha)" vs pyproject.toml "1.0.3" | Fixed: updated to "1.0.3" |
+| M2 | MEDIUM | `project-overview.md` Test Coverage table had wrong counts for 4 unit test files and was missing 8 files | Fixed: corrected all counts, added all 16 test files |
+| M3 | MEDIUM | `ROADMAP.md:37` claimed "174 tests at 99% coverage" but actual is 171 tests | Fixed: updated to "171 tests at 90%+ coverage" |
+| M4 | LOW | Stale aiosqlite refs in `project-scan-report.json` and `source-tree-analysis.md` | Pre-existing debt — not in story scope |
+| L1 | LOW | Story completion notes have slightly wrong line counts for new test files | No action — story bookkeeping |
+| L3 | LOW | Test split deviates from recommendation (TestRoundTripWorkflow in crud not conformance) | Dismissed — deviation is an improvement |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -243,6 +248,7 @@ Note: Only SQLite is tested in CI. PostgreSQL/MySQL/MariaDB support is inherited
 | 2026-03-06 | Updated all documentation pages to reflect Epic 7 architecture migration (TypeDecorator wrapping, multi-DB support, ADR-007 references) |
 | 2026-03-06 | Split test_adk_integration.py (768 lines) into 3 focused files: test_adk_conformance.py, test_adk_encryption.py, test_adk_crud.py |
 | 2026-03-06 | Updated test-review.md: marked Recommendation 1 as DONE |
+| 2026-03-06 | Code review: fixed version (0.1.1→1.0.3), test counts table (4 wrong + 8 missing), ROADMAP test count (174→171) |
 
 ## Dev Agent Record
 

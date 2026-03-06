@@ -7,7 +7,7 @@
 
 **adk-secure-sessions** is a Python library that provides encrypted session storage for [Google ADK](https://github.com/google/adk-python). It is an encrypted session persistence service implementing ADK's `BaseSessionService` that encrypts session data at rest using pluggable encryption backends.
 
-- **Version**: 0.1.1 (Alpha)
+- **Version**: 1.0.3
 - **License**: Apache-2.0
 - **Python**: 3.12 (strictly required)
 - **Repository type**: Monolith (single `src/` layout package)
@@ -84,13 +84,21 @@ ADK's `DatabaseSessionService` manages the schema; `EncryptedSessionService` rep
 | Test File | Scope | Tests |
 |-----------|-------|-------|
 | `tests/unit/test_protocols.py` | Protocol conformance, runtime validation | 6 |
-| `tests/unit/test_exceptions.py` | Exception hierarchy, chaining, safe messages | 15 |
-| `tests/unit/test_fernet_backend.py` | Encrypt/decrypt, key handling, type guards | 14 |
-| `tests/unit/test_serialization.py` | Envelope, round-trips, edge cases | 18 |
-| `tests/unit/test_encrypted_session_service.py` | CRUD, events, context manager, edge cases | 22 |
+| `tests/unit/test_exceptions.py` | Exception hierarchy, chaining, safe messages | 35 |
+| `tests/unit/test_fernet_backend.py` | Encrypt/decrypt, key handling, type guards | 20 |
+| `tests/unit/test_serialization.py` | Envelope, round-trips, edge cases | 30 |
+| `tests/unit/test_encrypted_session_service.py` | CRUD, events, context manager, sentinels | 17 |
+| `tests/unit/test_type_decorator.py` | EncryptedJSON TypeDecorator unit tests | 9 |
+| `tests/unit/test_public_api.py` | Public API surface validation | 6 |
 | `tests/integration/test_adk_conformance.py` | Interface & protocol conformance | 4 |
 | `tests/integration/test_adk_encryption.py` | DB encryption verification, wrong-key tests | 10 |
 | `tests/integration/test_adk_crud.py` | Round-trip workflows, list/delete, state merge | 6 |
+| `tests/integration/test_docs_examples.py` | Living documentation smoke test | 1 |
+| `tests/integration/test_concurrent_writes.py` | Concurrent write safety | 5 |
+| `tests/integration/test_adk_runner.py` | ADK Runner integration | 6 |
+| `tests/integration/test_conformance.py` | Side-by-side encrypted vs unencrypted conformance | 8 |
+| `tests/integration/test_encryption_boundary.py` | Raw-DB ciphertext verification | 8 |
+| `tests/benchmarks/test_encryption_overhead.py` | Encryption performance overhead | 1 |
 
 CI enforces: `--cov-fail-under=90`
 
