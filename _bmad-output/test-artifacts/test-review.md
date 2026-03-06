@@ -390,7 +390,7 @@ Test quality is excellent with a 95/100 weighted score (Grade A). Stories 7.5 an
 | File | Line | Severity | Dimension | Issue | Fix |
 |------|------|----------|-----------|-------|-----|
 | ~~`test_adk_integration.py`~~ | ~~1-768~~ | ~~HIGH~~ | ~~Maintainability~~ | ~~768 lines (2.5x threshold)~~ | ~~RESOLVED: Split into 3 files in Story 7.5~~ |
-| ~~`test_adk_crud.py` + others~~ | ~~multiple~~ | ~~MEDIUM~~ | ~~Maintainability~~ | ~~~20x duplicated service instantiation~~ | ~~RESOLVED: 9 tests refactored in Story 7.6~~ |
+| ~~`test_adk_crud.py` + others~~ | ~~multiple~~ | ~~MEDIUM~~ | ~~Maintainability~~ | ~~20x duplicated service instantiation~~ | ~~RESOLVED: 9 tests refactored in Story 7.6~~ |
 | `test_adk_crud.py` + others | multiple | MEDIUM | Maintainability | Repeated "my-agent", "user-1" strings | Define constants |
 | `test_adk_crud.py` | 1-394 | LOW | Maintainability | 394 lines (1.31x threshold) | Monitor |
 | `test_serialization.py` | 1-383 | LOW | Maintainability | 383 lines (marginally over) | Monitor |
