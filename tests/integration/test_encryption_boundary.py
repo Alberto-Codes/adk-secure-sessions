@@ -1,9 +1,9 @@
 """Encryption boundary verification tests.
 
 Gold-standard tests that verify ciphertext at rest by reading raw
-database rows directly via synchronous SQLAlchemy, bypassing the
-service layer entirely. Also verifies metadata remains plaintext
-and edge cases (empty state, complex nested structures) round-trip
+database rows directly via the stdlib ``sqlite3`` module, bypassing
+the service layer entirely. Also verifies metadata remains plaintext
+and that edge cases (empty state, complex nested structures) round-trip
 correctly through the encryption boundary.
 
 Typical usage::

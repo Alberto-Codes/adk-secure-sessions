@@ -311,4 +311,4 @@ None — no unexpected failures during implementation.
 | `tests/integration/test_concurrent_writes.py` | Modified | Added `test_concurrent_event_appends_all_encrypted` (AC-5) |
 | `src/adk_secure_sessions/services/type_decorator.py` | Modified | Broadened `process_result_value` exception handling for AC-4 |
 | `_bmad-output/implementation-artifacts/7-4-test-migration-conformance-verification.md` | Modified | Task checkboxes, AC-to-Test mapping, dev record |
-| `_bmad-output/implementation-artifacts/sprint-status.yaml` | Modified | Story status: backlog → in-progress |
+| `_bmad-output/implementation-artifacts/sprint-status.yaml` | Modified | Story status: backlog → done |
