@@ -3,9 +3,14 @@
 Defines the contract that all encryption backends must satisfy.
 Backends implement async methods (``encrypt``, ``decrypt``),
 synchronous counterparts (``sync_encrypt``, ``sync_decrypt``),
-and a ``backend_id`` property. No inheritance or registration is
-required; any class with matching signatures conforms via structural
-subtyping (PEP 544).
+and a ``backend_id`` property. No inheritance is required; any class
+with matching signatures conforms via structural subtyping (PEP 544).
+
+Note: while the protocol itself requires no registration, the
+serialization layer (``adk_secure_sessions.serialization``) maintains
+a ``BACKEND_REGISTRY`` of recognized backend IDs. Custom backends
+must register their ``backend_id`` there to be usable with the
+envelope functions.
 
 Examples:
     Define a conforming backend and verify at runtime:

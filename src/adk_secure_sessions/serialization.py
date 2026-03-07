@@ -3,8 +3,10 @@
 Converts Python dictionaries and JSON strings into self-describing
 encrypted envelopes using any ``EncryptionBackend``-conformant backend.
 Each envelope carries a version byte and backend identifier prefix to
-support future backend migrations. Registered backends: Fernet (0x01)
-and AES-GCM (0x02).
+support future backend migrations. The ``BACKEND_REGISTRY`` maps
+recognized backend IDs to human-readable names and is used by
+``_parse_envelope()`` for validation. Registered backends:
+Fernet (0x01) and AES-GCM (0x02).
 
 The layer is stateless — four async module-level functions, no classes.
 The encryption backend is passed per call.
@@ -49,7 +51,11 @@ BACKEND_REGISTRY: dict[int, str] = {
     BACKEND_FERNET: "Fernet",
     BACKEND_AES_GCM: "AES-GCM",
 }
-"""Mapping of backend IDs to human-readable names (error messages only)."""
+"""Mapping of supported backend IDs to human-readable names.
+
+Used by ``_parse_envelope()`` to validate incoming envelopes and
+generate error messages for unrecognized backends.
+"""
 
 _MIN_ENVELOPE_LENGTH: int = 3
 """Minimum envelope size: 1 version byte + 1 backend ID byte + 1+ ciphertext bytes."""
