@@ -33,8 +33,10 @@ Examples:
         EncryptedSessionService,
     )
 
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
     fernet = FernetBackend("old-passphrase")
-    aes_gcm = AesGcmBackend(key=aes_key)
+    aes_gcm = AesGcmBackend(key=AESGCM.generate_key(bit_length=256))
     service = EncryptedSessionService(
         db_url="sqlite+aiosqlite:///sessions.db",
         backend=aes_gcm,
@@ -112,8 +114,10 @@ class EncryptedSessionService(DatabaseSessionService):
             EncryptedSessionService,
         )
 
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
         fernet = FernetBackend("old-passphrase")
-        aes_gcm = AesGcmBackend(key=aes_key)
+        aes_gcm = AesGcmBackend(key=AESGCM.generate_key(bit_length=256))
         service = EncryptedSessionService(
             db_url="sqlite+aiosqlite:///sessions.db",
             backend=aes_gcm,

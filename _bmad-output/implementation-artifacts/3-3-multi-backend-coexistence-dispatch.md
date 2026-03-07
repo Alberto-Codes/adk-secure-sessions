@@ -1,6 +1,6 @@
 # Story 3.3: Multi-Backend Coexistence & Dispatch
 
-Status: review
+Status: done
 Branch: feat/serialization-3-3-multi-backend-dispatch
 GitHub Issue:
 
@@ -214,25 +214,29 @@ Both backends are fully implemented with salt support. The dispatch story builds
 - [x] `uv run ruff format --check .` -- zero format issues
 - [x] `uv run ty check` -- zero type errors (src/ only)
 - [x] `uv run pytest --cov=adk_secure_sessions --cov-fail-under=90` -- 246 passed, 98.78% coverage
-- [ ] `pre-commit run --all-files` -- all hooks pass
+- [x] `pre-commit run --all-files` -- all hooks pass
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Workflow (adversarial) + Party Mode consensus
+- **Outcome:** Approved with fixes (4 editorial fixes applied, 1 dismissed)
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| 1 | MEDIUM | File List missing `architecture.md` + `epics.md` (changed in git, not documented) | Fixed — added to File List |
+| 2 | LOW | Pre-commit quality gate `[ ]` unchecked (actually passes) | Fixed — checked the box |
+| 3 | LOW | test-review.md Follow-up Actions stale (items #2, #3 resolved but listed as backlog) | Fixed — struck through with resolution notes |
+| 4 | LOW | Docstring examples use undefined `aes_key` variable | Fixed — added `AESGCM.generate_key()` to both examples |
+| 5 | LOW | Weak `is not None` assertions on constructor tests | Dismissed — party-mode consensus: risk of brittle tests outweighs marginal gain; behavioral coverage exists in TestSessionCRUD |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (246 passed)
+- [x] Quality gates re-verified (ruff check + ruff format clean)
 
 ## Change Log
 
@@ -241,6 +245,7 @@ Both backends are fully implemented with salt support. The dispatch story builds
 | 2026-03-07 | Story created by SM agent -- comprehensive context engine |
 | 2026-03-07 | Party mode consensus: (1) dispatch dict in EncryptedJSON, no EncryptionCoordinator — deferred to Story 4.4; (2) construction-time registration only, FR19 = constructor-injected; (3) new test_multi_backend.py file; AC #5 clarified, Task 2 docstring requirement added, Task 5 file target + encryption boundary assertion added |
 | 2026-03-07 | Implementation complete — all 6 tasks + cross-cutting done. 246 tests pass, 98.78% coverage. Multi-backend dispatch via EncryptedJSON._decrypt_dispatch dict, EncryptedSessionService.additional_backends param, 5 integration tests in test_multi_backend.py |
+| 2026-03-07 | Code review complete — 5 findings (1M, 4L). Party-mode consensus: 4 editorial fixes applied (File List, pre-commit gate, test-review.md stale items, docstring examples), 1 dismissed (assertion strength — behavioral coverage sufficient via TestSessionCRUD) |
 
 ## Dev Agent Record
 
@@ -281,4 +286,6 @@ No debug issues encountered.
 - `tests/benchmarks/conftest.py` — modified (rationale docstring for _TARGET_SIZE_BYTES)
 - `_bmad-output/test-artifacts/test-review.md` — modified (marked recommendation #5 done)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — modified (status update)
+- `_bmad-output/planning-artifacts/architecture.md` — modified (party-mode consensus revision notes on coordinator deferral)
+- `_bmad-output/planning-artifacts/epics.md` — modified (party-mode consensus annotations on Stories 4.4 and design directions)
 - `_bmad-output/implementation-artifacts/3-3-multi-backend-coexistence-dispatch.md` — modified (story tracking)

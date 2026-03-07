@@ -386,13 +386,13 @@ None. All P1 and P2 items are resolved.
    - Priority: P3
    - Target: Backlog
 
-2. **Refactor runner fixtures** to parameterized factory
+2. ~~**Refactor runner fixtures** to parameterized factory~~
    - Priority: P3
-   - Target: Backlog
+   - Status: RESOLVED in Story 3.2
 
-3. **Add rationale comments** to benchmark magic constants
+3. ~~**Add rationale comments** to benchmark magic constants~~
    - Priority: P3
-   - Target: Backlog
+   - Status: RESOLVED in Story 3.3
 
 ### Re-Review Needed?
 
