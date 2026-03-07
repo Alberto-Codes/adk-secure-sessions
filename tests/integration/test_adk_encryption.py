@@ -31,6 +31,21 @@ from adk_secure_sessions import (
 _KEY_A = Fernet.generate_key()
 _KEY_B = Fernet.generate_key()
 
+APP_NAME = "secure-app"
+"""Default app name for encryption verification tests."""
+
+APP_NAME_WRONG_KEY = "my-agent"
+"""App name for wrong-key decryption tests."""
+
+APP_NAME_STATE = "test-app"
+"""App name for app/user state encryption tests."""
+
+USER_ID = "user-1"
+"""Default user ID for encryption integration tests."""
+
+USER_ID_SECRET = "user-secret"
+"""User ID for initial state encryption test."""
+
 pytestmark = pytest.mark.integration
 
 # =============================================================================
@@ -51,8 +66,8 @@ class TestDatabaseEncryption:
         ) as service:
             # Create session with sensitive data
             await service.create_session(
-                app_name="secure-app",
-                user_id="user-secret",
+                app_name=APP_NAME,
+                user_id=USER_ID_SECRET,
                 state={
                     "api_key": "sk-super-secret-key-12345",
                     "ssn": "123-45-6789",
@@ -88,8 +103,8 @@ class TestDatabaseEncryption:
             backend=fernet_backend,
         ) as service:
             session = await service.create_session(
-                app_name="secure-app",
-                user_id="user-1",
+                app_name=APP_NAME,
+                user_id=USER_ID,
             )
 
             event = Event(
@@ -126,8 +141,8 @@ class TestDatabaseEncryption:
             backend=fernet_backend,
         ) as service:
             session = await service.create_session(
-                app_name="secure-app",
-                user_id="user-1",
+                app_name=APP_NAME,
+                user_id=USER_ID,
             )
 
             event = Event(
@@ -169,8 +184,8 @@ class TestUserStateEncryption:
             backend=fernet_backend,
         ) as service:
             session = await service.create_session(
-                app_name="secure-app",
-                user_id="user-1",
+                app_name=APP_NAME,
+                user_id=USER_ID,
             )
 
             event = Event(
@@ -214,8 +229,8 @@ class TestWrongKeyIntegration:
             backend=backend1,
         ) as service:
             session = await service.create_session(
-                app_name="my-agent",
-                user_id="user-1",
+                app_name=APP_NAME_WRONG_KEY,
+                user_id=USER_ID,
                 state={"secret": "classified-data"},
             )
             session_id = session.id
@@ -228,8 +243,8 @@ class TestWrongKeyIntegration:
         ) as service:
             with pytest.raises(DecryptionError):
                 await service.get_session(
-                    app_name="my-agent",
-                    user_id="user-1",
+                    app_name=APP_NAME_WRONG_KEY,
+                    user_id=USER_ID,
                     session_id=session_id,
                 )
 
@@ -242,8 +257,8 @@ class TestWrongKeyIntegration:
             backend=backend1,
         ) as service:
             await service.create_session(
-                app_name="my-agent",
-                user_id="user-1",
+                app_name=APP_NAME_WRONG_KEY,
+                user_id=USER_ID,
                 state={"secret": "classified-data"},
             )
 
@@ -254,7 +269,7 @@ class TestWrongKeyIntegration:
             backend=backend2,
         ) as service:
             with pytest.raises(DecryptionError):
-                await service.list_sessions(app_name="my-agent")
+                await service.list_sessions(app_name=APP_NAME_WRONG_KEY)
 
 
 class TestWrongKeyOnStateTables:
@@ -272,8 +287,8 @@ class TestWrongKeyOnStateTables:
             backend=backend1,
         ) as service:
             session = await service.create_session(
-                app_name="test-app",
-                user_id="user-1",
+                app_name=APP_NAME_STATE,
+                user_id=USER_ID,
                 state={"session": "data"},
             )
             session_id = session.id
@@ -295,8 +310,8 @@ class TestWrongKeyOnStateTables:
         ) as service:
             with pytest.raises(DecryptionError):
                 await service.get_session(
-                    app_name="test-app",
-                    user_id="user-1",
+                    app_name=APP_NAME_STATE,
+                    user_id=USER_ID,
                     session_id=session_id,
                 )
 
@@ -312,8 +327,8 @@ class TestWrongKeyOnStateTables:
             backend=backend1,
         ) as service:
             session = await service.create_session(
-                app_name="test-app",
-                user_id="user-1",
+                app_name=APP_NAME_STATE,
+                user_id=USER_ID,
                 state={"session": "data"},
             )
             session_id = session.id
@@ -335,7 +350,7 @@ class TestWrongKeyOnStateTables:
         ) as service:
             with pytest.raises(DecryptionError):
                 await service.get_session(
-                    app_name="test-app",
-                    user_id="user-1",
+                    app_name=APP_NAME_STATE,
+                    user_id=USER_ID,
                     session_id=session_id,
                 )

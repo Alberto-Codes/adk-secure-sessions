@@ -10,6 +10,7 @@ import pytest
 
 from adk_secure_sessions.exceptions import DecryptionError, SerializationError
 from adk_secure_sessions.serialization import (
+    BACKEND_AES_GCM,
     BACKEND_FERNET,
     ENVELOPE_VERSION_1,
     _build_envelope,
@@ -381,3 +382,48 @@ class TestEdgeCases:
         tampered_backend[1] = 0xFF
         with pytest.raises(DecryptionError, match="Unsupported encryption backend"):
             _parse_envelope(bytes(tampered_backend))
+
+
+# ---------------------------------------------------------------------------
+# AES-GCM Serialization Integration
+# ---------------------------------------------------------------------------
+
+
+class TestAesGcmSerialization:
+    """AES-GCM backend integration with the serialization envelope."""
+
+    async def test_aesgcm_envelope_round_trip(self) -> None:
+        """AES-GCM encrypted session round-trips through envelope."""
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+        from adk_secure_sessions.backends.aes_gcm import AesGcmBackend
+
+        key = AESGCM.generate_key(bit_length=256)
+        backend = AesGcmBackend(key=key)
+        state = {"user": "alice", "score": 42}
+        envelope = await encrypt_session(state, backend, BACKEND_AES_GCM)
+        restored = await decrypt_session(envelope, backend)
+        assert restored == state
+
+    async def test_aesgcm_envelope_backend_id(self) -> None:
+        """AES-GCM envelope byte[1] is BACKEND_AES_GCM (0x02)."""
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+        from adk_secure_sessions.backends.aes_gcm import AesGcmBackend
+
+        key = AESGCM.generate_key(bit_length=256)
+        backend = AesGcmBackend(key=key)
+        envelope = await encrypt_session({"x": 1}, backend, BACKEND_AES_GCM)
+        assert envelope[0] == ENVELOPE_VERSION_1
+        assert envelope[1] == BACKEND_AES_GCM
+
+    async def test_fernet_envelope_still_works(self) -> None:
+        """Fernet-encrypted envelope still decrypts correctly after AES-GCM registration."""
+        from adk_secure_sessions.backends.fernet import FernetBackend
+
+        backend = FernetBackend(key="backward-compat-test")
+        state = {"legacy": True}
+        envelope = await encrypt_session(state, backend, BACKEND_FERNET)
+        restored = await decrypt_session(envelope, backend)
+        assert restored == state
+        assert envelope[1] == BACKEND_FERNET

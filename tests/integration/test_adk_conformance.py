@@ -25,6 +25,12 @@ from adk_secure_sessions.protocols import EncryptionBackend
 
 pytestmark = pytest.mark.integration
 
+APP_NAME = "test"
+"""Default app name for conformance tests."""
+
+USER_ID = "user"
+"""Default user ID for conformance tests."""
+
 # =============================================================================
 # BaseSessionService Interface Conformance
 # =============================================================================
@@ -60,17 +66,17 @@ class TestBaseSessionServiceInterface:
         service = encrypted_service
 
         # create_session returns Session
-        session = await service.create_session(app_name="test", user_id="user")
+        session = await service.create_session(app_name=APP_NAME, user_id=USER_ID)
         assert isinstance(session, Session)
 
         # get_session returns Session or None
         result = await service.get_session(
-            app_name="test", user_id="user", session_id=session.id
+            app_name=APP_NAME, user_id=USER_ID, session_id=session.id
         )
         assert isinstance(result, Session)
 
         # list_sessions returns ListSessionsResponse
-        list_result = await service.list_sessions(app_name="test")
+        list_result = await service.list_sessions(app_name=APP_NAME)
         assert isinstance(list_result, ListSessionsResponse)
 
 

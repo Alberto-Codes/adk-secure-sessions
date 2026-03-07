@@ -148,6 +148,8 @@ NFR28 [MVP]: A developer with an existing ADK agent can add encrypted sessions i
 - API surface growth strategy: flat namespace vs. submodule imports
 - Backend ecosystem architecture: backend ID registry, entry-point discovery, packaging strategy
 - PostgreSQL driver decision deferred (asyncpg vs. psycopg3)
+- AAD (associated data) binding: AESGCM supports `associated_data` to cryptographically tie ciphertext to session metadata (session_id, app_name, user_id). Deferred from Story 3.1 because it changes the `EncryptionBackend` protocol signature for all backends. Candidate for Story 3.2 or a dedicated security hardening story. (Added 2026-03-06, party mode consensus)
+- AES-GCM-SIV backend: Available in `cryptography>=46.0.0`. Nonce-misuse resistant — survives accidental nonce reuse without catastrophic security failure. Future Story 3.x or Epic 5 candidate. (Added 2026-03-06, party mode consensus)
 
 ### FR Coverage Map
 

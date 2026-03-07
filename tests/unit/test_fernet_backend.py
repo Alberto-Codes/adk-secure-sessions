@@ -264,3 +264,38 @@ class TestPolish:
     def test_decryption_error_inherits_secure_session_error(self) -> None:
         """DecryptionError is a SecureSessionError."""
         assert issubclass(DecryptionError, SecureSessionError)
+
+    def test_backend_id(self) -> None:
+        """backend_id returns BACKEND_FERNET (0x01)."""
+        from adk_secure_sessions.serialization import BACKEND_FERNET
+
+        backend = FernetBackend(key=_KEY_A)
+        assert backend.backend_id == BACKEND_FERNET
+        assert backend.backend_id == 0x01
+
+    def test_sync_encrypt_round_trip(self) -> None:
+        """sync_encrypt/sync_decrypt round-trips correctly."""
+        backend = FernetBackend(key=_KEY_A)
+        ciphertext = backend.sync_encrypt(b"sync test")
+        result = backend.sync_decrypt(ciphertext)
+        assert result == b"sync test"
+
+    def test_sync_encrypt_non_bytes_raises_type_error(self) -> None:
+        """sync_encrypt with non-bytes raises TypeError."""
+        backend = FernetBackend(key=_KEY_A)
+        with pytest.raises(TypeError, match="plaintext must be bytes"):
+            backend.sync_encrypt("not bytes")  # type: ignore[arg-type]
+
+    def test_sync_decrypt_non_bytes_raises_type_error(self) -> None:
+        """sync_decrypt with non-bytes raises TypeError."""
+        backend = FernetBackend(key=_KEY_A)
+        with pytest.raises(TypeError, match="ciphertext must be bytes"):
+            backend.sync_decrypt("not bytes")  # type: ignore[arg-type]
+
+    def test_sync_decrypt_wrong_key_raises_decryption_error(self) -> None:
+        """sync_decrypt with wrong key raises DecryptionError."""
+        backend1 = FernetBackend(key=_KEY_A)
+        backend2 = FernetBackend(key=_KEY_B)
+        ciphertext = backend1.sync_encrypt(b"secret")
+        with pytest.raises(DecryptionError):
+            backend2.sync_decrypt(ciphertext)
