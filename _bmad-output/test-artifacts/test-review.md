@@ -157,7 +157,8 @@ Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `c
 
 **Resolution**: Refactored to `_make_runner` factory fixture using `@contextlib.asynccontextmanager`. All three fixtures now delegate to the factory. Resolved in Story 3.2.
 
-### 5. Add rationale comments to magic constants
+### 5. ~~Add rationale comments to magic constants~~ DONE
+<!-- DONE: story 3.3 -->
 
 **Severity**: P3 (Low)
 **Location**: `tests/benchmarks/test_encryption_overhead.py:35`
@@ -165,6 +166,8 @@ Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `c
 
 **Issue Description**:
 `N_ITERATIONS = 20`, `_OVERHEAD_THRESHOLD = 1.20`, `_TARGET_SIZE_BYTES = 10240` lack rationale comments. `test_concurrent_writes.py` correctly documents `NUM_COROUTINES` with NFR traceability -- apply same pattern.
+
+**Resolution**: Rationale docstrings added to all three constants following the `NUM_COROUTINES` pattern (NFR traceability + justification). Resolved in Story 3.3.
 
 ### 6. Monitor marginally-over-threshold files
 
@@ -383,13 +386,13 @@ None. All P1 and P2 items are resolved.
    - Priority: P3
    - Target: Backlog
 
-2. **Refactor runner fixtures** to parameterized factory
+2. ~~**Refactor runner fixtures** to parameterized factory~~
    - Priority: P3
-   - Target: Backlog
+   - Status: RESOLVED in Story 3.2
 
-3. **Add rationale comments** to benchmark magic constants
+3. ~~**Add rationale comments** to benchmark magic constants~~
    - Priority: P3
-   - Target: Backlog
+   - Status: RESOLVED in Story 3.3
 
 ### Re-Review Needed?
 
@@ -425,7 +428,7 @@ Test quality is excellent with a 96/100 weighted score (Grade A). Story 3.1 adds
 | `test_encryption_boundary.py` | 1-309 | LOW | Maintainability | 309 lines (marginally over) | Monitor |
 | `test_fernet_backend.py` | 1-301 | LOW | Maintainability | 301 lines (just crossed threshold) | Monitor |
 | `test_adk_runner.py` | 56-110 | LOW | Maintainability | 3 near-identical runner fixtures | Parameterize |
-| `test_encryption_overhead.py` | 35 | LOW | Maintainability | Magic constants without rationale | Add comments |
+| ~~`test_encryption_overhead.py`~~ | ~~35~~ | ~~LOW~~ | ~~Maintainability~~ | ~~Magic constants without rationale~~ | ~~RESOLVED: Rationale docstrings added in Story 3.3~~ |
 
 ### Quality Trends
 
