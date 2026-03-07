@@ -1,6 +1,6 @@
 # Story 3.2: Per-Key Random Salt Key Derivation
 
-Status: review
+Status: done
 Branch: feat/backend-3-2-random-salt
 GitHub Issue:
 
@@ -252,21 +252,27 @@ else:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Alberto-Codes (adversarial review + party mode consensus)
+- **Outcome:** Approved (all issues fixed)
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | Duplicated error message string (S1192) — 4 occurrences | Extracted to `_DECRYPT_FAILED_MSG` constant |
+| M2 | MEDIUM | `test_fernet_backend.py` at 585 lines exceeds 500-line threshold | Split `TestPerKeyRandomSalt` + `TestBackwardCompatibility` into `test_fernet_salt.py` |
+| M3 | MEDIUM | `test_new_ciphertext_not_readable_by_legacy` uses bare `Exception` | Narrowed to `InvalidToken` |
+| M4 | MEDIUM | Completion notes test count stale (231 vs 233) | Updated to 233 passed, 25 new |
+| L1 | LOW | `_make_runner` fixture return type `object` | Skipped — cosmetic, tests excluded from ty check |
+| L2 | LOW | `except (ValueError, binascii.Error)` redundancy (S5713) | Skipped — pre-existing, out of scope |
+| L3 | LOW | SonarQube S2053 false positive on `_PBKDF2_SALT` | Skipped — design documented in ADR-008 |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -274,6 +280,7 @@ else:
 |------|-------------|
 | 2026-03-07 | Story created by SM agent -- comprehensive context engine |
 | 2026-03-07 | Party mode consensus: HKDF (full) over HKDFExpand, _MIN_SALTED_LENGTH=117, PBKDF2 iterations bumped to 600k with 480k legacy, direct-key no-marker test added |
+| 2026-03-07 | Code review: 4 MEDIUM fixed (error msg constant, test file split, narrow exception, stale count), 3 LOW skipped. Status → done |
 
 ## Dev Agent Record
 
@@ -286,7 +293,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 ### Completion Notes List
 
 - All 13 ACs verified with dedicated tests
-- 231 tests pass (23 new), 100% coverage on fernet.py, 99.22% overall
+- 233 tests pass (25 new), 100% coverage on fernet.py, 99.22% overall
 - PBKDF2 iterations bumped 480k → 600k (OWASP 2023+)
 - Legacy 480k backward compat verified via marker byte detection
 - Cross-cutting: runner fixtures refactored to factory pattern
@@ -294,7 +301,8 @@ Claude Opus 4.6 (claude-opus-4-6)
 ### File List
 
 - `src/adk_secure_sessions/backends/fernet.py` — refactored with two-phase derivation
-- `tests/unit/test_fernet_backend.py` — 21 new tests (TestPerKeyRandomSalt, TestBackwardCompatibility)
+- `tests/unit/test_fernet_backend.py` — existing tests retained (TestKeyDerivationStability updated)
+- `tests/unit/test_fernet_salt.py` — 21 new tests split from test_fernet_backend.py (TestPerKeyRandomSalt, TestBackwardCompatibility)
 - `tests/unit/test_serialization.py` — 2 new tests (TestSaltedFernetSerialization)
 - `tests/integration/test_adk_runner.py` — refactored runner fixtures to factory
 - `docs/adr/ADR-008-per-key-random-salt.md` — new ADR

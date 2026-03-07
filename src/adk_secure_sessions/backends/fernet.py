@@ -19,8 +19,8 @@ This ensures identical passphrases produce different ciphertexts on
 every encryption, hardening against precomputation attacks.
 
 Pre-generated Fernet keys (via ``Fernet.generate_key()``) bypass
-derivation entirely and are used directly — no salt marker, no format
-change.
+derivation entirely and are used directly with no salt marker and no
+format change.
 
 Examples:
     Basic usage:
@@ -61,6 +61,7 @@ _SALT_LENGTH = 16
 _HKDF_INFO = b"adk-fernet-v2"
 # Marker (1) + salt (16) + minimum base64-encoded Fernet token (~100 bytes).
 _MIN_SALTED_LENGTH = 1 + _SALT_LENGTH + 100
+_DECRYPT_FAILED_MSG = "Decryption failed: invalid token or wrong key"
 
 
 class FernetBackend:
@@ -186,11 +187,11 @@ class FernetBackend:
 
         Detects the ciphertext format via the first byte:
 
-        - ``0x01``: new salted format — extract salt, derive per-op key
-          via HKDF, decrypt the Fernet token.
-        - ``>= 0x2B``: legacy Fernet token — decrypt with the legacy
+        - ``0x01``: new salted format — extracts salt, derives per-op
+          key via HKDF, decrypts the Fernet token.
+        - ``>= 0x2B``: legacy Fernet token — decrypts with the legacy
           Fernet instance.
-        - Otherwise: raise ``DecryptionError``.
+        - Otherwise: raises ``DecryptionError``.
 
         Args:
             ciphertext: Encrypted bytes to decrypt.
@@ -213,7 +214,7 @@ class FernetBackend:
             raise TypeError(msg)
 
         if not ciphertext:
-            msg = "Decryption failed: invalid token or wrong key"
+            msg = _DECRYPT_FAILED_MSG
             raise DecryptionError(msg)
 
         if ciphertext[0:1] == _SALT_MARKER and len(ciphertext) >= _MIN_SALTED_LENGTH:
@@ -297,6 +298,9 @@ class FernetBackend:
     def _decrypt_salted(self, ciphertext: bytes) -> bytes:
         """Decrypt new-format salted ciphertext.
 
+        Extracts the 16-byte salt, derives a per-op key via HKDF,
+        and decrypts the remaining Fernet token.
+
         Args:
             ciphertext: Full ciphertext including marker and salt.
 
@@ -310,18 +314,21 @@ class FernetBackend:
         token = ciphertext[1 + _SALT_LENGTH :]
 
         if self._passphrase_key is None:
-            msg = "Decryption failed: invalid token or wrong key"
+            msg = _DECRYPT_FAILED_MSG
             raise DecryptionError(msg)
 
         per_op_key = self._derive_per_op_key(salt)
         try:
             return Fernet(per_op_key).decrypt(token)
         except InvalidToken:
-            msg = "Decryption failed: invalid token or wrong key"
+            msg = _DECRYPT_FAILED_MSG
             raise DecryptionError(msg) from None
 
     def _decrypt_legacy(self, ciphertext: bytes) -> bytes:
         """Decrypt legacy Fernet token (pre-3.2 or direct-key mode).
+
+        Delegates to ``self._legacy_fernet`` which uses the 480k-iteration
+        PBKDF2-derived key (passphrase mode) or direct Fernet key.
 
         Args:
             ciphertext: Legacy Fernet token bytes.
@@ -335,7 +342,7 @@ class FernetBackend:
         try:
             return self._legacy_fernet.decrypt(ciphertext)
         except InvalidToken:
-            msg = "Decryption failed: invalid token or wrong key"
+            msg = _DECRYPT_FAILED_MSG
             raise DecryptionError(msg) from None
 
     @staticmethod
