@@ -6,6 +6,7 @@ encryption backends that conform to the ``EncryptionBackend`` protocol.
 Attributes:
     EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
         contract.
+    AesGcmBackend: AES-256-GCM authenticated encryption backend.
     FernetBackend: Fernet symmetric encryption backend.
     EncryptedSessionService: Encrypted session service wrapping
         ``DatabaseSessionService`` with transparent encryption.
@@ -18,6 +19,7 @@ Attributes:
     decrypt_session: Decrypt an envelope back to a dict.
     encrypt_json: Encrypt a JSON string into an envelope.
     decrypt_json: Decrypt an envelope back to a JSON string.
+    BACKEND_AES_GCM: Backend identifier for AES-256-GCM encryption.
     BACKEND_FERNET: Backend identifier for Fernet encryption.
     ENVELOPE_VERSION_1: Current envelope format version byte.
 
@@ -42,6 +44,7 @@ See Also:
     Full protocol definition and known limitations.
 """
 
+from adk_secure_sessions.backends.aes_gcm import AesGcmBackend
 from adk_secure_sessions.backends.fernet import FernetBackend
 from adk_secure_sessions.exceptions import (
     ConfigurationError,
@@ -52,6 +55,7 @@ from adk_secure_sessions.exceptions import (
 )
 from adk_secure_sessions.protocols import EncryptionBackend
 from adk_secure_sessions.serialization import (
+    BACKEND_AES_GCM,
     BACKEND_FERNET,
     ENVELOPE_VERSION_1,
     decrypt_json,
@@ -62,6 +66,8 @@ from adk_secure_sessions.serialization import (
 from adk_secure_sessions.services.encrypted_session import EncryptedSessionService
 
 __all__ = [
+    "AesGcmBackend",
+    "BACKEND_AES_GCM",
     "BACKEND_FERNET",
     "ConfigurationError",
     "DecryptionError",

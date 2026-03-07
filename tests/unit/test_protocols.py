@@ -15,9 +15,19 @@ class TestConformingBackend:
     """A class with matching async encrypt/decrypt passes isinstance."""
 
     def test_conforming_class_passes_isinstance(self) -> None:
-        """Verify a class with both async methods passes isinstance check."""
+        """Verify a class with all protocol methods passes isinstance check."""
 
         class GoodBackend:
+            @property
+            def backend_id(self) -> int:
+                return 0x01
+
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
             async def encrypt(self, plaintext: bytes) -> bytes:
                 return plaintext
 
@@ -30,6 +40,16 @@ class TestConformingBackend:
         """Verify a class missing decrypt fails isinstance check."""
 
         class EncryptOnly:
+            @property
+            def backend_id(self) -> int:
+                return 0x01
+
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
             async def encrypt(self, plaintext: bytes) -> bytes:
                 return plaintext
 
@@ -39,10 +59,57 @@ class TestConformingBackend:
         """Verify a class missing encrypt fails isinstance check."""
 
         class DecryptOnly:
+            @property
+            def backend_id(self) -> int:
+                return 0x01
+
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
             async def decrypt(self, ciphertext: bytes) -> bytes:
                 return ciphertext
 
         assert not isinstance(DecryptOnly(), EncryptionBackend)
+
+    def test_missing_sync_encrypt_fails_isinstance(self) -> None:
+        """Verify a class missing sync_encrypt fails isinstance check."""
+
+        class NoSyncEncrypt:
+            @property
+            def backend_id(self) -> int:
+                return 0x01
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
+            async def encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            async def decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
+        assert not isinstance(NoSyncEncrypt(), EncryptionBackend)
+
+    def test_missing_backend_id_fails_isinstance(self) -> None:
+        """Verify a class missing backend_id fails isinstance check."""
+
+        class NoBackendId:
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
+            async def encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            async def decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
+        assert not isinstance(NoBackendId(), EncryptionBackend)
 
     def test_empty_class_fails_isinstance(self) -> None:
         """Verify a class with no methods fails isinstance check."""
@@ -52,8 +119,8 @@ class TestConformingBackend:
 
         assert not isinstance(Empty(), EncryptionBackend)
 
-    def test_sync_methods_pass_isinstance_known_limitation(self) -> None:
-        """Sync methods pass isinstance check.
+    def test_sync_async_methods_pass_isinstance_known_limitation(self) -> None:
+        """Sync encrypt/decrypt pass isinstance check.
 
         ``@runtime_checkable`` does not distinguish coroutine functions
         from regular functions. This is a known Python limitation
@@ -61,14 +128,24 @@ class TestConformingBackend:
         catch this mismatch.
         """
 
-        class SyncBackend:
+        class SyncAsyncBackend:
+            @property
+            def backend_id(self) -> int:
+                return 0x01
+
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext
+
             def encrypt(self, plaintext: bytes) -> bytes:
                 return plaintext
 
             def decrypt(self, ciphertext: bytes) -> bytes:
                 return ciphertext
 
-        assert isinstance(SyncBackend(), EncryptionBackend)
+        assert isinstance(SyncAsyncBackend(), EncryptionBackend)
 
 
 # --- US3: Third-Party Extensibility ---
@@ -89,6 +166,16 @@ class TestThirdPartyExtensibility:
         # importing EncryptionBackend. It conforms purely via
         # structural subtyping.
         class ExternalKmsBackend:
+            @property
+            def backend_id(self) -> int:
+                return 0x10
+
+            def sync_encrypt(self, plaintext: bytes) -> bytes:
+                return b"kms:" + plaintext
+
+            def sync_decrypt(self, ciphertext: bytes) -> bytes:
+                return ciphertext.removeprefix(b"kms:")
+
             async def encrypt(self, plaintext: bytes) -> bytes:
                 return b"kms:" + plaintext
 

@@ -38,7 +38,6 @@ from google.adk.sessions.database_session_service import DatabaseSessionService
 
 from adk_secure_sessions.exceptions import ConfigurationError
 from adk_secure_sessions.protocols import EncryptionBackend
-from adk_secure_sessions.serialization import BACKEND_FERNET
 from adk_secure_sessions.services.models import (
     _EncryptedSchemaClasses,
     create_encrypted_models,
@@ -87,6 +86,10 @@ class EncryptedSessionService(DatabaseSessionService):
     ) -> None:
         """Initialize the encrypted session service.
 
+        Uses ``backend.sync_encrypt``, ``backend.sync_decrypt``, and
+        ``backend.backend_id`` from the protocol to configure the
+        ``EncryptedJSON`` TypeDecorator.
+
         Args:
             db_url: SQLAlchemy connection string (e.g.,
                 ``"sqlite+aiosqlite:///sessions.db"``).
@@ -107,17 +110,10 @@ class EncryptedSessionService(DatabaseSessionService):
             )
             raise ConfigurationError(msg)
 
-        # Extract sync callables from the backend's internal Fernet instance.
-        # This coupling to _fernet is internal to our own package.
-        # TODO(epic-3): Extract sync primitives via protocol method when
-        # AES-GCM backend added
-        encrypt_fn = backend._fernet.encrypt  # type: ignore[attr-defined]
-        decrypt_fn = backend._fernet.decrypt  # type: ignore[attr-defined]
-
         self._encrypted_json = EncryptedJSON(
-            encrypt_fn=encrypt_fn,
-            decrypt_fn=decrypt_fn,
-            backend_id=BACKEND_FERNET,
+            encrypt_fn=backend.sync_encrypt,
+            decrypt_fn=backend.sync_decrypt,
+            backend_id=backend.backend_id,
         )
         self._encrypted_base, self._encrypted_schema = create_encrypted_models(
             self._encrypted_json

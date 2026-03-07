@@ -340,6 +340,26 @@ Current constructor API (accepting a backend instance) is sufficient through Pha
 
 **Trigger:** When the first KMS backend implementation begins (Phase 4).
 
+#### 7. AAD (Associated Data) Binding for Encryption Backends
+
+AESGCM natively supports `associated_data` to cryptographically bind ciphertext to authenticated-but-unencrypted metadata. For `adk-secure-sessions`, this would bind encrypted state columns to their session metadata (session_id, app_name, user_id), preventing ciphertext relocation attacks (moving encrypted state between rows).
+
+**Why deferred from Story 3.1:** Adding AAD requires changing the `EncryptionBackend` protocol signature (`encrypt(plaintext, associated_data)`) for all backends, threading session metadata through the encrypt path, and updating the TypeDecorator integration. Blast radius exceeds a single-backend story.
+
+**Candidate for:** Story 3.2 (salt + security hardening) or a dedicated security hardening story in Epic 3.
+
+**Added:** 2026-03-06, party mode consensus during Story 3.1 creation.
+
+#### 8. AES-GCM-SIV Backend
+
+Available in `cryptography>=46.0.0`. AES-GCM-SIV is nonce-misuse resistant -- it maintains confidentiality even under accidental nonce reuse, unlike standard AES-GCM where nonce reuse catastrophically compromises both confidentiality and authenticity.
+
+**Considerations:** Slightly higher computational overhead than AES-GCM. Same `cryptography` dependency (no new deps). Would be `BACKEND_AES_GCM_SIV = 0x03` in the envelope registry.
+
+**Trigger:** After AES-GCM backend ships and if enterprise users request nonce-misuse resistance.
+
+**Added:** 2026-03-06, party mode consensus during Story 3.1 creation.
+
 ### Decision Impact Analysis
 
 **Implementation Sequence:**
