@@ -57,7 +57,7 @@ class EncryptedJSON(TypeDecorator[dict[str, Any]]):
     ``dict -> json.dumps -> encrypt_fn(plaintext) -> envelope -> base64 -> TEXT``
 
     The read path is:
-    ``TEXT -> base64 decode -> parse envelope -> decrypt_fn(ciphertext) -> json.loads -> dict``
+    ``TEXT -> base64 -> envelope -> dispatch[backend_id](ct) -> json.loads -> dict``
 
     Attributes:
         impl (type[Text]): The underlying SQLAlchemy column type.

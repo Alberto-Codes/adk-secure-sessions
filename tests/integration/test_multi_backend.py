@@ -18,7 +18,6 @@ from __future__ import annotations
 import sqlite3
 
 import pytest
-from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from adk_secure_sessions import (
@@ -37,12 +36,6 @@ pytestmark = pytest.mark.integration
 def aes_gcm_backend() -> AesGcmBackend:
     """An AesGcmBackend with a freshly generated key."""
     return AesGcmBackend(key=AESGCM.generate_key(bit_length=256))
-
-
-@pytest.fixture
-def second_fernet_backend() -> FernetBackend:
-    """A second FernetBackend with a different key (for isolation tests)."""
-    return FernetBackend(Fernet.generate_key())
 
 
 # --- Story 3.3: Mixed-Backend Session Lifecycle ---

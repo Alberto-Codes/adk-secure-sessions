@@ -193,8 +193,6 @@ class TestWrongKeyDecryption:
 
     async def test_wrong_key_raises_decryption_error(self, db_url: str) -> None:
         """T: Decrypting with wrong key raises DecryptionError, not StatementError."""
-        from cryptography.fernet import Fernet
-
         key_a = Fernet.generate_key()
         key_b = Fernet.generate_key()
 
@@ -224,7 +222,6 @@ class TestWrongKeyDecryption:
         self, db_url: str
     ) -> None:
         """T: DecryptionError propagates directly, not wrapped in StatementError."""
-        from cryptography.fernet import Fernet
         from sqlalchemy.exc import StatementError
 
         key_a = Fernet.generate_key()
