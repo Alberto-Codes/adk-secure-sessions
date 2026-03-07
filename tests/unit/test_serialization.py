@@ -427,3 +427,66 @@ class TestAesGcmSerialization:
         restored = await decrypt_session(envelope, backend)
         assert restored == state
         assert envelope[1] == BACKEND_FERNET
+
+
+# ---------------------------------------------------------------------------
+# Salted Fernet Serialization (Story 3.2)
+# ---------------------------------------------------------------------------
+
+
+class TestSaltedFernetSerialization:
+    """Integration: salted Fernet ciphertext through envelope layer."""
+
+    async def test_salted_envelope_round_trip(self) -> None:
+        """Passphrase backend produces salted ciphertext inside envelope."""
+        from adk_secure_sessions.backends.fernet import _SALT_MARKER, FernetBackend
+
+        backend = FernetBackend(key="envelope-salt-test")
+        state = {"user": "alice", "role": "admin"}
+
+        envelope = await encrypt_session(state, backend, BACKEND_FERNET)
+        restored = await decrypt_session(envelope, backend)
+
+        assert restored == state
+        assert envelope[0] == ENVELOPE_VERSION_1
+        assert envelope[1] == BACKEND_FERNET
+        # Ciphertext portion (after 2-byte header) starts with salt marker
+        assert envelope[2:3] == _SALT_MARKER
+
+    async def test_legacy_envelope_decrypts_with_new_backend(self) -> None:
+        """Legacy Fernet envelope (no salt) decrypts with salted backend."""
+        import base64
+        import hashlib
+        import json
+
+        from cryptography.fernet import Fernet
+
+        from adk_secure_sessions.backends.fernet import (
+            _PBKDF2_ITERATIONS_LEGACY,
+            _PBKDF2_SALT,
+            FernetBackend,
+        )
+
+        # Build a legacy envelope manually: header + legacy Fernet ciphertext
+        passphrase = b"legacy-envelope-test"
+        legacy_key = base64.urlsafe_b64encode(
+            hashlib.pbkdf2_hmac(
+                "sha256", passphrase, _PBKDF2_SALT, _PBKDF2_ITERATIONS_LEGACY
+            )
+        )
+        legacy_fernet = Fernet(legacy_key)
+
+        state = {"legacy": True, "version": "pre-3.2"}
+        plaintext = json.dumps(state).encode()
+        legacy_ciphertext = legacy_fernet.encrypt(plaintext)
+
+        # Build envelope: [version][backend_id][ciphertext]
+        legacy_envelope = (
+            bytes([ENVELOPE_VERSION_1, BACKEND_FERNET]) + legacy_ciphertext
+        )
+
+        # New backend should decrypt via legacy path
+        backend = FernetBackend(key="legacy-envelope-test")
+        restored = await decrypt_session(legacy_envelope, backend)
+
+        assert restored == state

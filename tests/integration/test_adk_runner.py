@@ -54,60 +54,58 @@ async def counting_callback(callback_context: object) -> types.Content:
 
 
 @pytest.fixture
-async def runner(
+def _make_runner(
     encrypted_service: EncryptedSessionService,
+) -> object:
+    """Factory that creates a Runner with a given callback, with cleanup."""
+    import contextlib
+    from collections.abc import Callable
+
+    @contextlib.asynccontextmanager
+    async def factory(
+        callback: Callable[..., object],
+    ) -> AsyncGenerator[Runner, None]:
+        agent = LlmAgent(
+            name="test_agent",
+            model="gemini-2.0-flash",
+            before_agent_callback=callback,
+        )
+        r = Runner(
+            agent=agent,
+            app_name=APP_NAME,
+            session_service=encrypted_service,
+        )
+        yield r
+        await r.close()
+
+    return factory
+
+
+@pytest.fixture
+async def runner(
+    _make_runner: object,
 ) -> AsyncGenerator[Runner, None]:
     """Runner with echo callback agent, properly cleaned up."""
-    agent = LlmAgent(
-        name="test_agent",
-        model="gemini-2.0-flash",
-        before_agent_callback=echo_callback,
-    )
-    r = Runner(
-        agent=agent,
-        app_name=APP_NAME,
-        session_service=encrypted_service,
-    )
-    yield r
-    await r.close()
+    async with _make_runner(echo_callback) as r:  # type: ignore[misc]
+        yield r
 
 
 @pytest.fixture
 async def stateful_runner(
-    encrypted_service: EncryptedSessionService,
+    _make_runner: object,
 ) -> AsyncGenerator[Runner, None]:
     """Runner with stateful callback agent, properly cleaned up."""
-    agent = LlmAgent(
-        name="test_agent",
-        model="gemini-2.0-flash",
-        before_agent_callback=stateful_callback,
-    )
-    r = Runner(
-        agent=agent,
-        app_name=APP_NAME,
-        session_service=encrypted_service,
-    )
-    yield r
-    await r.close()
+    async with _make_runner(stateful_callback) as r:  # type: ignore[misc]
+        yield r
 
 
 @pytest.fixture
 async def counting_runner(
-    encrypted_service: EncryptedSessionService,
+    _make_runner: object,
 ) -> AsyncGenerator[Runner, None]:
     """Runner with counting callback agent, properly cleaned up."""
-    agent = LlmAgent(
-        name="test_agent",
-        model="gemini-2.0-flash",
-        before_agent_callback=counting_callback,
-    )
-    r = Runner(
-        agent=agent,
-        app_name=APP_NAME,
-        session_service=encrypted_service,
-    )
-    yield r
-    await r.close()
+    async with _make_runner(counting_callback) as r:  # type: ignore[misc]
+        yield r
 
 
 # --- Story 1.6a: ADK Runner Integration Test ---

@@ -12,3 +12,4 @@ This section documents the key architectural decisions for adk-secure-sessions.
 | [ADR-005](ADR-005-exception-hierarchy.md) | Exception Hierarchy | Accepted |
 | [ADR-006](ADR-006-configuration-error.md) | ConfigurationError | Accepted |
 | [ADR-007](ADR-007-architecture-migration.md) | Architecture Migration — DatabaseSessionService Wrapping | Accepted |
+| [ADR-008](ADR-008-per-key-random-salt.md) | Per-Key Random Salt Key Derivation | Accepted |
