@@ -15,8 +15,8 @@ scheme:
 2. **Expand (per operation)**: HKDF-SHA256 with a fresh 16-byte random
    salt derives a unique per-operation Fernet key from the master key.
 
-This ensures identical passphrases produce different ciphertexts on
-every encryption, hardening against precomputation attacks.
+This provides per-operation key diversification for passphrase-derived
+keys, hardening against precomputation attacks on the derived key.
 
 Pre-generated Fernet keys (via ``Fernet.generate_key()``) bypass
 derivation entirely and are used directly with no salt marker and no
@@ -281,18 +281,29 @@ class FernetBackend:
     def _derive_per_op_key(self, salt: bytes) -> bytes:
         """Derive a per-operation Fernet key via HKDF-SHA256.
 
+        Validates that a master key exists, then expands it with the
+        given salt to produce a unique Fernet key.
+
         Args:
             salt: Random salt for HKDF domain separation.
 
         Returns:
             A valid base64url-encoded 32-byte Fernet key.
+
+        Raises:
+            DecryptionError: If no master key is available (direct-key mode).
         """
+        master = self._passphrase_key
+        if master is None:
+            msg = _DECRYPT_FAILED_MSG
+            raise DecryptionError(msg)
+
         raw = HKDF(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
             info=_HKDF_INFO,
-        ).derive(self._passphrase_key)  # type: ignore[arg-type]
+        ).derive(master)
         return base64.urlsafe_b64encode(raw)
 
     def _decrypt_salted(self, ciphertext: bytes) -> bytes:
