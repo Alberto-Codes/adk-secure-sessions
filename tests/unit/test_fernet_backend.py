@@ -457,6 +457,33 @@ class TestBackwardCompatibility:
         with pytest.raises(DecryptionError, match="invalid ciphertext format"):
             backend.sync_decrypt(b"\x00" + b"\x00" * 50)
 
+    def test_marker_byte_short_ciphertext_raises(self) -> None:
+        """Ciphertext with 0x01 marker but < _MIN_SALTED_LENGTH raises.
+
+        When the first byte is 0x01 but the ciphertext is too short to be
+        a valid salted format, it falls through to the format check and
+        raises because 0x01 < 0x2B.
+        """
+        backend = FernetBackend(key="boundary-test")
+
+        # 0x01 prefix + padding, total 50 bytes (well below 117)
+        short_ct = b"\x01" + b"\x00" * 49
+        with pytest.raises(DecryptionError, match="invalid ciphertext format"):
+            backend.sync_decrypt(short_ct)
+
+    def test_marker_byte_exact_boundary_raises(self) -> None:
+        """Ciphertext at exactly _MIN_SALTED_LENGTH with marker is parsed.
+
+        At 117 bytes with 0x01 prefix, dispatch enters the salted path
+        but the Fernet token is garbage, so it raises DecryptionError.
+        """
+        backend = FernetBackend(key="exact-boundary-test")
+
+        # Exactly 117 bytes: marker + 16 salt + 100 garbage token
+        exact_ct = b"\x01" + b"\x00" * 16 + b"A" * 100
+        with pytest.raises(DecryptionError):
+            backend.sync_decrypt(exact_ct)
+
     def test_empty_ciphertext_raises_decryption_error(self) -> None:
         """Empty ciphertext raises DecryptionError."""
         backend = FernetBackend(key="empty-ct-test")

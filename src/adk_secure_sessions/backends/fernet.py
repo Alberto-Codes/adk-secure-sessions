@@ -3,7 +3,8 @@
 Implements the ``EncryptionBackend`` protocol using
 ``cryptography.fernet.Fernet`` for authenticated symmetric encryption
 (AES-128-CBC + HMAC-SHA256). Provides both async and synchronous
-encrypt/decrypt methods plus a ``backend_id`` property.
+encrypt/decrypt methods plus a ``backend_id`` property for envelope
+identification.
 
 Keys can be provided as strings, bytes, or valid Fernet keys. Arbitrary
 input is derived into a valid Fernet key via a two-phase key derivation
@@ -40,6 +41,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import binascii
 import hashlib
 import os
 
@@ -340,6 +342,10 @@ class FernetBackend:
     def _is_valid_fernet_key(key_bytes: bytes) -> bool:
         """Check whether key_bytes is a valid Fernet key.
 
+        Attempts to construct a ``Fernet`` instance. Returns ``False``
+        on ``ValueError`` (wrong key length) or ``binascii.Error``
+        (non-base64 input).
+
         Args:
             key_bytes: Raw key material.
 
@@ -349,7 +355,7 @@ class FernetBackend:
         try:
             Fernet(key_bytes)
             return True
-        except (ValueError, Exception):  # noqa: BLE001
+        except (ValueError, binascii.Error):
             return False
 
     @staticmethod
