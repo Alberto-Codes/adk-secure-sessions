@@ -25,6 +25,18 @@ from adk_secure_sessions import (
 
 pytestmark = pytest.mark.integration
 
+APP_NAME = "my-agent"
+"""Default app name for CRUD integration tests."""
+
+APP_NAME_ALT = "test-app"
+"""Alternate app name for state merge precedence tests."""
+
+USER_ID = "user-1"
+"""Default user ID for CRUD integration tests."""
+
+USER_ID_LIFECYCLE = "user-123"
+"""User ID for full lifecycle round-trip test."""
+
 # =============================================================================
 # Round-Trip Workflow
 # =============================================================================
@@ -44,8 +56,8 @@ class TestRoundTripWorkflow:
 
         # 1. Create session with initial state
         session = await service.create_session(
-            app_name="my-agent",
-            user_id="user-123",
+            app_name=APP_NAME,
+            user_id=USER_ID_LIFECYCLE,
             state={"conversation_id": "conv-1", "preferences": {}},
         )
         session_id = session.id
@@ -80,8 +92,8 @@ class TestRoundTripWorkflow:
 
         # 3. Get session and verify all data
         retrieved = await service.get_session(
-            app_name="my-agent",
-            user_id="user-123",
+            app_name=APP_NAME,
+            user_id=USER_ID_LIFECYCLE,
             session_id=session_id,
         )
 
@@ -92,21 +104,21 @@ class TestRoundTripWorkflow:
         assert retrieved.state.get("conversation_id") == "conv-1"
 
         # 4. List sessions
-        list_result = await service.list_sessions(app_name="my-agent")
+        list_result = await service.list_sessions(app_name=APP_NAME)
         assert len(list_result.sessions) == 1
         assert list_result.sessions[0].id == session_id
 
         # 5. Delete session
         await service.delete_session(
-            app_name="my-agent",
-            user_id="user-123",
+            app_name=APP_NAME,
+            user_id=USER_ID_LIFECYCLE,
             session_id=session_id,
         )
 
         # 6. Verify deletion
         deleted = await service.get_session(
-            app_name="my-agent",
-            user_id="user-123",
+            app_name=APP_NAME,
+            user_id=USER_ID_LIFECYCLE,
             session_id=session_id,
         )
         assert deleted is None
@@ -128,12 +140,12 @@ class TestListSessionsIntegration:
 
         # Create sessions for multiple users
         await service.create_session(
-            app_name="my-agent",
+            app_name=APP_NAME,
             user_id="alice",
             state={"name": "Alice"},
         )
         await service.create_session(
-            app_name="my-agent",
+            app_name=APP_NAME,
             user_id="bob",
             state={"name": "Bob"},
         )
@@ -144,7 +156,7 @@ class TestListSessionsIntegration:
         )
 
         # List all sessions for my-agent
-        result = await service.list_sessions(app_name="my-agent")
+        result = await service.list_sessions(app_name=APP_NAME)
         assert len(result.sessions) == 2
 
         # Verify state is decrypted correctly
@@ -160,20 +172,20 @@ class TestListSessionsIntegration:
         # Create multiple sessions for same user
         for i in range(3):
             await service.create_session(
-                app_name="my-agent",
+                app_name=APP_NAME,
                 user_id="alice",
                 state={"session_num": i},
             )
 
         await service.create_session(
-            app_name="my-agent",
+            app_name=APP_NAME,
             user_id="bob",
             state={"session_num": 99},
         )
 
         # List only Alice's sessions
         result = await service.list_sessions(
-            app_name="my-agent",
+            app_name=APP_NAME,
             user_id="alice",
         )
         assert len(result.sessions) == 3
@@ -199,8 +211,8 @@ class TestDeleteSessionIntegration:
             backend=fernet_backend,
         ) as service:
             session = await service.create_session(
-                app_name="my-agent",
-                user_id="user-1",
+                app_name=APP_NAME,
+                user_id=USER_ID,
             )
 
             # Add events
@@ -214,8 +226,8 @@ class TestDeleteSessionIntegration:
 
             # Delete session
             await service.delete_session(
-                app_name="my-agent",
-                user_id="user-1",
+                app_name=APP_NAME,
+                user_id=USER_ID,
                 session_id=session.id,
             )
 
@@ -233,8 +245,8 @@ class TestDeleteSessionIntegration:
         """Verify deleting a non-existent session doesn't raise."""
         # Should not raise
         await encrypted_service.delete_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             session_id="does-not-exist",
         )
 
@@ -257,8 +269,8 @@ class TestSessionRecreateAfterDelete:
 
         # Create session and add events
         session = await service.create_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             state={"counter": 1},
         )
         original_id = session.id
@@ -272,22 +284,22 @@ class TestSessionRecreateAfterDelete:
 
         # Delete the session
         await service.delete_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             session_id=original_id,
         )
 
         # Recreate with fresh state
         new_session = await service.create_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             state={"counter": 99},
         )
 
         # Retrieve and verify fresh data
         retrieved = await service.get_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             session_id=new_session.id,
         )
         assert retrieved is not None
@@ -296,8 +308,8 @@ class TestSessionRecreateAfterDelete:
 
         # Original session should be gone
         gone = await service.get_session(
-            app_name="my-agent",
-            user_id="user-1",
+            app_name=APP_NAME,
+            user_id=USER_ID,
             session_id=original_id,
         )
         assert gone is None
@@ -321,8 +333,8 @@ class TestStateMergePrecedence:
         service = encrypted_service
 
         session = await service.create_session(
-            app_name="test-app",
-            user_id="user-1",
+            app_name=APP_NAME_ALT,
+            user_id=USER_ID,
             state={"theme": "session-dark"},
         )
 
@@ -342,8 +354,8 @@ class TestStateMergePrecedence:
 
         # Retrieve session — ADK merges with prefixes
         retrieved = await service.get_session(
-            app_name="test-app",
-            user_id="user-1",
+            app_name=APP_NAME_ALT,
+            user_id=USER_ID,
             session_id=session.id,
         )
 
@@ -364,8 +376,8 @@ class TestStateMergePrecedence:
         service = encrypted_service
 
         session = await service.create_session(
-            app_name="test-app",
-            user_id="user-1",
+            app_name=APP_NAME_ALT,
+            user_id=USER_ID,
             state={"unrelated": "data"},
         )
 
@@ -383,8 +395,8 @@ class TestStateMergePrecedence:
         await service.append_event(session, event)
 
         retrieved = await service.get_session(
-            app_name="test-app",
-            user_id="user-1",
+            app_name=APP_NAME_ALT,
+            user_id=USER_ID,
             session_id=session.id,
         )
 
