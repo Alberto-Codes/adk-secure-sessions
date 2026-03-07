@@ -13,9 +13,12 @@ from __future__ import annotations
 import inspect
 
 import pytest
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from google.adk.sessions.database_session_service import DatabaseSessionService
 
 from adk_secure_sessions import (
+    AesGcmBackend,
     ConfigurationError,
     DecryptionError,
     EncryptedSessionService,
@@ -310,3 +313,61 @@ class TestADKSentinels:
                 f"{method_name} is overridden in EncryptedSessionService — "
                 f"should be inherited from DatabaseSessionService"
             )
+
+
+# =============================================================================
+# Story 3.3: Multi-Backend Init
+# =============================================================================
+
+
+class TestMultiBackendInit:
+    """Tests for EncryptedSessionService multi-backend constructor."""
+
+    def test_accepts_additional_backends(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: Service accepts additional_backends parameter."""
+        aes_key = AESGCM.generate_key(bit_length=256)
+        aes_backend = AesGcmBackend(key=aes_key)
+
+        service = EncryptedSessionService(
+            db_url=db_url,
+            backend=fernet_backend,
+            additional_backends=[aes_backend],
+        )
+        assert service is not None
+
+    def test_duplicate_backend_id_raises_configuration_error(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: Duplicate backend_id across primary and additional raises ConfigurationError."""
+        # Create a second Fernet backend (same backend_id=0x01)
+        second_fernet = FernetBackend(Fernet.generate_key())
+
+        with pytest.raises(ConfigurationError, match="[Dd]uplicate backend_id"):
+            EncryptedSessionService(
+                db_url=db_url,
+                backend=fernet_backend,
+                additional_backends=[second_fernet],
+            )
+
+    def test_non_conforming_additional_backend_raises_configuration_error(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: Non-EncryptionBackend in additional_backends raises ConfigurationError."""
+        with pytest.raises(ConfigurationError, match="EncryptionBackend protocol"):
+            EncryptedSessionService(
+                db_url=db_url,
+                backend=fernet_backend,
+                additional_backends=["not-a-backend"],  # type: ignore[list-item]
+            )
+
+    def test_single_backend_no_additional_works_identically(
+        self, db_url: str, fernet_backend: FernetBackend
+    ) -> None:
+        """T: Single backend (no additional_backends) works identically to current API."""
+        service = EncryptedSessionService(
+            db_url=db_url,
+            backend=fernet_backend,
+        )
+        assert service is not None

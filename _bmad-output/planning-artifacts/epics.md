@@ -143,8 +143,8 @@ NFR28 [MVP]: A developer with an existing ADK agent can add encrypted sessions i
 
 **From Architecture — Deferred Design Direction (Phase 3+):**
 
-- Service decomposition: persistence layer + encryption coordinator + service orchestrator
-- Key rotation design surface: key provider abstraction, migration strategy, backend registry
+- Service decomposition: persistence layer + encryption coordinator + service orchestrator (Note: Story 3.3 party-mode consensus confirmed coordinator is not needed for multi-backend dispatch alone — deferred to Story 4.4 key rotation)
+- Key rotation design surface: key provider abstraction, migration strategy, backend registry (Note: multi-backend decrypt dispatch implemented in Story 3.3 as dict in EncryptedJSON; coordinator-level coordination deferred to Story 4.4)
 - API surface growth strategy: flat namespace vs. submodule imports
 - Backend ecosystem architecture: backend ID registry, entry-point discovery, packaging strategy
 - PostgreSQL driver decision deferred (asyncpg vs. psycopg3)
@@ -830,6 +830,8 @@ So that **I can use managed PostgreSQL for high-availability, multi-instance dep
 **And** Google-style docstring with `Examples:` section
 
 ### Story 4.4: Zero-Downtime Key Rotation
+
+> **Note (2026-03-07, Story 3.3 party-mode consensus):** This story should evaluate whether the `EncryptionCoordinator` class (deferred from architecture design direction #3) is needed for key rotation. Story 3.3 implements multi-backend dispatch as a `dict[int, Callable]` in `EncryptedJSON`, which is sufficient for backend dispatch alone. Key rotation adds key provider abstraction and migration strategy responsibilities that may warrant extracting a coordinator. Evaluate during story creation.
 
 As an **operator managing encryption keys in production**,
 I want **to rotate encryption keys with zero downtime using a decrypt-with-old, encrypt-with-new strategy**,

@@ -35,6 +35,15 @@ CREATE TABLE IF NOT EXISTS benchmark_baseline (
 """
 
 _TARGET_SIZE_BYTES = 10240
+"""Upper bound for benchmark payload size in bytes.
+
+Set at 10KB to represent a realistic ADK session payload — large
+enough to exercise serialization and encryption overhead, small
+enough to keep benchmark runtime predictable. Based on observed
+production session sizes (user profile + conversation history +
+metadata). The ``benchmark_state`` fixture asserts its serialized
+size stays within this bound.
+"""
 
 
 @pytest.fixture

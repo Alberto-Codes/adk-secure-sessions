@@ -33,8 +33,24 @@ pytestmark = pytest.mark.benchmark
 logger = logging.getLogger(__name__)
 
 N_ITERATIONS = 20
+"""Number of measurement iterations per benchmark path.
+
+Set at 20 to balance statistical stability (enough samples for a
+reliable median) against total benchmark runtime (~2s per path).
+Derived from NFR1 validation requirement — the overhead measurement
+must be repeatable across runs. Higher values increase precision but
+slow CI feedback; lower values risk noisy medians on variable hardware.
+"""
 
 _OVERHEAD_THRESHOLD = 1.20
+"""Maximum acceptable encrypted-vs-baseline overhead ratio.
+
+NFR1 requires encryption overhead < 20% of total operation time.
+Expressed as 1.20x multiplier: ``median_encrypted / median_baseline``
+must stay below this value. Local runs assert hard failure; CI runs
+emit a warning (hardware variance makes hard assertions unreliable
+in shared runners).
+"""
 
 
 async def _baseline_round_trip(

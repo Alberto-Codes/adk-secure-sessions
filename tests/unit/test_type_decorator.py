@@ -15,7 +15,12 @@ import pytest
 from cryptography.fernet import Fernet
 
 from adk_secure_sessions.exceptions import DecryptionError
-from adk_secure_sessions.serialization import BACKEND_FERNET, ENVELOPE_VERSION_1
+from adk_secure_sessions.serialization import (
+    BACKEND_AES_GCM,
+    BACKEND_FERNET,
+    ENVELOPE_VERSION_1,
+    _build_envelope,
+)
 from adk_secure_sessions.services.type_decorator import EncryptedJSON
 
 pytestmark = pytest.mark.unit
@@ -35,7 +40,7 @@ def encrypted_json(fernet_instance: Fernet) -> EncryptedJSON:
     """An EncryptedJSON TypeDecorator with real Fernet callables."""
     return EncryptedJSON(
         encrypt_fn=fernet_instance.encrypt,
-        decrypt_fn=fernet_instance.decrypt,
+        decrypt_dispatch={BACKEND_FERNET: fernet_instance.decrypt},
         backend_id=BACKEND_FERNET,
     )
 
@@ -127,12 +132,12 @@ class TestWrongKeyDecryption:
 
         enc_json_a = EncryptedJSON(
             encrypt_fn=Fernet(key_a).encrypt,
-            decrypt_fn=Fernet(key_a).decrypt,
+            decrypt_dispatch={BACKEND_FERNET: Fernet(key_a).decrypt},
             backend_id=BACKEND_FERNET,
         )
         enc_json_b = EncryptedJSON(
             encrypt_fn=Fernet(key_b).encrypt,
-            decrypt_fn=Fernet(key_b).decrypt,
+            decrypt_dispatch={BACKEND_FERNET: Fernet(key_b).decrypt},
             backend_id=BACKEND_FERNET,
         )
 
@@ -151,3 +156,93 @@ class TestCacheOk:
     def test_cache_ok_is_true(self, encrypted_json: EncryptedJSON) -> None:
         """T009: EncryptedJSON.cache_ok is True."""
         assert encrypted_json.cache_ok is True
+
+
+# --- Story 3.3: Multi-Backend Decrypt Dispatch ---
+
+
+class TestDecryptDispatch:
+    """Tests for multi-backend decrypt dispatch in process_result_value."""
+
+    def test_dispatch_routes_to_correct_backend_by_envelope_id(self) -> None:
+        """T010: Decrypt dispatches to correct backend based on envelope backend_id."""
+        fernet_a = Fernet(Fernet.generate_key())
+        fernet_b = Fernet(Fernet.generate_key())
+
+        # Encrypt data with fernet_b, tag envelope as BACKEND_AES_GCM
+        plaintext = b'{"from": "backend_b"}'
+        ciphertext_b = fernet_b.encrypt(plaintext)
+        envelope = _build_envelope(ENVELOPE_VERSION_1, BACKEND_AES_GCM, ciphertext_b)
+        b64_value = base64.b64encode(envelope).decode("ascii")
+
+        # Dispatch: BACKEND_FERNET -> fernet_a, BACKEND_AES_GCM -> fernet_b
+        enc_json = EncryptedJSON(
+            encrypt_fn=fernet_a.encrypt,
+            decrypt_dispatch={
+                BACKEND_FERNET: fernet_a.decrypt,
+                BACKEND_AES_GCM: fernet_b.decrypt,
+            },
+            backend_id=BACKEND_FERNET,
+        )
+
+        result = enc_json.process_result_value(b64_value, dialect=None)
+        assert result == {"from": "backend_b"}
+
+    def test_dispatch_routes_primary_backend_on_read(self) -> None:
+        """T011: Data encrypted with primary backend decrypts via dispatch."""
+        fernet_a = Fernet(Fernet.generate_key())
+        fernet_b = Fernet(Fernet.generate_key())
+
+        enc_json = EncryptedJSON(
+            encrypt_fn=fernet_a.encrypt,
+            decrypt_dispatch={
+                BACKEND_FERNET: fernet_a.decrypt,
+                BACKEND_AES_GCM: fernet_b.decrypt,
+            },
+            backend_id=BACKEND_FERNET,
+        )
+
+        # Write with primary (Fernet A)
+        encrypted = enc_json.process_bind_param({"key": "value"}, dialect=None)
+        # Read — should dispatch to Fernet A based on envelope header
+        result = enc_json.process_result_value(encrypted, dialect=None)
+        assert result == {"key": "value"}
+
+    def test_unregistered_backend_in_dispatch_raises_decryption_error(self) -> None:
+        """T012: Backend_id in envelope but not in dispatch raises DecryptionError."""
+        fernet_a = Fernet(Fernet.generate_key())
+        fernet_b = Fernet(Fernet.generate_key())
+
+        # Encrypt with fernet_b, tag envelope as BACKEND_AES_GCM
+        ciphertext = fernet_b.encrypt(b'{"key": "value"}')
+        envelope = _build_envelope(ENVELOPE_VERSION_1, BACKEND_AES_GCM, ciphertext)
+        b64_value = base64.b64encode(envelope).decode("ascii")
+
+        # Dispatch only has BACKEND_FERNET — missing BACKEND_AES_GCM
+        enc_json = EncryptedJSON(
+            encrypt_fn=fernet_a.encrypt,
+            decrypt_dispatch={BACKEND_FERNET: fernet_a.decrypt},
+            backend_id=BACKEND_FERNET,
+        )
+
+        with pytest.raises(DecryptionError, match="No decrypt function"):
+            enc_json.process_result_value(b64_value, dialect=None)
+
+    def test_write_always_uses_primary_backend_id(self) -> None:
+        """T013: Write path uses primary backend_id regardless of dispatch map."""
+        fernet_a = Fernet(Fernet.generate_key())
+        fernet_b = Fernet(Fernet.generate_key())
+
+        enc_json = EncryptedJSON(
+            encrypt_fn=fernet_a.encrypt,
+            decrypt_dispatch={
+                BACKEND_FERNET: fernet_a.decrypt,
+                BACKEND_AES_GCM: fernet_b.decrypt,
+            },
+            backend_id=BACKEND_FERNET,
+        )
+
+        result = enc_json.process_bind_param({"key": "value"}, dialect=None)
+        decoded = base64.b64decode(result.encode("ascii"))
+        assert decoded[0] == ENVELOPE_VERSION_1
+        assert decoded[1] == BACKEND_FERNET
