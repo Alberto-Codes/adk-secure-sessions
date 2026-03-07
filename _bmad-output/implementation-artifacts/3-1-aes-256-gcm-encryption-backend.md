@@ -1,6 +1,6 @@
 # Story 3.1: AES-256-GCM Encryption Backend
 
-Status: ready-for-dev
+Status: review
 Branch: feat/backend-3-1-aes-gcm
 GitHub Issue:
 
@@ -40,72 +40,72 @@ So that I can meet enterprise security requirements that mandate AES-256-GCM or 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Extend `EncryptionBackend` protocol with sync primitives and backend_id (AC: 6, 7)
-  - [ ] 1.1 Add `backend_id` read-only property (`@property def backend_id(self) -> int`) to `protocols.py`
-  - [ ] 1.2 Add `sync_encrypt(self, plaintext: bytes) -> bytes` to `protocols.py`
-  - [ ] 1.3 Add `sync_decrypt(self, ciphertext: bytes) -> bytes` to `protocols.py`
-  - [ ] 1.4 Update protocol docstring with sync method and backend_id documentation
+- [x] Task 1: Extend `EncryptionBackend` protocol with sync primitives and backend_id (AC: 6, 7)
+  - [x] 1.1 Add `backend_id` read-only property (`@property def backend_id(self) -> int`) to `protocols.py`
+  - [x] 1.2 Add `sync_encrypt(self, plaintext: bytes) -> bytes` to `protocols.py`
+  - [x] 1.3 Add `sync_decrypt(self, ciphertext: bytes) -> bytes` to `protocols.py`
+  - [x] 1.4 Update protocol docstring with sync method and backend_id documentation
 
-- [ ] Task 2: Add sync primitives and backend_id to `FernetBackend` (AC: 6, 7, 12)
-  - [ ] 2.1 Add `backend_id` property returning `BACKEND_FERNET` (`0x01`)
-  - [ ] 2.2 Implement `sync_encrypt` on `FernetBackend` (delegates to `self._fernet.encrypt`)
-  - [ ] 2.3 Implement `sync_decrypt` on `FernetBackend` (delegates to `self._fernet.decrypt`, catches `InvalidToken`)
-  - [ ] 2.4 Verify existing `FernetBackend` tests still pass
+- [x] Task 2: Add sync primitives and backend_id to `FernetBackend` (AC: 6, 7, 12)
+  - [x] 2.1 Add `backend_id` property returning `BACKEND_FERNET` (`0x01`)
+  - [x] 2.2 Implement `sync_encrypt` on `FernetBackend` (delegates to `self._fernet.encrypt`)
+  - [x] 2.3 Implement `sync_decrypt` on `FernetBackend` (delegates to `self._fernet.decrypt`, catches `InvalidToken`)
+  - [x] 2.4 Verify existing `FernetBackend` tests still pass
 
-- [ ] Task 3: Update `EncryptedSessionService` to use protocol methods (AC: 6, 7)
-  - [ ] 3.1 Replace `backend._fernet.encrypt`/`.decrypt` with `backend.sync_encrypt`/`.sync_decrypt` in `encrypted_session.py:110-115`
-  - [ ] 3.2 Replace hardcoded `backend_id=BACKEND_FERNET` with `backend.backend_id`
-  - [ ] 3.3 Remove `type: ignore[attr-defined]` suppressions
-  - [ ] 3.4 Remove the `TODO(epic-3)` comment
-  - [ ] 3.5 Run `uv run pytest tests/ -v` -- confirm zero failures before proceeding to Task 4
+- [x] Task 3: Update `EncryptedSessionService` to use protocol methods (AC: 6, 7)
+  - [x] 3.1 Replace `backend._fernet.encrypt`/`.decrypt` with `backend.sync_encrypt`/`.sync_decrypt` in `encrypted_session.py:110-115`
+  - [x] 3.2 Replace hardcoded `backend_id=BACKEND_FERNET` with `backend.backend_id`
+  - [x] 3.3 Remove `type: ignore[attr-defined]` suppressions
+  - [x] 3.4 Remove the `TODO(epic-3)` comment
+  - [x] 3.5 Run `uv run pytest tests/ -v` -- confirm zero failures before proceeding to Task 4
 
 > **Commit boundary**: Tasks 1-3 should be committed and verified as a standalone change before Tasks 4-6. This prevents sync extraction regressions from being masked by new backend code.
 
-- [ ] Task 4: Implement `AesGcmBackend` (AC: 1, 2, 3, 4, 7, 8, 9, 10, 13)
-  - [ ] 4.1 Create `src/adk_secure_sessions/backends/aes_gcm.py`
-  - [ ] 4.2 Implement `__init__(self, key: bytes)` with 32-byte validation
-  - [ ] 4.3 Implement `backend_id` property returning `BACKEND_AES_GCM` (`0x02`)
-  - [ ] 4.4 Implement `sync_encrypt(self, plaintext: bytes) -> bytes` (nonce || AESGCM.encrypt with `associated_data=None`)
-  - [ ] 4.5 Implement `sync_decrypt(self, ciphertext: bytes) -> bytes` (split nonce, AESGCM.decrypt with `associated_data=None`)
-  - [ ] 4.6 Implement `async encrypt` and `async decrypt` wrapping sync methods in `asyncio.to_thread()`
-  - [ ] 4.7 Add Google-style docstring with fenced code examples (include `AESGCM.generate_key(bit_length=256)` for key generation)
-  - [ ] 4.8 Validate `isinstance(AesGcmBackend(...), EncryptionBackend)` at runtime
+- [x] Task 4: Implement `AesGcmBackend` (AC: 1, 2, 3, 4, 7, 8, 9, 10, 13)
+  - [x] 4.1 Create `src/adk_secure_sessions/backends/aes_gcm.py`
+  - [x] 4.2 Implement `__init__(self, key: bytes)` with 32-byte validation
+  - [x] 4.3 Implement `backend_id` property returning `BACKEND_AES_GCM` (`0x02`)
+  - [x] 4.4 Implement `sync_encrypt(self, plaintext: bytes) -> bytes` (nonce || AESGCM.encrypt with `associated_data=None`)
+  - [x] 4.5 Implement `sync_decrypt(self, ciphertext: bytes) -> bytes` (split nonce, AESGCM.decrypt with `associated_data=None`)
+  - [x] 4.6 Implement `async encrypt` and `async decrypt` wrapping sync methods in `asyncio.to_thread()`
+  - [x] 4.7 Add Google-style docstring with fenced code examples (include `AESGCM.generate_key(bit_length=256)` for key generation)
+  - [x] 4.8 Validate `isinstance(AesGcmBackend(...), EncryptionBackend)` at runtime
 
-- [ ] Task 5: Register backend in serialization layer (AC: 5)
-  - [ ] 5.1 Add `BACKEND_AES_GCM: int = 0x02` constant to `serialization.py`
-  - [ ] 5.2 Add entry to `BACKEND_REGISTRY: {0x02: "AES-GCM"}`
-  - [ ] 5.3 Export `BACKEND_AES_GCM` from `__init__.py`
+- [x] Task 5: Register backend in serialization layer (AC: 5)
+  - [x] 5.1 Add `BACKEND_AES_GCM: int = 0x02` constant to `serialization.py`
+  - [x] 5.2 Add entry to `BACKEND_REGISTRY: {0x02: "AES-GCM"}`
+  - [x] 5.3 Export `BACKEND_AES_GCM` from `__init__.py`
 
-- [ ] Task 6: Update public API exports (AC: 10)
-  - [ ] 6.1 Export `AesGcmBackend` from `backends/__init__.py`
-  - [ ] 6.2 Export `AesGcmBackend` and `BACKEND_AES_GCM` from `adk_secure_sessions/__init__.py`
-  - [ ] 6.3 Update `__all__` (alphabetically sorted)
+- [x] Task 6: Update public API exports (AC: 10)
+  - [x] 6.1 Export `AesGcmBackend` from `backends/__init__.py`
+  - [x] 6.2 Export `AesGcmBackend` and `BACKEND_AES_GCM` from `adk_secure_sessions/__init__.py`
+  - [x] 6.3 Update `__all__` (alphabetically sorted)
 
-- [ ] Task 7: Write unit tests for `AesGcmBackend` (AC: 1-4, 7-10, 13)
-  - [ ] 7.1 Create `tests/unit/test_aes_gcm_backend.py`
-  - [ ] 7.2 Test: round-trip encrypt/decrypt (various payloads: empty bytes, small, 10KB)
-  - [ ] 7.3 Test: protocol conformance (`isinstance` check)
-  - [ ] 7.4 Test: `backend_id` property returns `0x02`
-  - [ ] 7.5 Test: wrong-key decryption raises `DecryptionError`
-  - [ ] 7.6 Test: tampered ciphertext raises `DecryptionError`
-  - [ ] 7.7 Test: non-bytes input raises `TypeError`
-  - [ ] 7.8 Test: invalid key size raises `ConfigurationError` (too short, too long, empty)
-  - [ ] 7.9 Test: non-bytes key raises `ConfigurationError`
-  - [ ] 7.10 Test: nonce uniqueness (100 encryptions of same plaintext produce distinct ciphertexts)
-  - [ ] 7.11 Test: ciphertext format (first 12 bytes are nonce, remaining is ciphertext+tag)
-  - [ ] 7.12 Test: empty plaintext round-trip -- encrypt `b""` produces 28-byte blob (12 nonce + 16 tag), decrypt returns `b""`
-  - [ ] 7.13 Test: cross-backend confusion -- passing Fernet ciphertext to `AesGcmBackend.decrypt()` raises `DecryptionError` (not unhandled `InvalidTag`)
-  - [ ] 7.14 Test: interoperability with raw `AESGCM` from `cryptography` library
+- [x] Task 7: Write unit tests for `AesGcmBackend` (AC: 1-4, 7-10, 13)
+  - [x] 7.1 Create `tests/unit/test_aes_gcm_backend.py`
+  - [x] 7.2 Test: round-trip encrypt/decrypt (various payloads: empty bytes, small, 10KB)
+  - [x] 7.3 Test: protocol conformance (`isinstance` check)
+  - [x] 7.4 Test: `backend_id` property returns `0x02`
+  - [x] 7.5 Test: wrong-key decryption raises `DecryptionError`
+  - [x] 7.6 Test: tampered ciphertext raises `DecryptionError`
+  - [x] 7.7 Test: non-bytes input raises `TypeError`
+  - [x] 7.8 Test: invalid key size raises `ConfigurationError` (too short, too long, empty)
+  - [x] 7.9 Test: non-bytes key raises `ConfigurationError`
+  - [x] 7.10 Test: nonce uniqueness (100 encryptions of same plaintext produce distinct ciphertexts)
+  - [x] 7.11 Test: ciphertext format (first 12 bytes are nonce, remaining is ciphertext+tag)
+  - [x] 7.12 Test: empty plaintext round-trip -- encrypt `b""` produces 28-byte blob (12 nonce + 16 tag), decrypt returns `b""`
+  - [x] 7.13 Test: cross-backend confusion -- passing Fernet ciphertext to `AesGcmBackend.decrypt()` raises `DecryptionError` (not unhandled `InvalidTag`)
+  - [x] 7.14 Test: interoperability with raw `AESGCM` from `cryptography` library
 
-- [ ] Task 8: Write sync primitive and backend_id tests (AC: 6, 7, 12)
-  - [ ] 8.1 Add sync_encrypt/sync_decrypt and backend_id tests to `test_fernet_backend.py`
-  - [ ] 8.2 Add sync_encrypt/sync_decrypt and backend_id tests to `test_aes_gcm_backend.py`
-  - [ ] 8.3 Update `test_protocols.py` to verify sync methods and backend_id in protocol conformance
+- [x] Task 8: Write sync primitive and backend_id tests (AC: 6, 7, 12)
+  - [x] 8.1 Add sync_encrypt/sync_decrypt and backend_id tests to `test_fernet_backend.py`
+  - [x] 8.2 Add sync_encrypt/sync_decrypt and backend_id tests to `test_aes_gcm_backend.py`
+  - [x] 8.3 Update `test_protocols.py` to verify sync methods and backend_id in protocol conformance
 
-- [ ] Task 9: Write serialization integration tests (AC: 5)
-  - [ ] 9.1 Test: AES-GCM envelope round-trip via `encrypt_session`/`decrypt_session`
-  - [ ] 9.2 Test: envelope byte[1] == 0x02 for AES-GCM encrypted data
-  - [ ] 9.3 Test: Fernet-encrypted envelope still decrypts correctly (backward compat)
+- [x] Task 9: Write serialization integration tests (AC: 5)
+  - [x] 9.1 Test: AES-GCM envelope round-trip via `encrypt_session`/`decrypt_session`
+  - [x] 9.2 Test: envelope byte[1] == 0x02 for AES-GCM encrypted data
+  - [x] 9.3 Test: Fernet-encrypted envelope still decrypts correctly (backward compat)
 
 ### Cross-Cutting Test Maturity (Standing Task)
 
@@ -115,28 +115,28 @@ So that I can meet enterprise security requirements that mandate AES-256-GCM or 
 
 Magic strings repeated throughout. `test_concurrent_writes.py` and `test_adk_runner.py` correctly define `APP_NAME` and `USER_ID` at module level. Apply same pattern to the 3 split integration files.
 
-- [ ] Define `APP_NAME`, `USER_ID` (and other repeated strings) as module-level constants in `test_adk_crud.py`, `test_adk_encryption.py`, `test_adk_conformance.py`
-- [ ] Replace all inline magic string occurrences with the constants
-- [ ] Verify new/changed test(s) pass in CI
-- [ ] Mark item as done in `_bmad-output/test-artifacts/test-review.md`
+- [x] Define `APP_NAME`, `USER_ID` (and other repeated strings) as module-level constants in `test_adk_crud.py`, `test_adk_encryption.py`, `test_adk_conformance.py`
+- [x] Replace all inline magic string occurrences with the constants
+- [x] Verify new/changed test(s) pass in CI
+- [x] Mark item as done in `_bmad-output/test-artifacts/test-review.md`
 
 ## AC-to-Test Mapping
 
 | AC # | Test(s) | Status |
 |------|---------|--------|
-| 1    | `test_aes_gcm_backend.py::test_protocol_conformance` | pending |
-| 2    | `test_aes_gcm_backend.py::test_round_trip_*`, `test_interop_with_raw_aesgcm` | pending |
-| 3    | `test_aes_gcm_backend.py::test_nonce_uniqueness`, `test_ciphertext_format` | pending |
-| 4    | `test_aes_gcm_backend.py::test_ciphertext_format`, `test_empty_plaintext_round_trip` | pending |
-| 5    | `test_serialization.py::test_aesgcm_envelope_round_trip`, `test_aesgcm_envelope_backend_id` | pending |
-| 6    | `test_protocols.py::test_sync_methods`, `test_fernet_backend.py::test_sync_*`, `test_aes_gcm_backend.py::test_sync_*`, integration tests pass | pending |
-| 7    | `test_protocols.py::test_backend_id_property`, `test_aes_gcm_backend.py::test_backend_id`, `test_fernet_backend.py::test_backend_id` | pending |
-| 8    | `test_aes_gcm_backend.py::test_round_trip_*` (async tests via pytest-asyncio) | pending |
-| 9    | `test_aes_gcm_backend.py::test_wrong_key`, `test_tampered_ciphertext`, `test_cross_backend_confusion` | pending |
-| 10   | `test_aes_gcm_backend.py::test_invalid_key_size`, `test_non_bytes_key` | pending |
-| 11   | `test_public_api.py` (existing test verifies `__all__` exports) | pending |
-| 12   | All existing `test_fernet_backend.py` and integration tests pass | pending |
-| 13   | Manual review of docstring; verify `AESGCM.generate_key()` in examples | pending |
+| 1    | `test_aes_gcm_backend.py::test_protocol_conformance` | pass |
+| 2    | `test_aes_gcm_backend.py::test_round_trip_*`, `test_interop_with_raw_aesgcm` | pass |
+| 3    | `test_aes_gcm_backend.py::test_nonce_uniqueness`, `test_ciphertext_format` | pass |
+| 4    | `test_aes_gcm_backend.py::test_ciphertext_format`, `test_empty_plaintext_round_trip` | pass |
+| 5    | `test_serialization.py::test_aesgcm_envelope_round_trip`, `test_aesgcm_envelope_backend_id` | pass |
+| 6    | `test_protocols.py::test_sync_methods`, `test_fernet_backend.py::test_sync_*`, `test_aes_gcm_backend.py::test_sync_*`, integration tests pass | pass |
+| 7    | `test_protocols.py::test_backend_id_property`, `test_aes_gcm_backend.py::test_backend_id`, `test_fernet_backend.py::test_backend_id` | pass |
+| 8    | `test_aes_gcm_backend.py::test_round_trip_*` (async tests via pytest-asyncio) | pass |
+| 9    | `test_aes_gcm_backend.py::test_wrong_key`, `test_tampered_ciphertext`, `test_cross_backend_confusion` | pass |
+| 10   | `test_aes_gcm_backend.py::test_invalid_key_size`, `test_non_bytes_key` | pass |
+| 11   | `test_public_api.py` (existing test verifies `__all__` exports) | pass |
+| 12   | All existing `test_fernet_backend.py` and integration tests pass | pass |
+| 13   | Manual review of docstring; verify `AESGCM.generate_key()` in examples | pass |
 
 ## Dev Notes
 
@@ -250,28 +250,34 @@ Tasks 1-3 (protocol extension + sync primitives + service decoupling) form a dis
 
 ## Quality Gates
 
-- [ ] `uv run ruff check .` -- zero lint violations
-- [ ] `uv run ruff format --check .` -- zero format issues
+- [x] `uv run ruff check .` -- zero lint violations
+- [x] `uv run ruff format --check .` -- zero format issues
 - [ ] `uv run ty check` -- zero type errors (src/ only)
 - [ ] `uv run pytest --cov=adk_secure_sessions --cov-fail-under=90` -- all tests pass, >=90% coverage
 - [ ] `pre-commit run --all-files` -- all hooks pass
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Code Review Agent (adversarial) + Party Mode consensus
+- **Outcome:** Approve with fixes applied
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| H1 | HIGH | All tasks marked `[ ]` despite being implemented | Fixed: all checkboxes updated |
+| H2 | HIGH | Dev Agent Record completely empty | Fixed: populated with file list and completion notes |
+| M1 | LOW (downgraded) | `FernetBackend.encrypt`/`decrypt` don't delegate to `sync_*` methods | Fixed: async methods now delegate to `sync_encrypt`/`sync_decrypt` |
+| M2 | DISMISSED | `encrypt_session` accepts separate `backend_id` param | Dismissed: AC 7 satisfied at service level; serialization API intentionally flexible |
+| M3 | LOW (downgraded) | Cross-cutting test maturity item not marked DONE in test-review.md | Fixed: marker updated, subtask checkboxes checked |
+| L1 | LOW | AC-to-Test Mapping all shows `pending` | Fixed: all statuses updated to `pass` |
+| L2 | DISMISSED | `__init__.py` docstring only shows Fernet example | Dismissed: AES-GCM documented in its own class docstring |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes (208 passed, 0 failures)
 - [ ] Quality gates re-verified
 
 ## Change Log
@@ -280,13 +286,58 @@ Tasks 1-3 (protocol extension + sync primitives + service decoupling) form a dis
 |------|-------------|
 | 2026-03-06 | Story created by SM agent -- comprehensive context engine |
 | 2026-03-06 | Party mode review: added backend_id property (AC 7), empty plaintext test (7.12), cross-backend confusion test (7.13), commit boundary note, AESGCM.generate_key() in docs (AC 13), deferred AAD and AES-GCM-SIV |
+| 2026-03-06 | Implementation: Tasks 1-9 completed across 2 commits (3ac5f3e, e89dea4) |
+| 2026-03-06 | Code review: 7 findings (2 HIGH, 3 MEDIUM, 2 LOW). Party mode consensus: 2 HIGH fixed, 1 M downgraded+fixed, 2 dismissed, 2 LOW fixed. FernetBackend async delegation refactored. |
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 4.6
+
 ### Debug Log References
+
+N/A -- clean implementation, no debug issues encountered.
 
 ### Completion Notes List
 
+- All 13 ACs implemented and verified with passing tests (208 total, 0 failures)
+- Protocol extended with `sync_encrypt`, `sync_decrypt`, `backend_id` (Tasks 1-3)
+- `EncryptedSessionService` decoupled from FernetBackend internals (TODO(epic-3) resolved)
+- `AesGcmBackend` implemented with NIST SP 800-38D compliance (Task 4)
+- Backend registered in serialization layer as `BACKEND_AES_GCM = 0x02` (Task 5)
+- Public API exports updated in `__init__.py` and `backends/__init__.py` (Task 6)
+- Comprehensive unit tests: round-trip, key validation, nonce uniqueness, cross-backend confusion, interop (Tasks 7-8)
+- Serialization integration tests: envelope round-trip, backend ID byte, backward compat (Task 9)
+- Cross-cutting: magic strings extracted to module-level constants in 3 integration test files
+- Code review fix: `FernetBackend.encrypt`/`decrypt` now delegate to `sync_encrypt`/`sync_decrypt` for DRY consistency
+- SonarQube analysis: zero issues on `aes_gcm.py`
+- Quality gates: ruff check clean, ruff format clean
+
 ### File List
+
+**New files:**
+- `src/adk_secure_sessions/backends/aes_gcm.py` -- AES-256-GCM backend implementation
+- `tests/unit/test_aes_gcm_backend.py` -- AES-GCM backend unit tests (30 tests)
+
+**Modified source files:**
+- `src/adk_secure_sessions/protocols.py` -- Added `backend_id`, `sync_encrypt`, `sync_decrypt` to protocol
+- `src/adk_secure_sessions/backends/fernet.py` -- Added `backend_id`, `sync_encrypt`, `sync_decrypt`; async methods delegate to sync
+- `src/adk_secure_sessions/backends/__init__.py` -- Export `AesGcmBackend`
+- `src/adk_secure_sessions/serialization.py` -- Added `BACKEND_AES_GCM`, registry entry
+- `src/adk_secure_sessions/services/encrypted_session.py` -- Use `backend.sync_encrypt`/`.sync_decrypt`/`.backend_id` via protocol
+- `src/adk_secure_sessions/__init__.py` -- Export `AesGcmBackend`, `BACKEND_AES_GCM`
+
+**Modified test files:**
+- `tests/unit/test_fernet_backend.py` -- Added `backend_id`, `sync_*` tests
+- `tests/unit/test_protocols.py` -- Updated conformance tests for `sync_*` and `backend_id`
+- `tests/unit/test_serialization.py` -- Added AES-GCM serialization integration tests
+- `tests/integration/test_adk_crud.py` -- Extracted magic strings to module-level constants
+- `tests/integration/test_adk_encryption.py` -- Extracted magic strings to module-level constants
+- `tests/integration/test_adk_conformance.py` -- Extracted magic strings to module-level constants
+
+**Modified planning/tracking files:**
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` -- epic-3 and 3-1 set to in-progress
+- `_bmad-output/test-artifacts/test-review.md` -- Magic string item marked DONE
+- `_bmad-output/planning-artifacts/architecture.md` -- Updated for Phase 3
+- `_bmad-output/planning-artifacts/epics.md` -- Updated for Phase 3

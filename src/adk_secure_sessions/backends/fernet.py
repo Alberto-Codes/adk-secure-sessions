@@ -166,7 +166,9 @@ class FernetBackend:
             raise DecryptionError(msg) from None
 
     async def encrypt(self, plaintext: bytes) -> bytes:
-        """Encrypt plaintext bytes.
+        """Encrypt plaintext bytes asynchronously.
+
+        Delegates to ``sync_encrypt`` via ``asyncio.to_thread()``.
 
         Args:
             plaintext: Raw bytes to encrypt.
@@ -186,10 +188,12 @@ class FernetBackend:
             msg = f"plaintext must be bytes, got {type(plaintext).__name__}"
             raise TypeError(msg)
 
-        return await asyncio.to_thread(self._fernet.encrypt, plaintext)
+        return await asyncio.to_thread(self.sync_encrypt, plaintext)
 
     async def decrypt(self, ciphertext: bytes) -> bytes:
-        """Decrypt ciphertext bytes.
+        """Decrypt ciphertext bytes asynchronously.
+
+        Delegates to ``sync_decrypt`` via ``asyncio.to_thread()``.
 
         Args:
             ciphertext: Encrypted bytes (Fernet token) to decrypt.
@@ -211,11 +215,7 @@ class FernetBackend:
             msg = f"ciphertext must be bytes, got {type(ciphertext).__name__}"
             raise TypeError(msg)
 
-        try:
-            return await asyncio.to_thread(self._fernet.decrypt, ciphertext)
-        except InvalidToken:
-            msg = "Decryption failed: invalid token or wrong key"
-            raise DecryptionError(msg) from None
+        return await asyncio.to_thread(self.sync_decrypt, ciphertext)
 
     @staticmethod
     def _resolve_key(key_bytes: bytes) -> bytes:

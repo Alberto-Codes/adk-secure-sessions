@@ -139,8 +139,8 @@ This eliminated the only HIGH-severity violation and improved the maintainabilit
 
 Tests requiring custom configuration (wrong-key tests, raw DB reads, shared-DB tests) were correctly preserved with inline service creation. Files not refactored: `test_adk_encryption.py` (all tests need custom keys or raw DB), `test_encryption_boundary.py` (all tests need raw DB reads).
 
-### 3. Define module-level constants for repeated test strings
-<!-- ASSIGNED: story 3.1 -->
+### 3. ~~Define module-level constants for repeated test strings~~ RESOLVED
+<!-- DONE: story 3.1 -->
 
 **Severity**: P2 (Medium)
 **Location**: `tests/integration/test_adk_crud.py`, `test_adk_encryption.py`, `test_adk_conformance.py` (53 occurrences of `"my-agent"`, `"user-1"`, `"test-app"` across these 3 files)
