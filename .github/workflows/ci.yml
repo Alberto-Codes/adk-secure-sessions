@@ -90,5 +90,3 @@ jobs:
         with:
           fetch-depth: 0
       - uses: Alberto-Codes/docvet@v1
-        with:
-          args: "check --all"

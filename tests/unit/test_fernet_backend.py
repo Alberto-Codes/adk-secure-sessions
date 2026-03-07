@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
+
 import pytest
 from cryptography.fernet import Fernet
 
@@ -170,40 +173,53 @@ class TestFlexibleKeyInput:
 class TestKeyDerivationStability:
     """Pin PBKDF2 output to catch accidental changes to derivation constants.
 
-    If ``_PBKDF2_ITERATIONS``, ``_PBKDF2_SALT``, or the hash algorithm change,
-    all data encrypted with previously derived keys becomes permanently
-    unreadable.  These tests fail fast when any constant drifts.
+    The master key derivation (PBKDF2 step) is still deterministic. Per-op
+    keys vary (HKDF with random salt), so we test master key stability by
+    verifying backward-compatible decryption of legacy ciphertext.
     """
 
-    async def test_passphrase_derives_stable_key(self) -> None:
-        """Derived key matches independent computation with pinned constants."""
-        import base64
-        import hashlib
+    async def test_legacy_ciphertext_decrypts_with_new_backend(self) -> None:
+        """Legacy (480k iterations, fixed salt) ciphertext decrypts correctly.
 
-        # Independently derive a key using the documented constants.
+        Independently derives a key using the documented legacy constants,
+        encrypts data with it, then verifies the new FernetBackend decrypts.
+        """
         reference_key = base64.urlsafe_b64encode(
             hashlib.pbkdf2_hmac(
                 "sha256",
                 b"test-pinning-passphrase",
                 b"adk-secure-sessions-fernet-v1",  # _PBKDF2_SALT
-                480_000,  # _PBKDF2_ITERATIONS
+                480_000,  # _PBKDF2_ITERATIONS_LEGACY
             )
         )
 
-        # Encrypt with the reference key directly via cryptography.fernet
         reference_fernet = Fernet(reference_key)
-        ciphertext = reference_fernet.encrypt(b"stability-check")
+        legacy_ciphertext = reference_fernet.encrypt(b"stability-check")
 
-        # FernetBackend with the same passphrase must derive the same key
         backend = FernetBackend(key="test-pinning-passphrase")
-        result = await backend.decrypt(ciphertext)
+        result = await backend.decrypt(legacy_ciphertext)
 
         assert result == b"stability-check"
+
+    async def test_master_key_is_deterministic(self) -> None:
+        """Same passphrase produces same master key (PBKDF2 is deterministic).
+
+        Two backends with the same passphrase can decrypt each other's
+        salted ciphertext because they share the same master key.
+        """
+        backend1 = FernetBackend(key="shared-passphrase")
+        backend2 = FernetBackend(key="shared-passphrase")
+
+        ct1 = await backend1.encrypt(b"from-backend-1")
+        ct2 = await backend2.encrypt(b"from-backend-2")
+
+        assert await backend2.decrypt(ct1) == b"from-backend-1"
+        assert await backend1.decrypt(ct2) == b"from-backend-2"
 
     async def test_fernet_key_passthrough_interop(self) -> None:
         """Pre-generated Fernet key works interchangeably with raw Fernet.
 
-        Guards against ``_resolve_key`` regressions that would route
+        Guards against ``_is_valid_fernet_key`` regressions that would route
         valid Fernet keys through PBKDF2 derivation.  If passthrough
         breaks, data encrypted by this library becomes unreadable by
         standard Fernet tools and vice versa.

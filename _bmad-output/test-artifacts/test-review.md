@@ -144,7 +144,8 @@ No critical issues detected.
 
 This eliminates the 53 magic string occurrences flagged in v5.1 and resolves the last MEDIUM violation.
 
-### 4. Refactor runner fixtures to parameterized factory
+### 4. ~~Refactor runner fixtures to parameterized factory~~ DONE
+<!-- ASSIGNED: story 3.2 — RESOLVED -->
 
 **Severity**: P3 (Low)
 **Location**: `tests/integration/test_adk_runner.py:56-110`
@@ -153,6 +154,8 @@ This eliminates the 53 magic string occurrences flagged in v5.1 and resolves the
 
 **Issue Description**:
 Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `counting_runner`) differ only in their callback functions. A fixture factory would reduce duplication.
+
+**Resolution**: Refactored to `_make_runner` factory fixture using `@contextlib.asynccontextmanager`. All three fixtures now delegate to the factory. Resolved in Story 3.2.
 
 ### 5. Add rationale comments to magic constants
 
