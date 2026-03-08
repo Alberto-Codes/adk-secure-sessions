@@ -178,7 +178,8 @@ Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `c
 **Issue Description**:
 Eight files are over the 300-line threshold (301-429 lines). `test_serialization.py` at 429 lines is the largest (1.43x threshold) due to the new `TestAesGcmSerialization` class. `test_fernet_backend.py` newly crossed 300 at 301 lines after sync method tests were added. Each file is well-organized with clear test class boundaries. If any file exceeds 500 lines, split at the class boundary. This is informational, not actionable.
 
-### 7. Consider adding DontWrapMixin test coverage
+### 7. ~~Consider adding DontWrapMixin test coverage~~ DONE
+<!-- DONE: story 3.4 -->
 
 **Severity**: P3 (Low)
 **Location**: `tests/unit/test_encrypted_session_service.py:220-259`

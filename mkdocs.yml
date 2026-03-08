@@ -169,6 +169,7 @@ nav:
           - Configuration Error: adr/ADR-006-configuration-error.md
           - Architecture Migration: adr/ADR-007-architecture-migration.md
   - Roadmap: ROADMAP.md
+  - Benchmarks: benchmarks.md
   - FAQ: faq.md
   - Changelog: changelog.md
   - Contributing:

@@ -266,3 +266,49 @@ class TestConfigurationErrorHierarchy:
         """ConfigurationError accepts an empty message."""
         exc = ConfigurationError()
         assert str(exc) == ""
+
+
+# ---------------------------------------------------------------------------
+# DontWrapMixin Presence
+# ---------------------------------------------------------------------------
+
+
+class TestDontWrapMixinPresence:
+    """Verify DontWrapMixin is present on exception classes that need it.
+
+    SQLAlchemy wraps exceptions raised inside column type processing
+    in ``StatementError``. The ``DontWrapMixin`` marker prevents this
+    wrapping so our exceptions propagate directly to callers.
+    """
+
+    @pytest.mark.parametrize(
+        "exc_cls",
+        [EncryptionError, DecryptionError, SerializationError],
+        ids=["encryption", "decryption", "serialization"],
+    )
+    def test_exception_has_dont_wrap_mixin(
+        self,
+        exc_cls: type[SecureSessionError],
+    ) -> None:
+        """Exception class includes DontWrapMixin in its MRO."""
+        from sqlalchemy.exc import DontWrapMixin
+
+        assert issubclass(exc_cls, DontWrapMixin)
+
+    @pytest.mark.parametrize(
+        "exc_cls",
+        [SecureSessionError, ConfigurationError],
+        ids=["base", "configuration"],
+    )
+    def test_exception_without_dont_wrap_mixin(
+        self,
+        exc_cls: type[SecureSessionError],
+    ) -> None:
+        """Base and ConfigurationError do not need DontWrapMixin.
+
+        These exceptions are not raised inside SQLAlchemy column type
+        processing, so wrapping prevention is not required.
+        """
+        from sqlalchemy.exc import DontWrapMixin
+
+        assert not issubclass(exc_cls, DontWrapMixin)
