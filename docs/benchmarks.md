@@ -26,29 +26,33 @@ The `pytest-benchmark` plugin expects synchronous callables. Since all adk-secur
 
 ## Backend Comparison
 
-Results below are **relative ratios**, not absolute times. Ratios are hardware-independent — they reflect algorithmic differences between backends, not your machine's clock speed. Run the benchmarks on your own hardware for absolute values.
+Results below are **relative ratios**, not absolute times. Ratios are more stable across hardware than raw timings, but they do vary depending on CPU instruction set support (AES-NI, CLMUL, ARMv8 crypto extensions). Run the benchmarks on your own hardware for accurate values.
 
 ### Encryption Speed (Fernet / AES-256-GCM ratio)
 
+Measured on AMD Ryzen AI 9 HX 370 (x86_64, AES-NI + VAES + CLMUL). On CPUs without vectorized AES instructions, expect smaller ratios at large payload sizes.
+
 | Payload Size | Encrypt | Decrypt |
 |-------------|---------|---------|
-| Empty       | ~1.4x   | ~1.4x   |
+| Empty       | ~1.4x   | ~1.5x   |
 | 1 KB        | ~1.5x   | ~1.5x   |
 | 10 KB       | ~2.5x   | ~2.5x   |
-| 100 KB      | ~14x    | ~9x     |
+| 100 KB      | ~28x    | ~10x    |
 
 !!! note "Ratios are approximate"
-    These ratios were measured on a single development machine and will vary
-    by hardware. The trend is consistent: AES-256-GCM is faster than Fernet,
-    and the gap widens significantly at larger payload sizes.
+    The trend is consistent across hardware: AES-256-GCM is faster than
+    Fernet, and the gap widens significantly at larger payload sizes. The
+    exact ratios depend on hardware crypto acceleration — CPUs with VAES
+    (vectorized AES) show larger gaps because AES-GCM's counter mode is
+    parallelizable while Fernet's CBC mode is inherently sequential.
 
 ### Key Observations
 
 - **AES-256-GCM is consistently faster** than Fernet for raw encrypt/decrypt operations
-- **The performance gap grows with payload size** — at 100KB, AES-256-GCM can be ~14x faster for encryption
+- **The performance gap grows with payload size** — at 100KB, AES-256-GCM can be an order of magnitude faster for encryption
 - **At small payloads (empty, 1KB)**, both backends are fast enough that the difference is negligible in practice
-- **Fernet performs three sequential passes** over the data — AES-128-CBC encryption, HMAC-SHA256 authentication, and base64 encoding — each scaling linearly with payload size
-- **AES-256-GCM combines encryption and authentication in a single pass** (AEAD), with hardware acceleration for both (AES-NI + CLMUL). This single-pass architecture eliminates the multi-pass overhead that dominates Fernet at larger payloads
+- **Fernet implements Encrypt-then-MAC** (AES-128-CBC + HMAC-SHA256) with base64url output encoding. The two cryptographic operations are inherently sequential — CBC block chaining prevents parallelism, and HMAC must process the full ciphertext linearly. Both scale linearly with payload size
+- **AES-256-GCM combines encryption and authentication in a single pass** (AEAD), with hardware acceleration where available (x86 AES-NI + CLMUL, ARMv8 crypto extensions). Counter mode is parallelizable across CPU pipelines, which is why the performance gap widens dramatically at larger payloads
 
 ## How to Run
 
@@ -75,7 +79,7 @@ Benchmark results are logged at `INFO` level. Look for lines like:
 ```
 Benchmark [aesgcm/10KB]: baseline=0.0234s, encrypted=0.0237s, overhead=1.03x
 Encrypt-only [aesgcm/100KB]: median=0.000046s
-Comparison [encrypt/100KB]: fernet=0.000636s, aesgcm=0.000046s, fernet/aesgcm=13.94x
+Comparison [encrypt/100KB]: fernet=0.000684s, aesgcm=0.000024s, fernet/aesgcm=27.98x
 ```
 
 - **Benchmark lines**: Show round-trip overhead (encrypted service vs. no-op baseline)
@@ -106,5 +110,5 @@ Because both paths use the same service stack, the ratio isolates pure encryptio
 
 - **Round-trip tests** compare encrypted service vs. no-op service on the same stack, isolating encryption cost:
     - **AES-256-GCM**: Assertive — hard failure locally if overhead exceeds 1.20x. This backend reliably meets NFR1 across all payload sizes (typical overhead: 1.00-1.05x)
-    - **Fernet**: Informational — warns but does not fail. Fernet's three-pass architecture (AES-128-CBC + HMAC-SHA256 + base64) produces overhead that is borderline at the 1.20x threshold for small payloads and exceeds it at 100KB (~1.25x). AES-256-GCM is recommended for NFR1 compliance
+    - **Fernet**: Informational — warns but does not fail. Fernet's Encrypt-then-MAC architecture (AES-128-CBC + HMAC-SHA256) produces overhead that is borderline at the 1.20x threshold for small payloads and exceeds it at 100KB (~1.25x). AES-256-GCM is recommended for NFR1 compliance
 - **Per-operation tests** (encrypt-only, decrypt-only) measure raw backend performance in isolation. These are informational — useful for backend comparison but not subject to NFR thresholds.

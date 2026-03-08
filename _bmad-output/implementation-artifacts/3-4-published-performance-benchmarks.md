@@ -1,6 +1,6 @@
 # Story 3.4: Published Performance Benchmarks
 
-Status: review
+Status: done
 Branch: feat/bench-3-4-published-benchmarks
 GitHub Issue:
 
@@ -210,21 +210,25 @@ Files relevant to this story:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** Claude Opus 4.6 (adversarial code review + party mode research consensus)
+- **Outcome:** Changes Requested → Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | 100KB encrypt ratio docs said ~14x, actual measurement is ~28x — missing hardware context | Fixed: updated table with fresh ratios + hardware disclosure (CPU model, instruction sets) |
+| M2 | MEDIUM | "Hardware-independent" contradicts "will vary by hardware" — ratios ARE hardware-dependent | Fixed: reworded to "more stable across hardware than raw timings" + note AES-NI/VAES/ARMv8 impact |
+| M3 | MEDIUM | "Three sequential passes" misleading — Fernet is Encrypt-then-MAC (2 crypto ops) + base64 encoding | Fixed: rewritten to accurate Encrypt-then-MAC framing, explains parallelism gap |
+| L3 | LOW | Per-operation tests loop both backends in one function — less test isolation | Noted for future (not blocking) |
+| L6 | LOW | Backend comparison uses sequential measurement (not interleaved) | No action (sub-ms scale) |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
@@ -233,6 +237,7 @@ Files relevant to this story:
 | 2026-03-08 | Story created by SM agent — ultimate context engine analysis completed |
 | 2026-03-08 | Party mode consensus: assertion scope (round-trip assertive, per-op informational), cut 1MB payload, stay with perf_counter (no pytest-benchmark — async incompatibility), docs top-level nav, methodology+ratios approach |
 | 2026-03-08 | Implementation complete: expanded benchmark infrastructure (4 payload sizes, 2 backends), 17 benchmark tests, docs/benchmarks.md, DontWrapMixin tests added |
+| 2026-03-08 | Code review: 3 MEDIUM findings (ratio table inaccurate, hardware-independence claim, three-passes framing) — all fixed. Party mode research verified Fernet internals and hardware acceleration facts. Pre-commit passes. |
 
 ## Dev Agent Record
 
