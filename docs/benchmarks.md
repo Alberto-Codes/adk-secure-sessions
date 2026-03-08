@@ -112,3 +112,10 @@ Because both paths use the same service stack, the ratio isolates pure encryptio
     - **AES-256-GCM**: Assertive — hard failure locally if overhead exceeds 1.20x. This backend reliably meets NFR1 across all payload sizes (typical overhead: 1.00-1.05x)
     - **Fernet**: Informational — warns but does not fail. Fernet's Encrypt-then-MAC architecture (AES-128-CBC + HMAC-SHA256) produces overhead that is borderline at the 1.20x threshold for small payloads and exceeds it at 100KB (~1.25x). AES-256-GCM is recommended for NFR1 compliance
 - **Per-operation tests** (encrypt-only, decrypt-only) measure raw backend performance in isolation. These are informational — useful for backend comparison but not subject to NFR thresholds.
+
+## Related
+
+- [Algorithm documentation](./algorithms.md)
+- [Getting started](./getting-started.md)
+- [Roadmap](./ROADMAP.md)
+- [FAQ](./faq.md)

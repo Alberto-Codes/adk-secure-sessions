@@ -166,8 +166,9 @@ def _assert_overhead(
         label: Description for log/error messages.
         informational: If True, always emit a warning instead of
             failing. Used for backends whose overhead is inherently
-            borderline at benchmark timescales (e.g. Fernet's 3-pass
-            architecture). CI mode also forces warning-only behavior.
+            borderline at benchmark timescales (e.g. Fernet's
+            Encrypt-then-MAC design). CI mode also forces warning-only
+            behavior.
     """
     is_ci = os.environ.get("CI", "").lower() in ("true", "1", "yes")
 
@@ -247,7 +248,7 @@ async def _interleaved_measurement(
 # overhead cancel out because both paths use the same code.
 #
 # AES-256-GCM: Assertive (< 1.20x threshold, hard fail locally, warn in CI).
-# Fernet: Informational (always warns). Its 3-pass architecture produces
+# Fernet: Informational (always warns). Its Encrypt-then-MAC design produces
 #   overhead that is borderline at the threshold, and measurement noise at
 #   sub-millisecond scales makes hard assertions unreliable.
 # ---------------------------------------------------------------------------
@@ -266,10 +267,10 @@ async def test_fernet_round_trip_overhead(
     Compares Fernet-encrypted round-trips against no-op (passthrough)
     round-trips on the same service stack to isolate encryption cost.
 
-    Informational only — warns but does not fail. Fernet's three-pass
-    architecture (AES-128-CBC + HMAC-SHA256 + base64) produces overhead
-    that is borderline at the 1.20x threshold, and at sub-millisecond
-    encryption times the measurement is dominated by OS scheduling noise.
+    Informational only — warns but does not fail. Fernet's Encrypt-then-MAC
+    construction (AES-128-CBC + HMAC-SHA256) produces overhead that is
+    borderline at the 1.20x threshold, and at sub-millisecond encryption
+    times the measurement is dominated by OS scheduling noise.
     AES-256-GCM is the recommended backend for NFR1 compliance.
     """
     state = benchmark_payloads[payload_size]

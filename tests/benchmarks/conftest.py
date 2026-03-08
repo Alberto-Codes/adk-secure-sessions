@@ -18,7 +18,7 @@ See Also:
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Iterator
 
 import pytest
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -213,7 +213,7 @@ def benchmark_state() -> dict[str, object]:
 
 
 @pytest.fixture(autouse=True)
-def _register_noop_backend() -> None:
+def _register_noop_backend() -> Iterator[None]:
     """Register the NoOpBackend ID in BACKEND_REGISTRY for envelope parsing.
 
     Automatically applied to all benchmark tests. Registers the no-op
@@ -222,7 +222,7 @@ def _register_noop_backend() -> None:
     global registry.
     """
     BACKEND_REGISTRY[_NOOP_BACKEND_ID] = "NoOp"
-    yield  # type: ignore[misc]
+    yield
     BACKEND_REGISTRY.pop(_NOOP_BACKEND_ID, None)
 
 
