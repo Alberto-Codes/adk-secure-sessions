@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.1.0...v1.2.0) (2026-03-08)
+
+
+### Features
+
+* **backend:** add AES-256-GCM encryption backend ([#141](https://github.com/Alberto-Codes/adk-secure-sessions/issues/141)) ([9ea7881](https://github.com/Alberto-Codes/adk-secure-sessions/commit/9ea7881690b811b0d5e6512b810ac225bb2c05f1))
+* **backend:** add per-key random salt key derivation to FernetBackend ([64f2a76](https://github.com/Alberto-Codes/adk-secure-sessions/commit/64f2a768ed0ee321d5b92a95de8846a318f57353))
+* **backend:** add per-key random salt key derivation to FernetBackend ([#143](https://github.com/Alberto-Codes/adk-secure-sessions/issues/143)) ([64f2a76](https://github.com/Alberto-Codes/adk-secure-sessions/commit/64f2a768ed0ee321d5b92a95de8846a318f57353))
+* **bench:** add multi-backend benchmarks and docs page ([#145](https://github.com/Alberto-Codes/adk-secure-sessions/issues/145)) ([2dd4256](https://github.com/Alberto-Codes/adk-secure-sessions/commit/2dd4256a7f07c2d1ad2883be20104baba78860e3))
+* **serialization:** add multi-backend coexistence and dispatch ([#144](https://github.com/Alberto-Codes/adk-secure-sessions/issues/144)) ([c971d33](https://github.com/Alberto-Codes/adk-secure-sessions/commit/c971d3392ea86cf5ef7886540d6f2afe7c88c1b3)), closes [#145](https://github.com/Alberto-Codes/adk-secure-sessions/issues/145)
+
+
+### Bug Fixes
+
+* **backend:** address code review findings for per-key random salt ([64f2a76](https://github.com/Alberto-Codes/adk-secure-sessions/commit/64f2a768ed0ee321d5b92a95de8846a318f57353))
+* **backend:** tighten exception catch and add boundary tests ([64f2a76](https://github.com/Alberto-Codes/adk-secure-sessions/commit/64f2a768ed0ee321d5b92a95de8846a318f57353))
+
 ## [1.1.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.0.3...v1.1.0) (2026-03-06)
 
 
