@@ -493,6 +493,39 @@ class TestNullEncryptedColumn:
 
 
 # ---------------------------------------------------------------------------
+# US8: Non-ASCII stored value raises DecryptionError
+# ---------------------------------------------------------------------------
+
+
+class TestNonAsciiInput:
+    """Non-ASCII stored values raise DecryptionError, not UnicodeEncodeError."""
+
+    async def test_non_ascii_enc_val_raises_decryption_error(
+        self, mocker, old_backend, new_backend
+    ) -> None:
+        """T012: Non-ASCII state value raises DecryptionError, not UnicodeEncodeError."""
+        row = _FakeRow(
+            app_name="app1",
+            user_id="u1",
+            id="s1",
+            state="\xff\xfe corrupted",  # non-ASCII — cannot encode to ASCII
+            update_time=_DT,
+        )
+        execute_fn = _make_execute_fn(
+            mocker,
+            select_rows_by_table={"sessions": [row]},
+        )
+        _setup_mock_engine(mocker, execute_fn)
+
+        with pytest.raises(DecryptionError):
+            await rotate_encryption_keys(
+                db_url="sqlite+aiosqlite:///test.db",
+                old_backend=old_backend,
+                new_backend=new_backend,
+            )
+
+
+# ---------------------------------------------------------------------------
 # US7: Ciphertext guard in UPDATE WHERE clause
 # ---------------------------------------------------------------------------
 

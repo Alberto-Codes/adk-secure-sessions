@@ -73,44 +73,45 @@ async def populated_old_key_db(
         Dict with ``session_id``, ``app_name``, ``user_id`` keys.
     """
     svc = EncryptedSessionService(db_url=db_url, backend=old_backend)
-    session = await svc.create_session(
-        app_name=APP_NAME,
-        user_id=USER_ID,
-        state={"rotation_test_key": "rotation-test-value"},
-    )
+    try:
+        session = await svc.create_session(
+            app_name=APP_NAME,
+            user_id=USER_ID,
+            state={"rotation_test_key": "rotation-test-value"},
+        )
 
-    # Regular events — populate events table with non-NULL event_data
-    for i in range(2):
-        evt = Event(id=f"evt-{i}", author="user", invocation_id=f"inv-{i}")
-        await svc.append_event(session, evt)
+        # Regular events — populate events table with non-NULL event_data
+        for i in range(2):
+            evt = Event(id=f"evt-{i}", author="user", invocation_id=f"inv-{i}")
+            await svc.append_event(session, evt)
 
-    # App-level state delta → populates app_states table
-    await svc.append_event(
-        session,
-        Event(
-            id="evt-app",
-            author="agent",
-            invocation_id="inv-app",
-            actions=EventActions(
-                state_delta={"app:rotation_config": "app-secret-value"}
+        # App-level state delta → populates app_states table
+        await svc.append_event(
+            session,
+            Event(
+                id="evt-app",
+                author="agent",
+                invocation_id="inv-app",
+                actions=EventActions(
+                    state_delta={"app:rotation_config": "app-secret-value"}
+                ),
             ),
-        ),
-    )
+        )
 
-    # User-level state delta → populates user_states table
-    await svc.append_event(
-        session,
-        Event(
-            id="evt-user",
-            author="agent",
-            invocation_id="inv-user",
-            actions=EventActions(
-                state_delta={"user:rotation_pref": "user-secret-value"}
+        # User-level state delta → populates user_states table
+        await svc.append_event(
+            session,
+            Event(
+                id="evt-user",
+                author="agent",
+                invocation_id="inv-user",
+                actions=EventActions(
+                    state_delta={"user:rotation_pref": "user-secret-value"}
+                ),
             ),
-        ),
-    )
-
-    await svc.close()
+        )
+    finally:
+        await svc.close()
 
     yield {
         "session_id": session.id,

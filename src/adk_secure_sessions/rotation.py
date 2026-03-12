@@ -197,8 +197,9 @@ async def _rotate_table(
         Tuple of ``(rotated, skipped)`` counts for this table.
 
     Raises:
-        DecryptionError: If a record has a malformed envelope, cannot be
-            base64-decoded, or cannot be decrypted with ``old_backend``.
+        DecryptionError: If a record contains non-ASCII or malformed
+            base64 data, has a malformed envelope, or cannot be decrypted
+            with ``old_backend``.
     """
     rotated = 0
     skipped = 0
@@ -221,7 +222,7 @@ async def _rotate_table(
         # Base64-decode the stored TEXT value to get the raw envelope bytes
         try:
             envelope = base64.b64decode(enc_val.encode("ascii"), validate=True)
-        except binascii.Error:
+        except (binascii.Error, UnicodeEncodeError):
             msg = f"Rotation failed: base64 decode error in table {table!r}"
             raise DecryptionError(msg) from None
 
