@@ -119,14 +119,25 @@ loop.
 ### Optimistic Concurrency
 
 If a session is updated by the application between the rotation function's
-read and write, the `UPDATE WHERE update_time = <read_time>` check detects the
-conflict (zero rows affected). That record is counted as **skipped**, not
-overwritten. Run `rotate_encryption_keys()` again to pick up skipped records.
+read and write, the `UPDATE` check (which guards on both `update_time` and
+the existing ciphertext value) detects the conflict — zero rows affected.
+That record is counted as **skipped**, not overwritten.
+
+For **same-backend rotation** (the primary use case — two `FernetBackend`
+instances with different keys), skipped records can be picked up by running
+`rotate_encryption_keys()` again **before** stopping the old-backend service.
+However, once the rotation function has completed a full pass, do **not**
+re-run with the original `old_backend`: it cannot decrypt the already-rotated
+ciphertext and will raise `DecryptionError`. Re-runs are only safe for
+cross-backend rotation where backend IDs differ.
 
 ```python
+# Recommended: pause writes (or run during low-traffic window)
+# then run once; skipped count should be 0 or very low
 result = await rotate_encryption_keys(db_url, old, new)
 if result.skipped > 0:
-    print(f"{result.skipped} skipped — running second pass")
+    # Re-run ONLY if service is still using old_backend for reads —
+    # do not re-run after reconfiguring the service to new_backend
     result2 = await rotate_encryption_keys(db_url, old, new)
     print(f"Second pass: rotated={result2.rotated}, skipped={result2.skipped}")
 ```
@@ -135,7 +146,8 @@ if result.skipped > 0:
 
 - ✅ Complete one-time migration — no mixed-backend storage after rotation
 - ✅ Safe concurrent operation — skipped records never lose data
-- ✅ Idempotent — already-rotated records are silently skipped on re-run
+- ⚠️ Not idempotent for same-backend rotation — run once, then reconfigure
+  the service; do not re-run with the original `old_backend` after rotation
 - ⚠️ Requires a database connection at rotation time (not just the service)
 - ⚠️ May require a brief maintenance window for large databases to minimise
   skipped record counts; or run with the service paused
@@ -179,7 +191,7 @@ result = await rotate_encryption_keys(
 
 ---
 
-## See Also
+## Related
 
 - [ADR-009: Key Rotation Strategy](../adr/ADR-009-key-rotation-strategy.md) —
   architecture decisions behind both paths

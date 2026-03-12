@@ -226,40 +226,35 @@ class TestFullRotationLifecycle:
         assert result.rotated == expected_rotated
         assert result.skipped == 0
 
-    async def test_second_rotation_pass_returns_zero_for_already_rotated(
+    async def test_can_rotate_back_between_fernet_backends(
         self,
         populated_old_key_db: dict[str, str],
         db_url: str,
         old_backend: FernetBackend,
         new_backend: FernetBackend,
     ) -> None:
-        """T014: Second rotation pass (old→new after already rotated) returns zero.
+        """T014: Rotation is reversible — rotating back (new→old) succeeds.
 
-        After all records are re-encrypted with new_backend, a second call
-        with the same old_backend sees no matching records (they now carry
-        new_backend's backend_id). Since both backends are FernetBackend
-        (backend_id=0x01), old_backend would still see the records — but
-        they are now decryptable only by new_backend.
+        Verifies that after rotating old→new, a subsequent rotation in the
+        reverse direction (new→old) successfully re-encrypts all records back.
+        This confirms the utility works in both directions between same-backend
+        instances with different keys, which is useful for recovery scenarios.
 
-        For same-backend rotation (identical backend_id), running with
-        old_backend as new_backend on already-new-key data just re-encrypts
-        again. This test verifies rotated > 0 on re-run to confirm
-        idempotent operation (not a bug).
+        Note: For same-backend rotation, re-running with the original
+        old_backend after completing a rotation would attempt to decrypt
+        new-key ciphertext with the old key and raise DecryptionError. The
+        correct recovery path is reverse rotation (new→old), not re-run.
         """
-        # First pass
+        # First pass: rotate old key → new key
         result1 = await rotate_encryption_keys(
             db_url=db_url, old_backend=old_backend, new_backend=new_backend
         )
         assert result1.rotated > 0
 
-        # Second pass with same old/new: for same backend_id, records are
-        # visible again (both Fernet = 0x01). They will be decrypted with
-        # new_backend's key (fails) ... so second pass should fail gracefully
-        # OR: use new_backend as old_backend to rotate back — confirm it works
+        # Reverse pass: rotate new key → old key (recovery / rollback scenario)
         result2 = await rotate_encryption_keys(
             db_url=db_url, old_backend=new_backend, new_backend=old_backend
         )
-        # Records were re-encrypted to new key; rotating back to old key
         assert result2.rotated > 0
         assert result2.skipped == 0
 

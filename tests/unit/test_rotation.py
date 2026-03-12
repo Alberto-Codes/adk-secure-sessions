@@ -490,3 +490,48 @@ class TestNullEncryptedColumn:
         assert result.rotated == 0
         assert result.skipped == 0
         old_backend.sync_decrypt.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# US7: Ciphertext guard in UPDATE WHERE clause
+# ---------------------------------------------------------------------------
+
+
+class TestCiphertextGuard:
+    """UPDATE WHERE clause includes old ciphertext for same-timestamp collision detection."""
+
+    async def test_update_params_include_old_val(
+        self, mocker, old_backend, new_backend
+    ) -> None:
+        """T011: UPDATE call includes old_val param (ciphertext guard) for collision detection."""
+        state_b64 = _make_b64_state(BACKEND_FERNET)
+        row = _FakeRow(
+            app_name="app1",
+            user_id="u1",
+            id="s1",
+            state=state_b64,
+            update_time=_DT,
+        )
+
+        captured_params: dict = {}
+
+        async def execute_fn(sql, params=None):
+            sql_str = str(sql)
+            if sql_str.strip().upper().startswith("SELECT"):
+                if "FROM sessions" in sql_str:
+                    return _FakeCursor(rows=[row])
+                return _FakeCursor(rows=[])
+            if params:
+                captured_params.update(params)
+            return _FakeCursor(rows=[], rowcount=1)
+
+        _setup_mock_engine(mocker, execute_fn)
+
+        await rotate_encryption_keys(
+            db_url="sqlite+aiosqlite:///test.db",
+            old_backend=old_backend,
+            new_backend=new_backend,
+        )
+
+        assert "old_val" in captured_params
+        assert captured_params["old_val"] == state_b64

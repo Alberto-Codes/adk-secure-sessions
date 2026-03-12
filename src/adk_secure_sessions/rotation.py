@@ -177,7 +177,10 @@ async def _rotate_table(
     Selects all rows, identifies records encrypted with
     ``old_backend.backend_id`` by parsing the envelope header, re-encrypts
     each with ``new_backend``, and writes back using an optimistic
-    concurrency check on ``update_time`` for tables that have it.
+    concurrency check on both ``update_time`` and the existing ciphertext
+    value (``AND update_time = :update_time AND {enc_col} = :old_val``) for
+    tables that have ``update_time``. Tables without ``update_time``
+    (``events``) use only the ciphertext guard (``AND {enc_col} = :old_val``).
 
     Args:
         conn: Active SQLAlchemy async connection (within a transaction).
@@ -238,9 +241,9 @@ async def _rotate_table(
             )
         except DecryptionError:
             raise
-        except Exception as exc:
+        except Exception:
             msg = f"Rotation failed: re-encryption error in table {table!r}"
-            raise DecryptionError(msg) from exc
+            raise DecryptionError(msg) from None
 
         # Build new envelope and base64-encode for storage
         new_envelope = _build_envelope(
@@ -248,19 +251,30 @@ async def _rotate_table(
         )
         new_b64 = base64.b64encode(new_envelope).decode("ascii")
 
-        # Build parametrized UPDATE — values use bound parameters
+        # Build parametrized UPDATE — values use bound parameters.
+        # old_val guards against same-timestamp ciphertext collisions:
+        # if another writer changed the encrypted value between our read and
+        # write (even with the same update_time), rows_affected == 0.
         pk_params = {col: row_data[col] for col in pk_cols}
-        update_params: dict[str, Any] = {**pk_params, "new_val": new_b64}
+        update_params: dict[str, Any] = {
+            **pk_params,
+            "new_val": new_b64,
+            "old_val": enc_val,
+        }
         pk_where = " AND ".join(f"{col} = :{col}" for col in pk_cols)
 
         if has_update_time:
             update_params["update_time"] = row_data["update_time"]
             update_sql = (
                 f"UPDATE {table} SET {enc_col} = :new_val "
-                f"WHERE {pk_where} AND update_time = :update_time"
+                f"WHERE {pk_where} AND update_time = :update_time "
+                f"AND {enc_col} = :old_val"
             )
         else:
-            update_sql = f"UPDATE {table} SET {enc_col} = :new_val WHERE {pk_where}"
+            update_sql = (
+                f"UPDATE {table} SET {enc_col} = :new_val "
+                f"WHERE {pk_where} AND {enc_col} = :old_val"
+            )
 
         result = await conn.execute(text(update_sql), update_params)
 
@@ -292,13 +306,24 @@ async def rotate_encryption_keys(
     ``new_backend``. Records already on a different backend are skipped
     silently.
 
-    Uses ``update_time`` as an optimistic concurrency guard for
-    ``sessions``, ``app_states``, and ``user_states``. If a record is
-    modified between the rotation function's read and write
+    Uses ``update_time`` and the existing ciphertext value as an optimistic
+    concurrency guard for ``sessions``, ``app_states``, and ``user_states``.
+    If a record is modified between the rotation function's read and write
     (``rows_affected == 0``), it is counted as skipped. Run the function
-    again to pick up remaining records. Re-runs are safe: records already
-    rotated carry ``new_backend.backend_id`` in their envelope and are
-    skipped silently, so calling this function multiple times is idempotent.
+    again to pick up remaining records.
+
+    **Re-run semantics differ by rotation type:**
+
+    - *Cross-backend rotation* (``old_backend.backend_id !=
+      new_backend.backend_id``): Re-runs are safe. Already-rotated records
+      carry ``new_backend.backend_id`` in their envelope and are skipped
+      silently by the backend-id filter.
+    - *Same-backend rotation* (``old_backend.backend_id ==
+      new_backend.backend_id``, e.g., two ``FernetBackend`` instances):
+      A single pass is expected. Re-running with the original ``old_backend``
+      will attempt to decrypt already-rotated ciphertext with the old key
+      and raise ``DecryptionError``. For same-backend rotation, run once,
+      then update your service configuration to use ``new_backend``.
 
     For the ``events`` table (no ``update_time`` column), ``rows_affected
     == 0`` means the event was cascade-deleted between read and write and
