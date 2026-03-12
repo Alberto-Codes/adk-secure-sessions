@@ -1,4 +1,4 @@
-# generated: 2026-03-04
+# generated: 2026-03-08
 # project: adk-secure-sessions
 # project_key: NOKEY
 # tracking_system: both
@@ -34,7 +34,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-03-04
+generated: 2026-03-08
 project: adk-secure-sessions
 project_key: NOKEY
 tracking_system: both
@@ -69,20 +69,20 @@ development_status:
   epic-2-retrospective: done
 
   # Epic 3: AES-256-GCM Backend & Security Hardening (Phase 3)
-  epic-3: in-progress
+  epic-3: done
   3-1-aes-256-gcm-encryption-backend: done
   3-2-per-key-random-salt-key-derivation: done
   3-3-multi-backend-coexistence-dispatch: done
   3-4-published-performance-benchmarks: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   # Epic 4: Key Rotation & Operational Documentation (Phase 3)
   # NOTE: Stories 4.1, 4.2, 4.3 are SUPERSEDED by Epic 7 (Architecture Migration)
-  epic-4: backlog
+  epic-4: in-progress
   4-1-persistence-protocol-sqlite-extraction: superseded  # [SUPERSEDED by Epic 7]
   4-2-encryption-coordinator-extraction: superseded  # [SUPERSEDED by Epic 7]
   4-3-postgresql-persistence-backend: superseded  # [SUPERSEDED by Epic 7]
-  4-4-zero-downtime-key-rotation: backlog
+  4-4-zero-downtime-key-rotation: review
   4-5-backend-authoring-documentation: backlog
   4-6-operations-guide: backlog
   4-7-python-version-matrix-tracking: backlog

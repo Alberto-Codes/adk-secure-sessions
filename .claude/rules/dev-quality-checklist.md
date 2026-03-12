@@ -32,6 +32,14 @@ Before marking a story or task done, verify every acceptance criterion has at le
 - When adding new fields or state keys, verify they round-trip through the full encrypt/decrypt cycle
 - Test that wrong-key decryption raises `DecryptionError`, not a generic exception
 
+## Benchmark Story Ordering
+
+For stories that include benchmark measurement tables or performance claims:
+
+- Run the full benchmark suite and capture actual output **before** writing the results table — never project from a smaller payload or earlier run
+- Tables in documentation must be populated from captured output, not estimates
+- If hardware-specific factors apply (AES-NI, VAES, ARMv8 crypto), disclose the CPU model and relevant instruction sets alongside the ratios
+
 ## Async Test Hygiene
 
 - Test fixtures that create services with DB connections (e.g., `EncryptedSessionService`) MUST call `await svc.close()` in teardown

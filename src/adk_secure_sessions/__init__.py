@@ -22,6 +22,8 @@ Attributes:
     BACKEND_AES_GCM: Backend identifier for AES-256-GCM encryption.
     BACKEND_FERNET: Backend identifier for Fernet encryption.
     ENVELOPE_VERSION_1: Current envelope format version byte.
+    rotate_encryption_keys: Re-encrypt all session data to a new backend.
+    RotationResult: Result dataclass for key rotation operations.
 
 Examples:
     Encrypt and decrypt session state:
@@ -54,6 +56,7 @@ from adk_secure_sessions.exceptions import (
     SerializationError,
 )
 from adk_secure_sessions.protocols import EncryptionBackend
+from adk_secure_sessions.rotation import RotationResult, rotate_encryption_keys
 from adk_secure_sessions.serialization import (
     BACKEND_AES_GCM,
     BACKEND_FERNET,
@@ -76,10 +79,12 @@ __all__ = [
     "EncryptionBackend",
     "EncryptionError",
     "FernetBackend",
+    "RotationResult",
     "SecureSessionError",
     "SerializationError",
     "decrypt_json",
     "decrypt_session",
     "encrypt_json",
     "encrypt_session",
+    "rotate_encryption_keys",
 ]

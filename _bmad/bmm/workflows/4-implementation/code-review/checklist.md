@@ -13,6 +13,7 @@
 - [ ] Tests identified and mapped to ACs; gaps noted
 - [ ] Code quality review performed on changed files
 - [ ] Factual claims in docs/comments verified against actual code (no unsubstantiated assertions)
+- [ ] All numerical data (ratios, counts, timings, percentages) derived from actual measurement output, not estimation or projection
 - [ ] Documentation impact assessed — which doc pages does this change affect? (API ref, ADRs, README, guides)
 - [ ] Cross-cutting test maturity item verified: recommendation implemented and test-review.md updated
 - [ ] Security review performed on changed files and dependencies
