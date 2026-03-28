@@ -154,6 +154,8 @@ nav:
   - API Reference:
       - Overview: reference/index.md
       - Full Module Index: reference/adk_secure_sessions/index.md
+  - How-To Guides:
+      - Key Rotation: how-to/key-rotation.md
   - Architecture:
       - Overview: ARCHITECTURE.md
       - Envelope Protocol: envelope-protocol.md
@@ -168,6 +170,8 @@ nav:
           - Exception Hierarchy: adr/ADR-005-exception-hierarchy.md
           - Configuration Error: adr/ADR-006-configuration-error.md
           - Architecture Migration: adr/ADR-007-architecture-migration.md
+          - Per-Key Random Salt: adr/ADR-008-per-key-random-salt.md
+          - Key Rotation Strategy: adr/ADR-009-key-rotation-strategy.md
   - Roadmap: ROADMAP.md
   - Benchmarks: benchmarks.md
   - FAQ: faq.md

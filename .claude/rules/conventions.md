@@ -32,6 +32,17 @@ Extend `BaseSessionService` but don't fight the ADK contract. Override only the 
 
 This keeps us compatible across the google-adk version matrix (1.22.0 through latest). Fighting the upstream contract creates brittle code that breaks on ADK updates. See [ADR-004: ADK Interface Compatibility Strategy](docs/adr/ADR-004-adk-schema-compatibility.md).
 
+## The Sync/Async Boundary Is a High-Risk Zone
+
+Code that crosses the sync/async boundary — particularly `TypeDecorator` implementations (`process_bind_param`, `process_result_value`) and any `sync_encrypt`/`sync_decrypt` methods on backends — runs in SQLAlchemy's synchronous execution context despite the project's async-first design. This surface area consistently generates more code review findings than any other area.
+
+When writing or reviewing code in this zone:
+- Verify the sync method does not call any `async def` or `await` expressions (SQLAlchemy will not await them)
+- Confirm that blocking cryptographic operations in the sync path are acceptable for the call site (TypeDecorators run on the SQLAlchemy column serialization path, which is synchronous by design)
+- Flag these stories for additional review attention — budget for more findings than usual
+
+See [ADR-002: Async-First Design](docs/adr/ADR-002-async-first.md) and Story 3-1 (AES-256-GCM backend) for context.
+
 ## Own Our Schema
 
 Our SQLite schema (`app_states`, `user_states`, `sessions`, `events`) is derived from ADK's Session/Event data model contract with encrypted column types. Operationally independent — own tables, own migrations, own encryption — but structurally coupled to ADK's public model contract. All database access uses raw parametrized SQL via aiosqlite, not SQLAlchemy ORM.

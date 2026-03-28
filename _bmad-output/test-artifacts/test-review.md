@@ -170,6 +170,7 @@ Three nearly-identical async generator fixtures (`runner`, `stateful_runner`, `c
 **Resolution**: Rationale docstrings added to all three constants following the `NUM_COROUTINES` pattern (NFR traceability + justification). Resolved in Story 3.3.
 
 ### 6. Monitor marginally-over-threshold files
+<!-- ASSIGNED: story 4.4 -->
 
 **Severity**: P3 (Low)
 **Location**: `tests/unit/test_serialization.py` (429), `tests/integration/test_adk_crud.py` (406), `tests/integration/test_conformance.py` (367), `tests/integration/test_adk_encryption.py` (356), `tests/integration/test_adk_runner.py` (356), `tests/unit/test_encrypted_session_service.py` (312), `tests/integration/test_encryption_boundary.py` (309), `tests/unit/test_fernet_backend.py` (301)
