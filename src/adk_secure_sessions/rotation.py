@@ -323,8 +323,9 @@ async def rotate_encryption_keys(
       new_backend.backend_id``, e.g., two ``FernetBackend`` instances):
       A single pass is expected. Re-running with the original ``old_backend``
       will attempt to decrypt already-rotated ciphertext with the old key
-      and raise ``DecryptionError``. For same-backend rotation, run once,
-      then update your service configuration to use ``new_backend``.
+      and raise ``DecryptionError``. For same-backend rotation, stop or
+      pause the service before running this function, run once, then
+      reconfigure the service to use ``new_backend`` and restart.
 
     For the ``events`` table (no ``update_time`` column), ``rows_affected
     == 0`` means the event was cascade-deleted between read and write and

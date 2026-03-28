@@ -1,4 +1,4 @@
-"""Integration tests for zero-downtime key rotation.
+"""Integration tests for batch key rotation.
 
 Exercises the full rotation lifecycle using real FernetBackend instances
 and a real SQLite database. Covers session, event, app-state, and

@@ -185,9 +185,13 @@ result = await rotate_encryption_keys(
   exception messages from `rotate_encryption_keys()`.
 - The old key is not retained anywhere after the function returns — it is the
   caller's responsibility to securely delete or revoke the old key/passphrase.
-- During rotation, the database contains a mix of old-key and new-key records.
-  If the service is running, it must continue to use `old_backend` for reads
-  until rotation completes and the service is reconfigured.
+- During **cross-backend rotation** (Path A), the database contains a mix of
+  old-backend and new-backend records. The service can read both via
+  `additional_backends` — no downtime required.
+- During **same-backend rotation** (Path B), the database contains a mix of
+  old-key and new-key records with identical `backend_id`. The running service
+  cannot distinguish them. **Stop the service (or pause writes) before running
+  `rotate_encryption_keys()`, then reconfigure and restart with `new_backend`.**
 
 ---
 
