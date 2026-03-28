@@ -102,6 +102,40 @@ min-coverage = 100.0
 ignore_vulnerabilities = ["GHSA-5239-wwwm-4pmq"]
 allow_unused_ignores = false
 
+# --------------------------------------------------------------------------- #
+# import-linter
+# --------------------------------------------------------------------------- #
+[tool.importlinter]
+root_package = "adk_secure_sessions"
+
+[[tool.importlinter.contracts]]
+name = "Layered architecture"
+type = "layers"
+layers = [
+    "adk_secure_sessions.services",
+    "adk_secure_sessions.rotation",
+    "adk_secure_sessions.backends",
+    "adk_secure_sessions.serialization",
+    "adk_secure_sessions.protocols | adk_secure_sessions.exceptions",
+]
+
+[[tool.importlinter.contracts]]
+name = "Backends are independent of each other"
+type = "independence"
+modules = [
+    "adk_secure_sessions.backends.fernet",
+    "adk_secure_sessions.backends.aes_gcm",
+]
+
+[[tool.importlinter.contracts]]
+name = "Rotation is standalone (no backends or services)"
+type = "forbidden"
+source_modules = ["adk_secure_sessions.rotation"]
+forbidden_modules = [
+    "adk_secure_sessions.backends",
+    "adk_secure_sessions.services",
+]
+
 [tool.pytest.ini_options]
 markers = [
     "unit: Unit tests - fast, isolated",
@@ -154,5 +188,6 @@ dev = [
     "docvet>=1.7.0",
     "pip-audit>=2.9.0",
     "uv-secure>=0.17.0",
+    "import-linter>=2.11",
     "litellm>=1.82.0",
 ]
