@@ -97,6 +97,11 @@ fail-on = ["enrichment", "freshness", "coverage", "griffe", "presence"]
 [tool.docvet.presence]
 min-coverage = 100.0
 
+[tool.uv-secure.vulnerability_criteria]
+# Pygments 2.19.2 ReDoS in AdlLexer (GHSA low severity, local-only). No fix available.
+ignore_vulnerabilities = ["GHSA-5239-wwwm-4pmq"]
+allow_unused_ignores = false
+
 [tool.pytest.ini_options]
 markers = [
     "unit: Unit tests - fast, isolated",
