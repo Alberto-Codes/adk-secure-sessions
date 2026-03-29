@@ -16,12 +16,14 @@ See Also:
 from __future__ import annotations
 
 import pytest
+from sqlalchemy import JSON
 
 from adk_secure_sessions import (
     EncryptedSessionService,
     FernetBackend,
 )
 from adk_secure_sessions.protocols import EncryptionBackend
+from adk_secure_sessions.services.models import create_encrypted_models
 
 pytestmark = pytest.mark.integration
 
@@ -78,6 +80,80 @@ class TestBaseSessionServiceInterface:
         # list_sessions returns ListSessionsResponse
         list_result = await service.list_sessions(app_name=APP_NAME)
         assert isinstance(list_result, ListSessionsResponse)
+
+
+# =============================================================================
+# EncryptionBackend Protocol Conformance
+# =============================================================================
+
+
+# =============================================================================
+# StorageSession Method Parity (Sentinel)
+# =============================================================================
+
+
+class TestStorageSessionMethodParity:
+    """Sentinel tests: EncryptedStorageSession duck-types ADK's StorageSession."""
+
+    def test_all_public_methods_present(self) -> None:
+        """AC6: All public methods on ADK StorageSession exist on ours."""
+        from google.adk.sessions.schemas.v1 import StorageSession
+
+        _, schema = create_encrypted_models(JSON())
+
+        upstream_methods = {
+            name
+            for name in dir(StorageSession)
+            if not name.startswith("_") and callable(getattr(StorageSession, name))
+        }
+        upstream_properties = {
+            name
+            for name in dir(StorageSession)
+            if not name.startswith("_")
+            and isinstance(getattr(StorageSession, name, None), property)
+        }
+        upstream_public = upstream_methods | upstream_properties
+
+        # Exclude SQLAlchemy ORM internals that don't apply to duck-typing
+        orm_internals = {"metadata", "registry"}
+        upstream_public -= orm_internals
+
+        encrypted_cls = schema.StorageSession
+        missing = {name for name in upstream_public if not hasattr(encrypted_cls, name)}
+
+        assert not missing, (
+            f"EncryptedStorageSession is missing public members from "
+            f"StorageSession: {sorted(missing)}"
+        )
+
+    async def test_create_session_roundtrip_sets_storage_update_marker(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """AC5: _storage_update_marker is set after create_session() round-trip."""
+        session = await encrypted_service.create_session(
+            app_name=APP_NAME, user_id=USER_ID
+        )
+
+        assert hasattr(session, "_storage_update_marker")
+        assert session._storage_update_marker is not None
+        assert isinstance(session._storage_update_marker, str)
+
+    async def test_get_session_roundtrip_sets_storage_update_marker(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """AC5: _storage_update_marker persists through get_session() round-trip."""
+        created = await encrypted_service.create_session(
+            app_name=APP_NAME, user_id=USER_ID
+        )
+
+        retrieved = await encrypted_service.get_session(
+            app_name=APP_NAME, user_id=USER_ID, session_id=created.id
+        )
+
+        assert retrieved is not None
+        assert hasattr(retrieved, "_storage_update_marker")
+        assert retrieved._storage_update_marker is not None
+        assert isinstance(retrieved._storage_update_marker, str)
 
 
 # =============================================================================
