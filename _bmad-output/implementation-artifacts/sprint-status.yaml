@@ -82,8 +82,8 @@ development_status:
   4-1-persistence-protocol-sqlite-extraction: superseded  # [SUPERSEDED by Epic 7]
   4-2-encryption-coordinator-extraction: superseded  # [SUPERSEDED by Epic 7]
   4-3-postgresql-persistence-backend: superseded  # [SUPERSEDED by Epic 7]
-  4-4-zero-downtime-key-rotation: review
-  4-5-backend-authoring-documentation: backlog
+  4-4-zero-downtime-key-rotation: done
+  4-5-backend-authoring-documentation: review
   4-6-operations-guide: backlog
   4-7-python-version-matrix-tracking: backlog
   epic-4-retrospective: optional

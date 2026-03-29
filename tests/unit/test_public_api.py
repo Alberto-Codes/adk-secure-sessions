@@ -7,6 +7,7 @@ A failure here means a refactoring silently broke every downstream import.
 
 from __future__ import annotations
 
+import importlib
 import importlib.metadata
 import re
 import types
@@ -57,6 +58,27 @@ class TestAllConsistency:
         extra = declared - module_names
         assert extra == set(), (
             f"__all__ entries not in module namespace: {sorted(extra)}"
+        )
+
+
+class TestAllAlphabeticallySorted:
+    """``__all__`` must be alphabetically sorted in every ``__init__.py``."""
+
+    @pytest.mark.parametrize(
+        "module_path",
+        [
+            "adk_secure_sessions",
+            "adk_secure_sessions.backends",
+            "adk_secure_sessions.services",
+        ],
+        ids=["root", "backends", "services"],
+    )
+    def test_all_is_sorted(self, module_path: str) -> None:
+        """__all__ entries are in alphabetical order."""
+        mod = importlib.import_module(module_path)
+        exported = list(mod.__all__)
+        assert exported == sorted(exported), (
+            f"{module_path}.__all__ is not sorted: {exported}"
         )
 
 
