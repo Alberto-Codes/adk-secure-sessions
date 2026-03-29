@@ -125,6 +125,11 @@ def create_encrypted_models(
     class EncryptedStorageSession(_Base):
         """Encrypted session storage model.
 
+        Duck-types ADK's ``StorageSession`` with encrypted state columns.
+        Provides ``get_update_marker()`` and ``update_timestamp_tz`` for
+        forward-compatibility with google-adk >= 1.28.0 optimistic
+        concurrency.
+
         Examples:
             Created internally by ``create_encrypted_models``:
 
@@ -175,14 +180,15 @@ def create_encrypted_models(
                 is_sqlite: Whether the backend is SQLite.
 
             Returns:
-                ADK Session object.
+                ADK Session object with ``_storage_update_marker`` set for
+                optimistic concurrency control.
             """
             if state is None:
                 state = {}
             if events is None:
                 events = []
 
-            return Session(
+            session = Session(
                 app_name=self.app_name,
                 user_id=self.user_id,
                 id=self.id,
@@ -190,6 +196,8 @@ def create_encrypted_models(
                 events=events,
                 last_update_time=self.get_update_timestamp(is_sqlite=is_sqlite),
             )
+            session._storage_update_marker = self.get_update_marker()  # type: ignore[attr-defined]  # PrivateAttr added in ADK 1.28.0
+            return session
 
         def get_update_timestamp(self, is_sqlite: bool = False) -> float:
             """Get update time as a POSIX timestamp.
@@ -203,6 +211,39 @@ def create_encrypted_models(
             if is_sqlite:
                 return self.update_time.replace(tzinfo=timezone.utc).timestamp()
             return self.update_time.timestamp()
+
+        @property
+        def update_timestamp_tz(self) -> float:
+            """The update time as a POSIX timestamp (UTC, non-SQLite path).
+
+            Compatibility alias matching upstream ``StorageSession``.
+            Equivalent to ``get_update_timestamp(is_sqlite=False)``.
+
+            Note:
+                Upstream dynamically detects SQLite via
+                ``inspect(self).session.bind.dialect.name``.  Our duck-typed
+                model may not be ORM-bound when this property is accessed, so
+                we hard-code ``is_sqlite=False``.  Revisit after upgrading to
+                google-adk >= 1.28.0 if upstream starts calling this property.
+            """
+            return self.get_update_timestamp(is_sqlite=False)
+
+        def get_update_marker(self) -> str:
+            """Return a stable revision marker for optimistic concurrency checks.
+
+            Produces an ISO 8601 timestamp string with microsecond precision,
+            matching the upstream ``StorageSession.get_update_marker()``
+            contract introduced in google-adk 1.28.0.
+
+            Returns:
+                ISO 8601 formatted update time (microsecond precision).
+                Naive datetimes pass through as-is (assumed UTC from
+                SQLite); tz-aware datetimes are normalized to UTC.
+            """
+            update_time = self.update_time
+            if update_time.tzinfo is not None:
+                update_time = update_time.astimezone(timezone.utc)
+            return update_time.isoformat(timespec="microseconds")
 
         def __repr__(self) -> str:
             return f"<EncryptedStorageSession(id={self.id}, update_time={self.update_time})>"
