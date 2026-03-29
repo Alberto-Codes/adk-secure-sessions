@@ -90,6 +90,8 @@ All test-review.md recommendations have been addressed. Pick a gap area not rela
 
 No source code changes in `src/`. No new test files (unless the cross-cutting task warrants one). The only code-adjacent change is the `mkdocs.yml` nav entry.
 
+Cross-cutting task added an `__all__` alphabetical sort test to `tests/unit/test_public_api.py` and fixed the sort order in `src/adk_secure_sessions/__init__.py`.
+
 ### The EncryptionBackend Protocol Contract (5 Members)
 
 From `src/adk_secure_sessions/protocols.py`:
@@ -254,8 +256,8 @@ From Story 4.4 dev agent record: `mkdocs.yml` was modified to add the How-To Gui
 ### Blast Radius: Peripheral Config Files
 
 - `mkdocs.yml`: Add `Backend Authoring` entry under `How-To Guides:` nav section
-- **No changes to**: `pyproject.toml`, `.github/workflows/*.yml`, `sonar-project.properties`, `.pre-commit-config.yaml`, `release-please-config.json`, `src/adk_secure_sessions/__init__.py`
-- This is a pure documentation addition — no code changes, no new dependencies, no CI changes
+- **No changes to**: `pyproject.toml`, `.github/workflows/*.yml`, `sonar-project.properties`, `.pre-commit-config.yaml`, `release-please-config.json`
+- Documentation-focused — no new dependencies, no CI changes
 
 ### Documentation Impact
 
