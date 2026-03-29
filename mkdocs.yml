@@ -156,6 +156,7 @@ nav:
       - Full Module Index: reference/adk_secure_sessions/index.md
   - How-To Guides:
       - Key Rotation: how-to/key-rotation.md
+      - Backend Authoring: how-to/backend-authoring.md
   - Architecture:
       - Overview: ARCHITECTURE.md
       - Envelope Protocol: envelope-protocol.md

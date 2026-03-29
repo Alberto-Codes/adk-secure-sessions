@@ -4,26 +4,26 @@ Provides field-level encryption for ADK session data via pluggable
 encryption backends that conform to the ``EncryptionBackend`` protocol.
 
 Attributes:
-    EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
-        contract.
     AesGcmBackend: AES-256-GCM authenticated encryption backend.
-    FernetBackend: Fernet symmetric encryption backend.
-    EncryptedSessionService: Encrypted session service wrapping
-        ``DatabaseSessionService`` with transparent encryption.
-    SecureSessionError: Base exception for all library errors.
-    EncryptionError: Raised when encryption fails.
-    DecryptionError: Raised when decryption fails.
-    SerializationError: Raised when data cannot be serialized to JSON.
-    ConfigurationError: Raised when the service is misconfigured at startup.
-    encrypt_session: Serialize a dict to an encrypted envelope.
-    decrypt_session: Decrypt an envelope back to a dict.
-    encrypt_json: Encrypt a JSON string into an envelope.
-    decrypt_json: Decrypt an envelope back to a JSON string.
     BACKEND_AES_GCM: Backend identifier for AES-256-GCM encryption.
     BACKEND_FERNET: Backend identifier for Fernet encryption.
+    ConfigurationError: Raised when the service is misconfigured at startup.
+    DecryptionError: Raised when decryption fails.
     ENVELOPE_VERSION_1: Current envelope format version byte.
-    rotate_encryption_keys: Re-encrypt all session data to a new backend.
+    EncryptedSessionService: Encrypted session service wrapping
+        ``DatabaseSessionService`` with transparent encryption.
+    EncryptionBackend (Protocol): Protocol defining the encrypt/decrypt
+        contract.
+    EncryptionError: Raised when encryption fails.
+    FernetBackend: Fernet symmetric encryption backend.
     RotationResult: Result dataclass for key rotation operations.
+    SecureSessionError: Base exception for all library errors.
+    SerializationError: Raised when data cannot be serialized to JSON.
+    decrypt_json: Decrypt an envelope back to a JSON string.
+    decrypt_session: Decrypt an envelope back to a dict.
+    encrypt_json: Encrypt a JSON string into an envelope.
+    encrypt_session: Serialize a dict to an encrypted envelope.
+    rotate_encryption_keys: Re-encrypt all session data to a new backend.
 
 Examples:
     Encrypt and decrypt session state:
@@ -74,8 +74,8 @@ __all__ = [
     "BACKEND_FERNET",
     "ConfigurationError",
     "DecryptionError",
-    "EncryptedSessionService",
     "ENVELOPE_VERSION_1",
+    "EncryptedSessionService",
     "EncryptionBackend",
     "EncryptionError",
     "FernetBackend",

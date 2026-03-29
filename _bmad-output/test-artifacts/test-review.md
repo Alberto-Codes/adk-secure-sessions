@@ -1,16 +1,16 @@
 ---
 stepsCompleted: ['step-01-load-context', 'step-02-discover-tests', 'step-03a-subprocess-determinism', 'step-03b-subprocess-isolation', 'step-03c-subprocess-maintainability', 'step-03e-subprocess-performance', 'step-03f-aggregate-scores', 'step-04-generate-report']
 lastStep: 'step-04-generate-report'
-lastSaved: '2026-03-06'
+lastSaved: '2026-03-28'
 workflowType: 'testarch-test-review'
-inputDocuments: ['tests/unit/test_protocols.py', 'tests/unit/test_exceptions.py', 'tests/unit/test_fernet_backend.py', 'tests/unit/test_serialization.py', 'tests/unit/test_encrypted_session_service.py', 'tests/unit/test_type_decorator.py', 'tests/unit/test_public_api.py', 'tests/unit/test_aes_gcm_backend.py', 'tests/integration/test_adk_conformance.py', 'tests/integration/test_adk_encryption.py', 'tests/integration/test_adk_crud.py', 'tests/integration/test_docs_examples.py', 'tests/integration/test_concurrent_writes.py', 'tests/integration/test_adk_runner.py', 'tests/integration/test_conformance.py', 'tests/integration/test_encryption_boundary.py', 'tests/benchmarks/test_encryption_overhead.py']
+inputDocuments: ['tests/unit/test_protocols.py', 'tests/unit/test_exceptions.py', 'tests/unit/test_fernet_backend.py', 'tests/unit/test_serialization.py', 'tests/unit/test_encrypted_session_service.py', 'tests/unit/test_type_decorator.py', 'tests/unit/test_public_api.py', 'tests/unit/test_aes_gcm_backend.py', 'tests/unit/test_models.py', 'tests/integration/test_adk_conformance.py', 'tests/integration/test_adk_encryption.py', 'tests/integration/test_adk_crud.py', 'tests/integration/test_docs_examples.py', 'tests/integration/test_concurrent_writes.py', 'tests/integration/test_adk_runner.py', 'tests/integration/test_conformance.py', 'tests/integration/test_encryption_boundary.py', 'tests/benchmarks/test_encryption_overhead.py']
 ---
 
-# Test Quality Review: Full Suite (Post-Story 3.1)
+# Test Quality Review: Full Suite (Post-ADK-128 Update)
 
 **Quality Score**: 96/100 (A - Excellent)
-**Review Date**: 2026-03-06
-**Review Scope**: suite (17 files, 208 tests, 4,610 LOC)
+**Review Date**: 2026-03-28
+**Review Scope**: suite (27 files, 282 tests, 6,906 LOC)
 **Reviewer**: TEA Agent (Test Architect)
 
 ---
@@ -26,12 +26,10 @@ Coverage mapping and coverage gates are out of scope here. Use `trace` for cover
 
 ### Key Strengths
 
-- Story 3.1 adds a comprehensive AES-256-GCM backend test file (`test_aes_gcm_backend.py`, 282 lines, 28 tests) covering round-trip, wrong-key, key validation, nonce uniqueness, ciphertext format, raw-library interop, cross-backend confusion, and sync method verification
-- Magic string extraction (Story 3.1 refactor commit) resolves the last remaining MEDIUM violation: `test_adk_crud.py`, `test_adk_encryption.py`, and `test_adk_conformance.py` now use module-level constants (`APP_NAME`, `USER_ID`, etc.) with docstring annotations
-- Protocol tests expanded for the new `sync_encrypt`, `sync_decrypt`, and `backend_id` protocol members -- 5 new negative `isinstance` tests verify structural subtyping rejects incomplete implementations
-- AES-GCM serialization integration tests (`TestAesGcmSerialization`) verify envelope round-trip, `BACKEND_AES_GCM` byte marker, and backward compatibility with Fernet envelopes
-- FernetBackend sync primitives tested: `sync_encrypt`/`sync_decrypt` round-trip, type guards, and wrong-key failure
-- All previous strengths preserved: 6 ADK compatibility sentinels, DontWrapMixin verification, async generator fixtures with proper teardown, living documentation smoke test, conformance pattern, encryption boundary tests
+- ADK-128 update adds `test_models.py` (167 lines, 10 tests) covering `get_update_marker()`, `update_timestamp_tz`, and `to_session()` marker stamping with full datetime edge case coverage (naive, tz-aware, UTC, zero microseconds)
+- New sentinel test `test_all_public_methods_present` in `test_adk_conformance.py` introspects upstream `StorageSession` to detect duck-type parity gaps at CI time -- catches future ADK API additions automatically
+- Integration round-trip tests verify `_storage_update_marker` survives `create_session()` and `get_session()` cycles through real encrypted DB
+- All previous strengths preserved: AES-GCM backend tests, cross-backend confusion detection, 6 ADK compatibility sentinels, DontWrapMixin verification, async generator fixtures, living documentation smoke test, conformance pattern, encryption boundary tests
 
 ### Key Weaknesses
 
@@ -41,7 +39,7 @@ Coverage mapping and coverage gates are out of scope here. Use `trace` for cover
 
 ### Summary
 
-The adk-secure-sessions test suite improves to 96/100 after Story 3.1. The last MEDIUM-severity violation (magic string constants) is resolved. The AES-GCM backend has comprehensive test coverage from day one -- 28 tests including cross-backend confusion detection and bidirectional raw-library interop. The protocol tests now validate all 5 protocol members (`encrypt`, `decrypt`, `sync_encrypt`, `sync_decrypt`, `backend_id`) with both positive and negative `isinstance` checks. The suite has grown to 208 tests across 17 files (4,610 LOC), running in 4.80s with zero flakiness. No critical or high-severity issues remain.
+The adk-secure-sessions test suite maintains 96/100 after the ADK-128 update. The new `test_models.py` file follows all established patterns: Google-style docstrings, AC traceability, factory fixtures, explicit assertions. The sentinel parity test is a valuable addition that will automatically detect future ADK API drift. The suite has grown to 282 tests across 27 files (6,906 LOC), running in 5.51s with zero flakiness. No critical or high-severity issues.
 
 ---
 
@@ -270,6 +268,14 @@ Eight test classes systematically verify every encrypted column in every table. 
 **Why This Is Good**:
 Six sentinel tests verify that ADK's `DatabaseSessionService` still exposes the private APIs we depend on.
 
+### 8b. StorageSession Duck-Type Parity Sentinel (NEW)
+
+**Location**: `tests/integration/test_adk_conformance.py:98-127`
+**Pattern**: Upstream API surface drift detection
+
+**Why This Is Good**:
+The `test_all_public_methods_present` test introspects `StorageSession` from `google.adk.sessions.schemas.v1` and asserts every public method/property exists on `EncryptedStorageSession`. When ADK adds a new method (like `get_update_marker()` in 1.28.0), this test fails immediately, flagging the parity gap before runtime `AttributeError` hits production. The ORM-internal exclusion set (`metadata`, `registry`) keeps the test focused on the API contract.
+
 ### 9. Async Generator Fixture with Proper Teardown
 
 **Location**: `tests/conftest.py:133-160`, `tests/integration/test_conformance.py:44-86`
@@ -302,7 +308,8 @@ Extracts code blocks from `docs/getting-started.md` using sentinel comments and 
 | test_encrypted_session_service.py | `tests/unit/` | 312 | 17 | 5 | `unit` | A |
 | test_type_decorator.py | `tests/unit/` | 153 | 9 | 5 | `unit` | A |
 | test_public_api.py | `tests/unit/` | 76 | 6 | 3 | `unit` | A |
-| test_adk_conformance.py | `tests/integration/` | 103 | 4 | 2 | `integration` | A |
+| test_models.py | `tests/unit/` | 167 | 10 | 3 | `unit` | A |
+| test_adk_conformance.py | `tests/integration/` | 179 | 7 | 3 | `integration` | A |
 | test_adk_encryption.py | `tests/integration/` | 356 | 8 | 4 | `integration` | B |
 | test_adk_crud.py | `tests/integration/` | 406 | 8 | 5 | `integration` | B+ |
 | test_docs_examples.py | `tests/integration/` | 78 | 1 | 1 | `integration` | A |
@@ -328,6 +335,8 @@ Extracts code blocks from `docs/getting-started.md` using sentinel comments and 
 | `db_path` | function | conftest.py | Temp SQLite path via `tmp_path` |
 | `db_url` | function | conftest.py | SQLAlchemy connection string |
 | `encrypted_service` | function (async gen) | conftest.py | EncryptedSessionService with teardown |
+| `schema` | module | test_models.py | Encrypted model classes via `create_encrypted_models(JSON())` |
+| `make_session` | function | test_models.py | Factory for `EncryptedStorageSession` with given `update_time` |
 | `key` | function | test_aes_gcm_backend.py | Generated 256-bit AES key |
 | `backend` | function | test_aes_gcm_backend.py | Fresh AesGcmBackend per test |
 | `runner` / `stateful_runner` / `counting_runner` | function (async gen) | test_adk_runner.py | ADK Runner instances with cleanup |
@@ -443,6 +452,7 @@ Test quality is excellent with a 96/100 weighted score (Grade A). Story 3.1 adds
 | 2026-03-06  | 95/100 | A   | 0               | 16    | 171   | 3,940 | (up) +2pts (Story 7.5 file split) |
 | 2026-03-06  | 95/100 | A   | 0               | 16    | 171   | 3,918 | (stable) +0pts (Story 7.6 fixture extraction) |
 | 2026-03-06  | 96/100 | A   | 0               | 17    | 208   | 4,610 | (up) +1pt (Story 3.1 AES-GCM + magic strings) |
+| 2026-03-28  | 96/100 | A   | 0               | 27    | 282   | 6,906 | (stable) +0pts (ADK-128 get_update_marker) |
 
 ### Related Reviews
 
@@ -456,7 +466,8 @@ Test quality is excellent with a 96/100 weighted score (Grade A). Story 3.1 adds
 | test_encrypted_session_service.py | 98/100 | A | 0 | Approved |
 | test_type_decorator.py | 100/100 | A | 0 | Approved |
 | test_public_api.py | 100/100 | A | 0 | Approved |
-| test_adk_conformance.py | 100/100 | A | 0 | Approved |
+| test_models.py | 98/100 | A | 0 | Approved |
+| test_adk_conformance.py | 98/100 | A | 0 | Approved |
 | test_adk_encryption.py | 92/100 | A | 0 | Approved |
 | test_adk_crud.py | 92/100 | A | 0 | Approved |
 | test_docs_examples.py | 100/100 | A | 0 | Approved |
@@ -474,9 +485,9 @@ Test quality is excellent with a 96/100 weighted score (Grade A). Story 3.1 adds
 
 **Generated By**: BMad TEA Agent (Test Architect)
 **Workflow**: testarch-test-review v5.0
-**Review ID**: test-review-suite-20260306-post-3.1
-**Timestamp**: 2026-03-06
-**Version**: 6.0 (updated for Story 3.1 AES-GCM backend + magic string extraction)
+**Review ID**: test-review-suite-20260328-adk-128
+**Timestamp**: 2026-03-28
+**Version**: 7.0 (updated for ADK-128 get_update_marker compatibility)
 
 ---
 
