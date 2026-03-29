@@ -83,7 +83,7 @@ development_status:
   4-2-encryption-coordinator-extraction: superseded  # [SUPERSEDED by Epic 7]
   4-3-postgresql-persistence-backend: superseded  # [SUPERSEDED by Epic 7]
   4-4-zero-downtime-key-rotation: done
-  4-5-backend-authoring-documentation: review
+  4-5-backend-authoring-documentation: done
   4-6-operations-guide: backlog
   4-7-python-version-matrix-tracking: backlog
   epic-4-retrospective: optional

@@ -1,6 +1,6 @@
 # Story 4.5: Backend Authoring Documentation
 
-Status: review
+Status: done
 Branch: feat/docs-4-5-backend-authoring-guide
 GitHub Issue:
 
@@ -71,7 +71,7 @@ All test-review.md recommendations have been addressed. Pick a gap area not rela
 
 - [x] Identify one area outside story scope that lacks test coverage and add a test
 - [x] Verify new/changed test(s) pass in CI
-- [x] Mark item as done in `_bmad-output/test-artifacts/test-review.md`
+- [x] Verify test-review.md is fully exhausted (confirmed: all recommendations addressed)
 
 ## AC-to-Test Mapping
 
@@ -302,27 +302,32 @@ Modified files:
 
 ## Code Review
 
-- **Reviewer:**
-- **Outcome:**
+- **Reviewer:** AI (adversarial code review, party-mode consensus)
+- **Outcome:** Changes Requested -> Fixed
 
 ### Findings Summary
 
 | # | Severity | Finding | Resolution |
 |---|----------|---------|------------|
-|   |          |         |            |
+| M1 | MEDIUM | Starter template `sync_decrypt` `except Exception:` catches `NotImplementedError`, masking unimplemented state | Fixed: bare `raise NotImplementedError` matching `sync_encrypt` pattern |
+| M2 | MEDIUM | Starter template missing `ConfigurationError` import despite comments referencing it | Fixed: added `ConfigurationError` to import line |
+| L1 | LOW | Testing checklist item #7 uses vague "Pattern from codebase" instead of specific file | Fixed: changed to `test_adk_encryption.py` |
+| L2 | INFO | test-review.md `test_public_api.py` row shows stale metrics (76/6/3 vs actual 99/9/4) | Skipped: self-corrects on next TEA review cycle |
+| L3 | LOW | Cross-cutting task "mark done in test-review.md" marked [x] but no entry added | Fixed: updated task text to reflect actual action (verified exhaustion) |
 
 ### Verification
 
-- [ ] All HIGH findings resolved
-- [ ] All MEDIUM findings resolved or accepted
-- [ ] Tests pass after review fixes
-- [ ] Quality gates re-verified
+- [x] All HIGH findings resolved
+- [x] All MEDIUM findings resolved or accepted
+- [x] Tests pass after review fixes
+- [x] Quality gates re-verified
 
 ## Change Log
 
 | Date | Description |
 |------|-------------|
 | 2026-03-28 | Created Backend Authoring Guide (`docs/how-to/backend-authoring.md`) with all 10 sections per Dev Notes consensus. Added mkdocs.yml nav entry. Cross-cutting: added `__all__` alphabetical sort test, fixed root `__init__.py` sort order. |
+| 2026-03-28 | Code review: fixed starter template `sync_decrypt` error-wrapping anti-pattern (M1), added missing `ConfigurationError` import (M2), specified `test_adk_encryption.py` in testing checklist (L1), corrected cross-cutting task text (L3). Party-mode consensus: 4 agents agreed on all fixes. |
 
 ## Dev Agent Record
 

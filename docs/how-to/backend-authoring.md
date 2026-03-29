@@ -158,7 +158,7 @@ from __future__ import annotations
 
 import asyncio
 
-from adk_secure_sessions.exceptions import DecryptionError
+from adk_secure_sessions.exceptions import ConfigurationError, DecryptionError
 
 BACKEND_MY_CRYPTO = 0x10  # community range start
 
@@ -190,11 +190,7 @@ class MyBackend:
         # 2. Decrypt using self._key.
         # 3. On failure: raise DecryptionError("decryption failed") from None
         #    NEVER include key material in the error message.
-        try:
-            raise NotImplementedError
-        except Exception:
-            msg = "Decryption failed"
-            raise DecryptionError(msg) from None
+        raise NotImplementedError
 
     async def encrypt(self, plaintext: bytes) -> bytes:
         return await asyncio.to_thread(self.sync_encrypt, plaintext)
@@ -275,7 +271,7 @@ references a test in the existing suite as a pattern to follow.
 | 4 | `decrypt(wrong_key_ciphertext)` raises `DecryptionError` | `test_aes_gcm_backend.py` | Wrong-key rejection |
 | 5 | 100x `encrypt(same_plaintext)` produces 100 unique ciphertexts | `test_aes_gcm_backend.py` | Nonce uniqueness (nonce-based backends only) |
 | 6 | Cross-backend: decrypt with wrong backend raises `DecryptionError` | `test_aes_gcm_backend.py` | Cross-backend confusion |
-| 7 | Error messages don't contain key material | Pattern from codebase | NFR6 safety |
+| 7 | Error messages don't contain key material | `test_adk_encryption.py` | NFR6 safety |
 
 !!! tip "Nonce uniqueness (test #5)"
     Test #5 applies to nonce-based backends (AES-GCM, ChaCha20). KMS backends
