@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  # Lets a maintainer re-run the release after fixing something outside the
+  # repo (a rotated RELEASE_PLEASE_TOKEN, for example). Re-running a previous
+  # run replays that run's original context, so it cannot pick up a new secret.
+  workflow_dispatch:
 
 permissions:
   contents: write
