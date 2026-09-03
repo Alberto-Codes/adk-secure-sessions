@@ -75,7 +75,18 @@ explicit = true
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-exclude = [".uv-cache", ".venv", "__pycache__", "*.egg-info", "specs", "_bmad", "_bmad-output"]
+exclude = [
+    ".uv-cache",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+    "specs",
+    # Framework-generated trees (BMAD, speckit) are not ours to format.
+    "_bmad",
+    "_bmad-output",
+    ".specify",
+    ".claude/commands",
+]
 
 [tool.ruff.lint]
 extend-select = [
