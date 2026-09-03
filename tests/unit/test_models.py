@@ -12,6 +12,7 @@ Typical usage::
 from __future__ import annotations
 
 import inspect
+import os
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -31,18 +32,27 @@ from adk_secure_sessions.services.models import (
 
 
 @pytest.fixture
-def new_york_tz(monkeypatch):
+def new_york_tz():
     """Run the test with the process timezone set to America/New_York.
 
     Makes naive-local and naive-UTC datetimes differ by hours, so any code
     that confuses the two produces a visibly wrong value instead of passing
-    by coincidence on UTC hosts such as CI runners.
+    by coincidence on UTC hosts such as CI runners. Only ``TZ`` is touched,
+    and it is restored (and ``tzset`` re-run) even if the test fails.
     """
-    monkeypatch.setenv("TZ", "America/New_York")
+    if not hasattr(time, "tzset"):
+        pytest.skip("time.tzset() is unavailable on this platform")
+    previous = os.environ.get("TZ")
+    os.environ["TZ"] = "America/New_York"
     time.tzset()
-    yield
-    monkeypatch.undo()
-    time.tzset()
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = previous
+        time.tzset()
 
 
 @pytest.fixture(scope="module")

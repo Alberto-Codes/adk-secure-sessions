@@ -2,14 +2,15 @@
 
 google-adk 2.4.0+ applies state deltas by mutating the loaded ORM row's
 ``state`` dict in place (``storage_session.state.update(delta)``) rather than
-reassigning the attribute. SQLAlchemy only detects that if the column type is
-wrapped in ``MutableDict.as_mutable``. These tests exercise that contract
+reassigning the attribute. SQLAlchemy only detects that if the ``state``
+attribute is registered with ``MutableDict`` (we use
+``MutableDict.associate_with_attribute``). These tests exercise that contract
 directly against our encrypted models, independent of which ADK version is
 installed, so a regression shows up on every matrix cell.
 
 See Also:
     [`adk_secure_sessions.services.models.create_encrypted_models`][adk_secure_sessions.services.models.create_encrypted_models]:
-    Where the ``MutableDict`` wrapping lives.
+    Where the ``MutableDict`` association lives.
 """
 
 from __future__ import annotations

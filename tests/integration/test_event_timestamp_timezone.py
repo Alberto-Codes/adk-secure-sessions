@@ -14,6 +14,7 @@ See Also:
 
 from __future__ import annotations
 
+import os
 import time
 from collections.abc import Iterator
 
@@ -39,17 +40,26 @@ T1 = T0 + 3600.0
 
 
 @pytest.fixture(params=["America/New_York", "Asia/Tokyo"])
-def process_timezone(request, monkeypatch) -> Iterator[str]:
+def process_timezone(request) -> Iterator[str]:
     """Run the test under a fixed non-UTC process timezone, west and east.
 
     A wrong convention loses events west of UTC and leaks them east of it,
-    so both directions are exercised.
+    so both directions are exercised. Only ``TZ`` is touched, and it is
+    restored (and ``tzset`` re-run) even if the test fails.
     """
-    monkeypatch.setenv("TZ", request.param)
+    if not hasattr(time, "tzset"):
+        pytest.skip("time.tzset() is unavailable on this platform")
+    previous = os.environ.get("TZ")
+    os.environ["TZ"] = request.param
     time.tzset()
-    yield request.param
-    monkeypatch.undo()
-    time.tzset()
+    try:
+        yield request.param
+    finally:
+        if previous is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = previous
+        time.tzset()
 
 
 async def _seed_two_events(service: EncryptedSessionService):
