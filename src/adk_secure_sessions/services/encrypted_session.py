@@ -6,6 +6,10 @@ SQLAlchemy model classes via ``_get_schema_classes()`` and
 ``prepare_tables()`` overrides. All CRUD operations are delegated to
 the parent class — no method overrides needed.
 
+SQLAlchemy (with the ``asyncio`` extra) and ``aiosqlite`` are declared as
+direct dependencies of this package. google-adk 2.x moved both behind its
+optional ``db`` extra, so they can no longer be inherited transitively.
+
 Examples:
     Basic usage with FernetBackend:
 
@@ -52,7 +56,7 @@ See Also:
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from google.adk.sessions.database_session_service import DatabaseSessionService
@@ -139,7 +143,8 @@ class EncryptedSessionService(DatabaseSessionService):
         ``backend.backend_id`` from the protocol to configure the
         ``EncryptedJSON`` TypeDecorator. When ``additional_backends``
         are provided, their decrypt functions are included in the
-        dispatch map for reading legacy-encrypted data.
+        dispatch map (keyed by ``backend_id``) for reading
+        legacy-encrypted data.
 
         Backends are fixed after construction. The ``cache_ok = True``
         on ``EncryptedJSON`` means SQLAlchemy may cache the type
@@ -190,7 +195,9 @@ class EncryptedSessionService(DatabaseSessionService):
                 raise ConfigurationError(msg)
             seen_ids.add(b.backend_id)
 
-        decrypt_dispatch = {b.backend_id: b.sync_decrypt for b in all_backends}
+        decrypt_dispatch: dict[int, Callable[[bytes], bytes]] = {
+            b.backend_id: b.sync_decrypt for b in all_backends
+        }
 
         self._encrypted_json = EncryptedJSON(
             encrypt_fn=backend.sync_encrypt,
@@ -203,8 +210,13 @@ class EncryptedSessionService(DatabaseSessionService):
 
         super().__init__(db_url=db_url, **kwargs)
 
-    def _get_schema_classes(self) -> _EncryptedSchemaClasses:  # type: ignore[override]
+    def _get_schema_classes(self) -> _EncryptedSchemaClasses:  # ty: ignore[invalid-method-override]
         """Return encrypted model classes for CRUD operations.
+
+        Upstream declares the return type as its private ``_SchemaClasses``;
+        ours is a duck-typed stand-in exposing the same four attributes, so
+        the override is intentionally reported as incompatible by the type
+        checker and suppressed.
 
         Returns:
             Duck-typed schema classes with encrypted models.

@@ -24,11 +24,12 @@ Google ADK's built-in session services store all session data — including user
 | Language | Python | 3.12 | Runtime |
 | Framework | google-adk | >=1.22.0 | Upstream ADK (BaseSessionService, Session, Event) |
 | Encryption | cryptography | >=44.0.0 | Fernet symmetric encryption (AES-128-CBC + HMAC-SHA256) |
-| ORM | SQLAlchemy | >=2.0.0 | Used directly via DatabaseSessionService; TypeDecorator (`EncryptedJSON`) provides transparent encryption at the ORM boundary |
-| Linter/Formatter | ruff | >=0.13.0 | Linting + formatting (Google style) |
-| Type Checker | ty | >=0.0.1a20 | Type checking |
-| Test Framework | pytest | >=8.4.2 | Unit + integration tests |
-| Test Async | pytest-asyncio | >=1.2.0 | Async test support (auto mode) |
+| ORM | SQLAlchemy | >=2.0 | Declared directly (google-adk 2.x moved it behind an optional extra); TypeDecorator (`EncryptedJSON`) provides transparent encryption at the ORM boundary |
+| Driver | aiosqlite | >=0.20 | Async SQLite driver for the default `sqlite+aiosqlite://` URL |
+| Linter/Formatter | ruff | >=0.16 | Linting + formatting (Google style) |
+| Type Checker | ty | >=0.0.64 | Type checking |
+| Test Framework | pytest | >=9.1 | Unit + integration tests |
+| Test Async | pytest-asyncio | >=1.4 | Async test support (auto mode) |
 | Test Mocking | pytest-mock | >=3.15.1 | Mock fixtures |
 | Docs | MkDocs Material | >=9.7.1 | Documentation site |
 | Docs API | mkdocstrings-python | >=2.0.1 | Auto-generated API reference |

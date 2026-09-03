@@ -129,7 +129,7 @@ Do not annotate `self` or `cls` parameters.
 
 Use f-strings for string interpolation. For logging, use %-formatting with lazy evaluation:
 ```python
-logger.info('Processing session: %s', session_id)
+logger.info("Processing session: %s", session_id)
 ```
 
 ## Boolean and None Checks

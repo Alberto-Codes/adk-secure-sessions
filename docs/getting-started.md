@@ -41,10 +41,12 @@ just two changes:
 ```python
 # Before (ADK default — unencrypted):
 from google.adk.sessions import DatabaseSessionService
+
 session_service = DatabaseSessionService(db_url="sqlite+aiosqlite:///sessions.db")
 
 # After (encrypted — swap the import and constructor):
 from adk_secure_sessions import EncryptedSessionService, FernetBackend
+
 session_service = EncryptedSessionService(
     db_url="sqlite+aiosqlite:///sessions.db",
     backend=FernetBackend("your-secret-passphrase"),
@@ -150,7 +152,7 @@ import sqlite3
 conn = sqlite3.connect("sessions.db")
 row = conn.execute("SELECT state FROM sessions LIMIT 1").fetchone()
 print(type(row[0]))  # <class 'str'>
-print(row[0][:40])   # First 40 chars of base64-encoded envelope
+print(row[0][:40])  # First 40 chars of base64-encoded envelope
 conn.close()
 ```
 

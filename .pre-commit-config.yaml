@@ -1,57 +1,92 @@
+# Every Python tool here runs from the project environment through
+# `uv run`, so the lockfile pins one version for both this hook line and
+# CI. A pre-commit mirror carries its own pin that drifts from the
+# lockfile CI installs, and the two gates then disagree.
+#
+# actionlint is a Go binary with no lockfile entry; the CI step pins the
+# same 1.7.11 this mirror does.
+default_stages: [pre-commit]
+
 repos:
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.38.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
     hooks:
-      - id: yamllint
-        args: [-c, .yamllint.yaml]
+      - id: end-of-file-fixer
+        exclude: ^(_bmad|_bmad-output|\.specify|\.claude/commands)/
+      - id: trailing-whitespace
+        exclude: ^(_bmad|_bmad-output|\.specify|\.claude/commands)/
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
 
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.11
     hooks:
       - id: actionlint
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
-    hooks:
-      - id: ruff-check
-      - id: ruff-format
-
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.10.7
-    hooks:
-      - id: uv-lock
-
-  - repo: https://github.com/owenlamont/uv-secure
-    rev: 0.17.0
-    hooks:
-      - id: uv-secure
-
   - repo: local
     hooks:
+      - id: yamllint
+        name: yamllint
+        entry: uv run yamllint -c .yamllint.yaml .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --check .
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # `uv lock --check` reports a stale lockfile where the mirror's bare
+      # `uv lock` rewrote it, matching CI.
+      - id: uv-lock
+        name: uv lock is current
+        entry: uv lock --check
+        language: system
+        pass_filenames: false
+        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
+
+      - id: uv-secure
+        name: uv-secure
+        entry: uv run uv-secure
+        language: system
+        pass_filenames: false
+        files: ^uv\.lock$
+
       - id: lint-imports
         name: import-linter
         entry: uv run lint-imports
         language: system
-        types: [python]
         pass_filenames: false
+        always_run: true
 
       - id: ty-check
         name: ty type check
         entry: uv run ty check src/
         language: system
-        types: [python]
         pass_filenames: false
+        always_run: true
 
       - id: pytest
         name: pytest
         entry: uv run pytest --tb=short -q
         language: system
-        types: [python]
         pass_filenames: false
+        always_run: true
 
       - id: docvet
         name: docvet check
         entry: uv run docvet check --staged
         language: system
-        types: [python]
         pass_filenames: false
+        always_run: true
