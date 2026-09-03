@@ -271,9 +271,32 @@ class TestADKSentinels:
         """T: DatabaseSessionService has _get_schema_classes method."""
         assert hasattr(DatabaseSessionService, "_get_schema_classes")
 
-    def test_database_session_service_has_prepare_tables(self) -> None:
-        """T: DatabaseSessionService has _prepare_tables method."""
-        assert hasattr(DatabaseSessionService, "_prepare_tables")
+    def test_database_session_service_has_table_preparation_hook(self) -> None:
+        """T: DatabaseSessionService exposes a table-preparation hook.
+
+        google-adk < 2.4.0 names it ``_prepare_tables``; 2.4.0+ renamed it
+        to the public ``prepare_tables``. Either must exist, or our
+        encrypted table creation is never invoked.
+        """
+        hooks = [
+            name
+            for name in ("prepare_tables", "_prepare_tables")
+            if hasattr(DatabaseSessionService, name)
+        ]
+        assert hooks, "No table-preparation hook found on DatabaseSessionService"
+
+    def test_encrypted_service_overrides_every_upstream_table_hook(self) -> None:
+        """T: Every upstream table hook resolves to our override.
+
+        If upstream exposes a hook we do not override, CRUD would create
+        plaintext-typed tables from ADK's own metadata.
+        """
+        for name in ("prepare_tables", "_prepare_tables"):
+            if not hasattr(DatabaseSessionService, name):
+                continue
+            assert getattr(EncryptedSessionService, name) is not getattr(
+                DatabaseSessionService, name
+            ), f"EncryptedSessionService does not override {name}"
 
     def test_database_session_service_init_accepts_db_url(self) -> None:
         """T: DatabaseSessionService.__init__ accepts db_url parameter."""

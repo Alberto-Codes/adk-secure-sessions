@@ -15,6 +15,8 @@ See Also:
 
 from __future__ import annotations
 
+import inspect
+
 import pytest
 from sqlalchemy import JSON
 
@@ -124,6 +126,44 @@ class TestStorageSessionMethodParity:
         assert not missing, (
             f"EncryptedStorageSession is missing public members from "
             f"StorageSession: {sorted(missing)}"
+        )
+
+    def test_public_method_signatures_accept_upstream_parameters(self) -> None:
+        """AC6: Our methods accept every parameter upstream's methods accept.
+
+        ``DatabaseSessionService`` calls these methods with keyword
+        arguments (for example ``is_postgresql``, added in google-adk
+        2.4.0). A parameter present upstream but missing here raises
+        ``TypeError`` on every CRUD call.
+        """
+        from google.adk.sessions.schemas.v1 import StorageSession
+
+        _, schema = create_encrypted_models(JSON())
+        encrypted_cls = schema.StorageSession
+
+        upstream_methods = {
+            name
+            for name in dir(StorageSession)
+            if not name.startswith("_")
+            and callable(getattr(StorageSession, name))
+            and not isinstance(getattr(StorageSession, name, None), property)
+            and name not in {"metadata", "registry"}
+        }
+
+        gaps: dict[str, set[str]] = {}
+        for name in upstream_methods:
+            upstream_params = set(
+                inspect.signature(getattr(StorageSession, name)).parameters
+            )
+            ours_params = set(
+                inspect.signature(getattr(encrypted_cls, name)).parameters
+            )
+            missing = upstream_params - ours_params
+            if missing:
+                gaps[name] = missing
+
+        assert not gaps, (
+            f"EncryptedStorageSession methods missing upstream parameters: {gaps}"
         )
 
     async def test_create_session_roundtrip_sets_storage_update_marker(

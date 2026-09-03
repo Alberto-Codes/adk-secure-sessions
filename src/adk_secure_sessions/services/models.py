@@ -5,6 +5,11 @@ Mirrors ADK's database schema but replaces ``DynamicJSON`` columns with
 function that creates a fresh ``DeclarativeBase`` per call to avoid
 metadata conflicts between multiple service instances.
 
+State columns are wrapped in ``MutableDict.as_mutable`` exactly as upstream
+does. google-adk 2.4.0+ applies state deltas by mutating the loaded dict in
+place (``storage_session.state.update(delta)``); without change tracking
+SQLAlchemy never issues the UPDATE and the delta is silently lost.
+
 This module is an internal implementation detail and is NOT exported
 in the public API.
 
@@ -35,7 +40,9 @@ from sqlalchemy import (
     ForeignKeyConstraint,
     String,
     func,
+    inspect,
 )
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -126,9 +133,12 @@ def create_encrypted_models(
         """Encrypted session storage model.
 
         Duck-types ADK's ``StorageSession`` with encrypted state columns.
-        Provides ``get_update_marker()`` and ``update_timestamp_tz`` for
-        forward-compatibility with google-adk >= 1.28.0 optimistic
-        concurrency.
+        The ``state`` column is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted. Provides
+        ``get_update_marker()`` and ``update_timestamp_tz`` for optimistic
+        concurrency (google-adk >= 1.28.0), ``_dialect_name`` for
+        google-adk 1.22.0 through 1.25.x, and a ``to_session()`` signature
+        that accepts every dialect flag upstream passes.
 
         Examples:
             Created internally by ``create_encrypted_models``:
@@ -153,7 +163,9 @@ def create_encrypted_models(
             default=lambda: str(uuid.uuid4()),
         )
 
-        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
+        state: Mapped[dict[str, Any]] = mapped_column(
+            MutableDict.as_mutable(encrypted_json), default=dict
+        )
 
         create_time: Mapped[datetime] = mapped_column(DateTime, default=func.now())
         update_time: Mapped[datetime] = mapped_column(
@@ -166,18 +178,43 @@ def create_encrypted_models(
             cascade="all, delete-orphan",
         )
 
+        @property
+        def _dialect_name(self) -> str | None:
+            """Dialect name of the engine this row is bound to.
+
+            google-adk 1.22.0 through 1.25.x read this private property in
+            ``append_event()`` to decide how to interpret ``update_time``.
+            Later releases pass dialect flags explicitly instead.
+
+            Returns:
+                The SQLAlchemy dialect name (for example ``"sqlite"``), or
+                ``None`` when the instance is detached from any session.
+            """
+            orm_session = inspect(self).session
+            if orm_session is None or orm_session.bind is None:
+                return None
+            return orm_session.bind.dialect.name
+
         def to_session(
             self,
             state: dict[str, Any] | None = None,
             events: list[Event] | None = None,
             is_sqlite: bool = False,
+            is_postgresql: bool = False,
         ) -> Session:
             """Convert to an ADK Session object.
+
+            The ``is_sqlite`` and ``is_postgresql`` flags mirror the upstream
+            ``StorageSession.to_session()`` signature. ADK passes them as
+            keywords from ``DatabaseSessionService`` (``is_postgresql`` since
+            google-adk 2.4.0), so both must be accepted even though the
+            timestamp logic no longer depends on them.
 
             Args:
                 state: Merged state dict (overrides stored state).
                 events: List of Event objects.
                 is_sqlite: Whether the backend is SQLite.
+                is_postgresql: Whether the backend is PostgreSQL.
 
             Returns:
                 ADK Session object with ``_storage_update_marker`` set for
@@ -194,21 +231,35 @@ def create_encrypted_models(
                 id=self.id,
                 state=state,
                 events=events,
-                last_update_time=self.get_update_timestamp(is_sqlite=is_sqlite),
+                last_update_time=self.get_update_timestamp(
+                    is_sqlite=is_sqlite, is_postgresql=is_postgresql
+                ),
             )
             session._storage_update_marker = self.get_update_marker()  # type: ignore[attr-defined]  # PrivateAttr added in ADK 1.28.0
             return session
 
-        def get_update_timestamp(self, is_sqlite: bool = False) -> float:
+        def get_update_timestamp(
+            self, is_sqlite: bool = False, is_postgresql: bool = False
+        ) -> float:
             """Get update time as a POSIX timestamp.
 
+            Naive datetimes (returned by SQLite and PostgreSQL, which store
+            no timezone) are interpreted as UTC. Timezone-aware datetimes are
+            converted directly. This matches upstream ``StorageSession``
+            behaviour, which decides on ``tzinfo`` rather than the dialect
+            flags.
+
             Args:
-                is_sqlite: Whether the backend is SQLite (naive datetime).
+                is_sqlite: Whether the backend is SQLite. Accepted for
+                    upstream signature parity; unused.
+                is_postgresql: Whether the backend is PostgreSQL. Accepted
+                    for upstream signature parity; unused.
 
             Returns:
                 Update time as a float POSIX timestamp.
             """
-            if is_sqlite:
+            del is_sqlite, is_postgresql  # Signature parity only.
+            if self.update_time.tzinfo is None:
                 return self.update_time.replace(tzinfo=timezone.utc).timestamp()
             return self.update_time.timestamp()
 
@@ -220,11 +271,12 @@ def create_encrypted_models(
             Equivalent to ``get_update_timestamp(is_sqlite=False)``.
 
             Note:
-                Upstream dynamically detects SQLite via
-                ``inspect(self).session.bind.dialect.name``.  Our duck-typed
+                Upstream detects the dialect via
+                ``inspect(self).session.bind.dialect.name``. Our duck-typed
                 model may not be ORM-bound when this property is accessed, so
-                we hard-code ``is_sqlite=False``.  Revisit after upgrading to
-                google-adk >= 1.28.0 if upstream starts calling this property.
+                the dialect flags are omitted. This is safe because
+                ``get_update_timestamp`` decides on ``tzinfo``, not on the
+                flags.
             """
             return self.get_update_timestamp(is_sqlite=False)
 
@@ -251,6 +303,9 @@ def create_encrypted_models(
     class EncryptedStorageAppState(_Base):
         """Encrypted app state storage model.
 
+        The ``state`` column is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted.
+
         Examples:
             Created internally by ``create_encrypted_models``:
 
@@ -265,13 +320,18 @@ def create_encrypted_models(
         app_name: Mapped[str] = mapped_column(
             String(_DEFAULT_MAX_KEY_LENGTH), primary_key=True
         )
-        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
+        state: Mapped[dict[str, Any]] = mapped_column(
+            MutableDict.as_mutable(encrypted_json), default=dict
+        )
         update_time: Mapped[datetime] = mapped_column(
             DateTime, default=func.now(), onupdate=func.now()
         )
 
     class EncryptedStorageUserState(_Base):
         """Encrypted user state storage model.
+
+        The ``state`` column is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted.
 
         Examples:
             Created internally by ``create_encrypted_models``:
@@ -290,7 +350,9 @@ def create_encrypted_models(
         user_id: Mapped[str] = mapped_column(
             String(_DEFAULT_MAX_KEY_LENGTH), primary_key=True
         )
-        state: Mapped[dict[str, Any]] = mapped_column(encrypted_json, default=dict)
+        state: Mapped[dict[str, Any]] = mapped_column(
+            MutableDict.as_mutable(encrypted_json), default=dict
+        )
         update_time: Mapped[datetime] = mapped_column(
             DateTime, default=func.now(), onupdate=func.now()
         )

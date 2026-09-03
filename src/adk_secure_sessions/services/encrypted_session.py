@@ -3,7 +3,7 @@
 Provides transparent field-level encryption for session state and event
 data by subclassing ``DatabaseSessionService`` and injecting encrypted
 SQLAlchemy model classes via ``_get_schema_classes()`` and
-``_prepare_tables()`` overrides. All CRUD operations are delegated to
+``prepare_tables()`` overrides. All CRUD operations are delegated to
 the parent class — no method overrides needed.
 
 Examples:
@@ -73,7 +73,7 @@ class EncryptedSessionService(DatabaseSessionService):
 
     Subclasses ADK's ``DatabaseSessionService`` to inject encrypted
     SQLAlchemy models via ``_get_schema_classes()`` and
-    ``_prepare_tables()``. All CRUD methods (``create_session``,
+    ``prepare_tables()``. All CRUD methods (``create_session``,
     ``get_session``, ``list_sessions``, ``delete_session``,
     ``append_event``) are inherited without modification.
 
@@ -211,11 +211,17 @@ class EncryptedSessionService(DatabaseSessionService):
         """
         return self._encrypted_schema
 
-    async def _prepare_tables(self) -> None:
+    async def prepare_tables(self) -> None:
         """Create encrypted tables using custom DeclarativeBase metadata.
 
-        Overrides the parent method to use our encrypted model metadata
-        instead of ADK's built-in schema.
+        Overrides the parent hook to use our encrypted model metadata
+        instead of ADK's built-in schema. Upstream calls this lazily before
+        every CRUD operation; it is safe to call eagerly at startup and
+        safe to call more than once.
+
+        ADK renamed this hook from ``_prepare_tables()`` to the public
+        ``prepare_tables()`` in google-adk 2.4.0. ``_prepare_tables`` below
+        keeps the older call path working.
         """
         if self._tables_created:
             return
@@ -228,3 +234,12 @@ class EncryptedSessionService(DatabaseSessionService):
                 await conn.run_sync(self._encrypted_base.metadata.create_all)
 
             self._tables_created = True
+
+    async def _prepare_tables(self) -> None:
+        """Compatibility alias for google-adk < 2.4.0.
+
+        Older ``DatabaseSessionService`` releases call the underscore
+        variant before each CRUD operation. Delegates to
+        [`prepare_tables`][adk_secure_sessions.services.encrypted_session.EncryptedSessionService.prepare_tables].
+        """
+        await self.prepare_tables()

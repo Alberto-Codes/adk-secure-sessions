@@ -11,6 +11,7 @@ Typical usage::
 
 from __future__ import annotations
 
+import inspect
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -137,6 +138,65 @@ class TestUpdateTimestampTz:
 
 
 # =============================================================================
+# get_update_timestamp() — dialect flags are signature parity only
+# =============================================================================
+
+
+class TestGetUpdateTimestamp:
+    """Unit tests for EncryptedStorageSession.get_update_timestamp()."""
+
+    def test_accepts_is_postgresql_keyword(self, make_session):
+        """AC1: is_postgresql (google-adk >= 2.4.0) is accepted, not rejected."""
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
+        session = make_session(dt)
+
+        result = session.get_update_timestamp(is_sqlite=False, is_postgresql=True)
+
+        assert isinstance(result, float)
+
+    def test_naive_datetime_is_interpreted_as_utc(self, make_session):
+        """AC2: Naive datetime is treated as UTC regardless of dialect flags."""
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
+        session = make_session(dt)
+        expected = dt.replace(tzinfo=timezone.utc).timestamp()
+
+        assert session.get_update_timestamp() == expected
+        assert session.get_update_timestamp(is_sqlite=True) == expected
+        assert session.get_update_timestamp(is_postgresql=True) == expected
+
+    def test_tz_aware_datetime_is_converted_directly(self, make_session):
+        """AC2: Timezone-aware datetime keeps its own offset."""
+        dt = datetime(
+            2026, 3, 28, 12, 0, 0, 123456, tzinfo=timezone(timedelta(hours=5))
+        )
+        session = make_session(dt)
+
+        assert session.get_update_timestamp() == dt.timestamp()
+        assert session.get_update_timestamp(is_sqlite=True) == dt.timestamp()
+
+
+# =============================================================================
+# _dialect_name — read by google-adk 1.22.0 through 1.25.x
+# =============================================================================
+
+
+class TestDialectName:
+    """Unit tests for the EncryptedStorageSession._dialect_name property."""
+
+    def test_detached_instance_returns_none(self, make_session):
+        """AC3: A row not attached to any ORM session reports no dialect."""
+        session = make_session(datetime(2026, 3, 28, 12, 0, 0))
+
+        assert session._dialect_name is None
+
+    def test_property_exists_on_class(self, schema):
+        """AC3: google-adk 1.22.0 append_event() reads this attribute."""
+        assert isinstance(
+            inspect.getattr_static(schema.StorageSession, "_dialect_name"), property
+        )
+
+
+# =============================================================================
 # to_session() — _storage_update_marker stamping
 # =============================================================================
 
@@ -155,6 +215,23 @@ class TestToSessionMarker:
             is_sqlite=True,
         )
 
+        assert session._storage_update_marker == storage_session.get_update_marker()
+
+    def test_to_session_accepts_is_postgresql_keyword(self, make_session):
+        """AC1: to_session(is_postgresql=...) matches the upstream call site."""
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
+        storage_session = make_session(dt)
+
+        session = storage_session.to_session(
+            state={"key": "value"},
+            events=[],
+            is_sqlite=False,
+            is_postgresql=True,
+        )
+
+        assert session.id == "session-1"
+        assert session.state == {"key": "value"}
+        assert session.last_update_time == storage_session.get_update_timestamp()
         assert session._storage_update_marker == storage_session.get_update_marker()
 
     def test_marker_matches_iso_format(self, make_session):

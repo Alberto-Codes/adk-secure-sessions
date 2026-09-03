@@ -159,6 +159,10 @@ filterwarnings = [
     # google-adk RunConfig.save_input_blobs_as_artifacts deprecated pydantic field;
     # narrowed to google.adk.runners to surface deprecations from other ADK submodules.
     "ignore:deprecated:DeprecationWarning:google\\.adk\\.runners",
+    # google-adk >= 2.x emits a DeprecationWarning at import time when its own
+    # LlmAgentConfig subclasses the deprecated BaseAgentConfig. Upstream
+    # module-level code, not our defect.
+    "ignore:BaseAgentConfig is deprecated:DeprecationWarning",
 ]
 
 [dependency-groups]
