@@ -49,14 +49,18 @@ uv run ruff check .     # Lint check
 
 ## Pre-Commit Hooks
 
-Seven hooks run on each commit:
+Every Python tool runs through `uv run`, so the hook line and CI share the version pinned in `uv.lock`. Only `actionlint` (a Go binary) and the generic `pre-commit-hooks` checks come from pre-commit mirrors.
 
 | Hook | What it checks |
 |------|---------------|
-| yamllint | YAML syntax and formatting |
+| pre-commit-hooks | Trailing whitespace, final newline, merge markers, files over 1 MB |
 | actionlint | GitHub Actions workflow validity |
+| yamllint | YAML syntax and formatting |
 | ruff-check | Python linting |
-| ruff-format | Python code formatting |
+| ruff-format | Python and Markdown code-fence formatting |
+| uv-lock | `uv.lock` is current with `pyproject.toml` |
+| uv-secure | Known vulnerabilities in locked dependencies |
+| import-linter | Layered-architecture contracts hold |
 | ty | Type checking (`src/` only) |
 | pytest | Full test suite |
 | docvet | Docstring quality on staged files |
@@ -113,4 +117,3 @@ Install with: `pre-commit install`
 - **Markers**: `@pytest.mark.unit`, `@pytest.mark.integration`
 - **Fixtures**: Async generators with proper teardown (`yield svc; await svc.close()`)
 - **Warnings**: Treated as errors; third-party warnings filtered in `pyproject.toml`
-

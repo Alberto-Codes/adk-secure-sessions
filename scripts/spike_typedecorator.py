@@ -18,7 +18,7 @@ import base64
 import json
 import sys
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from cryptography.fernet import Fernet
@@ -159,7 +159,7 @@ def make_encrypted_models(
 
         def get_update_timestamp(self, is_sqlite: bool) -> float:
             if is_sqlite:
-                return self.update_time.replace(tzinfo=timezone.utc).timestamp()
+                return self.update_time.replace(tzinfo=UTC).timestamp()
             return self.update_time.timestamp()
 
         def to_session(self, state=None, events=None, is_sqlite=False):

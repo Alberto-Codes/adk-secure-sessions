@@ -197,6 +197,12 @@ async def _rotate_table(
         Tuple of ``(rotated, skipped)`` counts for this table.
 
     Raises:
+        DecryptionError: If ``old_backend`` cannot decrypt a record, or if
+            any other failure occurs inside the backends during
+            re-encryption. The original exception is deliberately not
+            chained so backend internals never leak into the message.
+
+    Raises:
         DecryptionError: If a record contains non-ASCII or malformed
             base64 data, has a malformed envelope, or cannot be decrypted
             with ``old_backend``.
@@ -242,7 +248,7 @@ async def _rotate_table(
             )
         except DecryptionError:
             raise
-        except Exception:
+        except Exception:  # noqa: BLE001 — any backend failure is a rotation failure
             msg = f"Rotation failed: re-encryption error in table {table!r}"
             raise DecryptionError(msg) from None
 

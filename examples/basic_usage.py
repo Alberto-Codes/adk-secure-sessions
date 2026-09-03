@@ -102,7 +102,11 @@ async def run_turn(
 
 
 async def main() -> None:
-    """Run a multi-turn agent conversation with encrypted sessions."""
+    """Run a multi-turn agent conversation with encrypted sessions.
+
+    Requires ``OLLAMA_API_BASE`` in the environment; exits early with a
+    hint when it is missing.
+    """
     if not os.getenv("OLLAMA_API_BASE"):
         print("Error: OLLAMA_API_BASE not set.")
         print("Set it in .env or run:")
@@ -167,7 +171,7 @@ async def main() -> None:
 
     for table in ("sessions", "events"):
         col = "state" if table == "sessions" else "event_data"
-        row = conn.execute(f"SELECT {col} FROM {table} LIMIT 1").fetchone()  # noqa: S608
+        row = conn.execute(f"SELECT {col} FROM {table} LIMIT 1").fetchone()
         if row and row[0]:
             raw = row[0]
             preview = raw[:60] if len(raw) > 60 else raw

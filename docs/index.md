@@ -87,9 +87,11 @@ already enables runtime validation and static type checking:
 ```python
 from adk_secure_sessions import EncryptionBackend
 
+
 class MyBackend:
     async def encrypt(self, plaintext: bytes) -> bytes: ...
     async def decrypt(self, ciphertext: bytes) -> bytes: ...
+
 
 assert isinstance(MyBackend(), EncryptionBackend)  # True
 ```

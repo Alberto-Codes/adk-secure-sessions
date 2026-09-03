@@ -67,9 +67,11 @@ tests/
 ```python
 import pytest
 
+
 @pytest.fixture
 def fernet_backend():
     return FernetBackend(key=Fernet.generate_key())
+
 
 @pytest.fixture
 def database_session():
@@ -97,6 +99,7 @@ def make_backend():
         if key is None:
             key = Fernet.generate_key()
         return FernetBackend(key=key)
+
     return _make_backend
 ```
 
@@ -109,11 +112,15 @@ def make_backend():
 ## Parametrization
 
 ```python
-@pytest.mark.parametrize("input_data, expected", [
-    (b"hello", b"hello"),
-    (b"", b""),
-    (b"\x00\xff", b"\x00\xff"),
-], ids=["ascii", "empty", "binary"])
+@pytest.mark.parametrize(
+    "input_data, expected",
+    [
+        (b"hello", b"hello"),
+        (b"", b""),
+        (b"\x00\xff", b"\x00\xff"),
+    ],
+    ids=["ascii", "empty", "binary"],
+)
 async def test_encrypt_decrypt_roundtrip(backend, input_data, expected):
     encrypted = await backend.encrypt(input_data)
     decrypted = await backend.decrypt(encrypted)
@@ -147,6 +154,7 @@ Use `pytest-asyncio` for async test functions:
 
 ```python
 import pytest
+
 
 @pytest.mark.asyncio
 async def test_encrypt_returns_bytes(backend):
