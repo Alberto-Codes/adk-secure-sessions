@@ -6,9 +6,10 @@ SQLAlchemy model classes via ``_get_schema_classes()`` and
 ``prepare_tables()`` overrides. All CRUD operations are delegated to
 the parent class — no method overrides needed.
 
-SQLAlchemy (with the ``asyncio`` extra) and ``aiosqlite`` are declared as
-direct dependencies of this package. google-adk 2.x moved both behind its
-optional ``db`` extra, so they can no longer be inherited transitively.
+SQLAlchemy (with the ``asyncio`` extra) is declared as a direct dependency of
+this package: google-adk 2.x moved it behind its optional ``db`` extra, so it
+can no longer be inherited transitively. ``aiosqlite``, the driver behind the
+default ``sqlite+aiosqlite://`` URL, is declared for the same reason.
 
 Examples:
     Basic usage with FernetBackend:

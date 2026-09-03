@@ -14,7 +14,7 @@ from __future__ import annotations
 import inspect
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 from google.adk.events.event import Event
@@ -109,7 +109,7 @@ class TestGetUpdateMarker:
 
     def test_utc_datetime_preserves_value(self, make_session):
         """UTC-aware datetime passes through unchanged."""
-        dt = datetime(2026, 3, 28, 12, 0, 0, 500000, tzinfo=timezone.utc)
+        dt = datetime(2026, 3, 28, 12, 0, 0, 500000, tzinfo=UTC)
         session = make_session(dt)
 
         result = session.get_update_marker()
@@ -146,7 +146,7 @@ class TestUpdateTimestampTz:
 
     def test_returns_float_timestamp(self, make_session):
         """AC7: update_timestamp_tz returns a POSIX float."""
-        dt = datetime(2026, 3, 28, 12, 0, 0, tzinfo=timezone.utc)
+        dt = datetime(2026, 3, 28, 12, 0, 0, tzinfo=UTC)
         session = make_session(dt)
 
         result = session.update_timestamp_tz
@@ -155,7 +155,7 @@ class TestUpdateTimestampTz:
 
     def test_matches_get_update_timestamp_non_sqlite(self, make_session):
         """AC7: Equivalent to get_update_timestamp(is_sqlite=False)."""
-        dt = datetime(2026, 3, 28, 12, 0, 0, 123456, tzinfo=timezone.utc)
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456, tzinfo=UTC)
         session = make_session(dt)
 
         assert session.update_timestamp_tz == session.get_update_timestamp(
@@ -183,7 +183,7 @@ class TestUpdateTimestampTz:
             orm.add(row)
             result = row.update_timestamp_tz
 
-        assert result == dt.replace(tzinfo=timezone.utc).timestamp()
+        assert result == dt.replace(tzinfo=UTC).timestamp()
         assert result == row.get_update_timestamp(is_sqlite=True)
 
 
@@ -202,13 +202,13 @@ class TestGetUpdateTimestamp:
 
         result = session.get_update_timestamp(is_sqlite=False, is_postgresql=True)
 
-        assert result == dt.replace(tzinfo=timezone.utc).timestamp()
+        assert result == dt.replace(tzinfo=UTC).timestamp()
 
     def test_naive_datetime_with_dialect_flag_is_utc(self, make_session, new_york_tz):
         """AC2: Either dialect flag makes a naive value UTC on every ADK version."""
         dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
         session = make_session(dt)
-        expected = dt.replace(tzinfo=timezone.utc).timestamp()
+        expected = dt.replace(tzinfo=UTC).timestamp()
 
         assert session.get_update_timestamp(is_sqlite=True) == expected
         assert session.get_update_timestamp(is_postgresql=True) == expected
@@ -226,7 +226,7 @@ class TestGetUpdateTimestamp:
         dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
         session = make_session(dt)
         if _NAIVE_UPDATE_TIME_IS_UTC:
-            expected = dt.replace(tzinfo=timezone.utc).timestamp()
+            expected = dt.replace(tzinfo=UTC).timestamp()
         else:
             expected = dt.timestamp()
 
@@ -234,7 +234,7 @@ class TestGetUpdateTimestamp:
         assert expected != (
             dt.timestamp()
             if _NAIVE_UPDATE_TIME_IS_UTC
-            else dt.replace(tzinfo=timezone.utc).timestamp()
+            else dt.replace(tzinfo=UTC).timestamp()
         ), "New York offset must make the two conventions distinguishable"
 
     def test_tz_aware_datetime_is_converted_directly(self, make_session):
@@ -428,9 +428,7 @@ class TestEventTimestampRoundTrip:
         row = schema.StorageEvent.from_event(adk_session, event)
 
         if _EVENT_TIMESTAMPS_ARE_UTC:
-            expected = datetime.fromtimestamp(self.EPOCH, tz=timezone.utc).replace(
-                tzinfo=None
-            )
+            expected = datetime.fromtimestamp(self.EPOCH, tz=UTC).replace(tzinfo=None)
         else:
             expected = datetime.fromtimestamp(self.EPOCH)
         assert row.timestamp == expected

@@ -15,11 +15,12 @@ requires-python = ">=3.12"
 dependencies = [
     "google-adk>=1.22.0",
     "cryptography>=44.0.0",
-    # We import sqlalchemy directly and drive it through the aiosqlite dialect.
-    # google-adk 2.x moved both behind its optional `db` extra, so they must be
-    # declared here rather than inherited.
+    # sqlalchemy is imported directly; google-adk 2.x moved it behind its optional
+    # `db` extra, so it must be declared here rather than inherited. aiosqlite is
+    # the driver for the default `sqlite+aiosqlite://` URL and is declared for
+    # the same reason: our import path should not depend on upstream's extras.
     "sqlalchemy[asyncio]>=2.0",
-    "aiosqlite>=0.20",
+    "aiosqlite>=0.21",
 ]
 keywords = [
     "adk",

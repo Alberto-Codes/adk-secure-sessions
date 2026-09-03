@@ -81,7 +81,7 @@ This project uses pre-commit hooks to catch issues before they reach CI. Pre-com
 pre-commit install
 ```
 
-Every Python tool runs through `uv run`, so the hook line and CI share the version pinned in `uv.lock`. These hooks run automatically on each commit:
+Every Python tool runs through `uv run`, so the hook line and CI share the version pinned in `uv.lock`. These hooks run automatically on each commit (`uv-lock` and `uv-secure` only when `pyproject.toml` or `uv.lock` is staged):
 
 | Hook | What it checks |
 |------|---------------|
