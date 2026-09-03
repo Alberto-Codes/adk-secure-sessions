@@ -5,6 +5,21 @@ Mirrors ADK's database schema but replaces ``DynamicJSON`` columns with
 function that creates a fresh ``DeclarativeBase`` per call to avoid
 metadata conflicts between multiple service instances.
 
+The three ``state`` columns are mutation-tracked with
+``MutableDict.associate_with_attribute``. google-adk 2.4.0+ applies state
+deltas by mutating the loaded dict in place
+(``storage_session.state.update(delta)``); without change tracking SQLAlchemy
+never issues the UPDATE and the delta is silently lost. Attribute-level
+association is used instead of ``MutableDict.as_mutable`` because the latter
+installs process-global mapper listeners that are never garbage collected and
+would retain each service's ``EncryptedJSON`` (and thus its key material).
+
+Timestamp storage follows the installed google-adk release. Event timestamps
+are stored as naive UTC from 2.7.0 (``schemas.shared.timestamp_to_utc_datetime``)
+and as naive local time before that, matching the ``after_timestamp`` filter
+upstream builds in ``get_session``. Naive ``update_time`` values are read as
+UTC from 2.4.0 and, for non-SQLite dialects, as local time before that.
+
 This module is an internal implementation detail and is NOT exported
 in the public API.
 
@@ -24,18 +39,23 @@ See Also:
 
 from __future__ import annotations
 
+import inspect as _py_inspect
 import uuid
 from datetime import datetime, timezone
 from typing import Any
 
 from google.adk.events.event import Event
+from google.adk.sessions.schemas import shared as _adk_shared
+from google.adk.sessions.schemas.v1 import StorageSession as _UpstreamStorageSession
 from google.adk.sessions.session import Session
 from sqlalchemy import (
     DateTime,
     ForeignKeyConstraint,
     String,
     func,
+    inspect,
 )
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -50,6 +70,74 @@ _DEFAULT_MAX_KEY_LENGTH = 128
 
 _DEFAULT_MAX_VARCHAR_LENGTH = 1024
 """Maximum length for varchar columns (matches ADK's default)."""
+
+_shared_to_utc = getattr(_adk_shared, "timestamp_to_utc_datetime", None)
+"""Upstream POSIX-to-naive-UTC helper (google-adk >= 2.7.0), else None."""
+
+_shared_from_utc = getattr(_adk_shared, "utc_datetime_to_timestamp", None)
+"""Upstream naive-UTC-to-POSIX helper (google-adk >= 2.7.0), else None."""
+
+_EVENT_TIMESTAMPS_ARE_UTC = _shared_to_utc is not None and _shared_from_utc is not None
+"""Whether event timestamps are stored as naive UTC (google-adk >= 2.7.0).
+
+Older releases store naive local time and filter ``after_timestamp`` with
+``datetime.fromtimestamp(...)``; storing UTC there would shift the filter.
+"""
+
+
+def _event_timestamp_to_storage(timestamp: float) -> datetime:
+    """Convert an ``Event.timestamp`` float to the datetime upstream would store.
+
+    Delegates to ``schemas.shared.timestamp_to_utc_datetime`` on google-adk
+    >= 2.7.0 (naive UTC). Before that, mirrors the older
+    ``StorageEvent.from_event`` (naive local time).
+
+    Args:
+        timestamp: POSIX timestamp from ``Event.timestamp``.
+
+    Returns:
+        Naive datetime in the convention the installed google-adk expects.
+    """
+    if _shared_to_utc is not None:
+        return _shared_to_utc(timestamp)
+    return datetime.fromtimestamp(timestamp)  # noqa: DTZ006
+
+
+def _storage_to_event_timestamp(value: datetime) -> float:
+    """Convert a stored ``timestamp`` column value back to a POSIX float.
+
+    Inverse of ``_event_timestamp_to_storage``.
+
+    Args:
+        value: Naive datetime as read from the ``timestamp`` column.
+
+    Returns:
+        POSIX timestamp under the same convention the value was stored with.
+    """
+    if _shared_from_utc is not None:
+        return _shared_from_utc(value)
+    return value.timestamp()
+
+
+def _upstream_reads_naive_update_time_as_utc() -> bool:
+    """Report whether upstream treats naive ``update_time`` values as UTC.
+
+    google-adk 2.4.0 rewrote ``StorageSession.get_update_timestamp`` to decide
+    on ``tzinfo`` alone (naive means UTC) and added the ``is_postgresql``
+    parameter in the same change. Earlier releases wrote naive *local* time
+    for non-SQLite dialects and read it back with ``.timestamp()``.
+
+    Returns:
+        True when the installed upstream uses the tzinfo-based convention.
+    """
+    method = getattr(_UpstreamStorageSession, "get_update_timestamp", None)
+    if method is None:
+        return False
+    return "is_postgresql" in _py_inspect.signature(method).parameters
+
+
+_NAIVE_UPDATE_TIME_IS_UTC = _upstream_reads_naive_update_time_as_utc()
+"""Whether a naive ``update_time`` is UTC (google-adk >= 2.4.0) or local."""
 
 
 class _EncryptedSchemaClasses:
@@ -102,7 +190,10 @@ def create_encrypted_models(
     Creates a fresh ``DeclarativeBase`` subclass and four model classes
     per call, avoiding metadata conflicts between multiple service
     instances. Table names match ADK's schema exactly: ``sessions``,
-    ``app_states``, ``user_states``, ``events``.
+    ``app_states``, ``user_states``, ``events``. The three ``state``
+    attributes are registered with ``MutableDict.associate_with_attribute``
+    after class creation so in-place mutation is tracked without any
+    process-global listener.
 
     Args:
         encrypted_json: Configured EncryptedJSON TypeDecorator instance.
@@ -126,9 +217,12 @@ def create_encrypted_models(
         """Encrypted session storage model.
 
         Duck-types ADK's ``StorageSession`` with encrypted state columns.
-        Provides ``get_update_marker()`` and ``update_timestamp_tz`` for
-        forward-compatibility with google-adk >= 1.28.0 optimistic
-        concurrency.
+        The ``state`` attribute is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted. Provides
+        ``get_update_marker()`` and ``update_timestamp_tz`` for optimistic
+        concurrency (google-adk >= 1.28.0), ``_dialect_name`` for
+        google-adk 1.22.0 through 1.25.x, and a ``to_session()`` signature
+        that accepts every dialect flag upstream passes.
 
         Examples:
             Created internally by ``create_encrypted_models``:
@@ -166,18 +260,43 @@ def create_encrypted_models(
             cascade="all, delete-orphan",
         )
 
+        @property
+        def _dialect_name(self) -> str | None:
+            """Dialect name of the engine this row is bound to.
+
+            google-adk 1.22.0 through 1.25.x read this private property in
+            ``append_event()`` to decide how to interpret ``update_time``.
+            Later releases pass dialect flags explicitly instead.
+
+            Returns:
+                The SQLAlchemy dialect name (for example ``"sqlite"``), or
+                ``None`` when the instance is detached from any session.
+            """
+            orm_session = inspect(self).session
+            if orm_session is None or orm_session.bind is None:
+                return None
+            return orm_session.bind.dialect.name
+
         def to_session(
             self,
             state: dict[str, Any] | None = None,
             events: list[Event] | None = None,
             is_sqlite: bool = False,
+            is_postgresql: bool = False,
         ) -> Session:
             """Convert to an ADK Session object.
+
+            The ``is_sqlite`` and ``is_postgresql`` flags mirror the upstream
+            ``StorageSession.to_session()`` signature. ADK passes them as
+            keywords from ``DatabaseSessionService`` (``is_postgresql`` since
+            google-adk 2.4.0), so both must be accepted even though the
+            timestamp logic no longer depends on them.
 
             Args:
                 state: Merged state dict (overrides stored state).
                 events: List of Event objects.
                 is_sqlite: Whether the backend is SQLite.
+                is_postgresql: Whether the backend is PostgreSQL.
 
             Returns:
                 ADK Session object with ``_storage_update_marker`` set for
@@ -194,39 +313,63 @@ def create_encrypted_models(
                 id=self.id,
                 state=state,
                 events=events,
-                last_update_time=self.get_update_timestamp(is_sqlite=is_sqlite),
+                last_update_time=self.get_update_timestamp(
+                    is_sqlite=is_sqlite, is_postgresql=is_postgresql
+                ),
             )
             session._storage_update_marker = self.get_update_marker()  # type: ignore[attr-defined]  # PrivateAttr added in ADK 1.28.0
             return session
 
-        def get_update_timestamp(self, is_sqlite: bool = False) -> float:
+        def get_update_timestamp(
+            self, is_sqlite: bool = False, is_postgresql: bool = False
+        ) -> float:
             """Get update time as a POSIX timestamp.
 
+            Timezone-aware values are converted directly. Naive values are
+            interpreted the way the installed google-adk wrote them: as UTC
+            when the dialect is SQLite (by flag, or detected from the bound
+            engine when no flag is given, as google-adk 1.22.0 through 1.25.x
+            did), when ``is_postgresql`` is set, or on google-adk >= 2.4.0
+            (which decides on ``tzinfo`` alone); as process-local time
+            otherwise, matching the ``datetime.fromtimestamp(...)`` that
+            google-adk < 2.4.0 wrote for non-SQLite dialects.
+
             Args:
-                is_sqlite: Whether the backend is SQLite (naive datetime).
+                is_sqlite: Whether the backend is SQLite. When False and
+                    ``is_postgresql`` is also False, the bound engine's
+                    dialect is consulted instead.
+                is_postgresql: Whether the backend is PostgreSQL (passed by
+                    google-adk >= 2.4.0).
 
             Returns:
                 Update time as a float POSIX timestamp.
             """
-            if is_sqlite:
-                return self.update_time.replace(tzinfo=timezone.utc).timestamp()
-            return self.update_time.timestamp()
+            update_time = self.update_time
+            if update_time.tzinfo is not None:
+                return update_time.timestamp()
+            naive_is_utc = (
+                is_sqlite
+                or is_postgresql
+                or _NAIVE_UPDATE_TIME_IS_UTC
+                or self._dialect_name == "sqlite"
+            )
+            if naive_is_utc:
+                return update_time.replace(tzinfo=timezone.utc).timestamp()
+            return update_time.timestamp()
 
         @property
         def update_timestamp_tz(self) -> float:
-            """The update time as a POSIX timestamp (UTC, non-SQLite path).
+            """The update time as a POSIX timestamp.
 
-            Compatibility alias matching upstream ``StorageSession``.
-            Equivalent to ``get_update_timestamp(is_sqlite=False)``.
+            Compatibility alias matching upstream ``StorageSession``. This is
+            the only accessor google-adk 1.22.0 through 1.25.x call.
 
-            Note:
-                Upstream dynamically detects SQLite via
-                ``inspect(self).session.bind.dialect.name``.  Our duck-typed
-                model may not be ORM-bound when this property is accessed, so
-                we hard-code ``is_sqlite=False``.  Revisit after upgrading to
-                google-adk >= 1.28.0 if upstream starts calling this property.
+            Returns:
+                POSIX timestamp. Equivalent to ``get_update_timestamp()``
+                with no flags, which derives the dialect from the bound
+                engine.
             """
-            return self.get_update_timestamp(is_sqlite=False)
+            return self.get_update_timestamp()
 
         def get_update_marker(self) -> str:
             """Return a stable revision marker for optimistic concurrency checks.
@@ -251,6 +394,9 @@ def create_encrypted_models(
     class EncryptedStorageAppState(_Base):
         """Encrypted app state storage model.
 
+        The ``state`` attribute is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted.
+
         Examples:
             Created internally by ``create_encrypted_models``:
 
@@ -272,6 +418,9 @@ def create_encrypted_models(
 
     class EncryptedStorageUserState(_Base):
         """Encrypted user state storage model.
+
+        The ``state`` attribute is ``MutableDict``-tracked so in-place delta
+        application (google-adk >= 2.4.0) is persisted.
 
         Examples:
             Created internally by ``create_encrypted_models``:
@@ -350,22 +499,38 @@ def create_encrypted_models(
         def to_event(self) -> Event:
             """Convert to an ADK Event object.
 
+            Prefers the exact POSIX float preserved in ``event_data`` over the
+            ``timestamp`` column, as upstream does: rebuilding an epoch from a
+            naive datetime can resolve an ambiguous local time (a DST
+            fall-back hour) to the wrong instant. The column is used only for
+            rows whose payload lacks a timestamp.
+
             Returns:
                 ADK Event object reconstructed from stored data.
             """
             data = self.event_data or {}
+            timestamp = data.get("timestamp")
+            if timestamp is None:
+                timestamp = _storage_to_event_timestamp(self.timestamp)
             return Event.model_validate(
                 {
                     **data,
                     "id": self.id,
                     "invocation_id": self.invocation_id,
-                    "timestamp": self.timestamp.timestamp(),
+                    "timestamp": timestamp,
                 }
             )
 
         @classmethod
         def from_event(cls, session: Session, event: Event) -> EncryptedStorageEvent:
             """Create an EncryptedStorageEvent from an ADK Event.
+
+            The event ``timestamp`` float is stored with the same convention
+            the installed google-adk uses for its own ``StorageEvent``: naive
+            UTC from 2.7.0, naive local time before that. Upstream's
+            ``get_session`` builds its ``after_timestamp`` filter with that
+            convention, so storing anything else silently drops or leaks
+            events on hosts whose local timezone is not UTC.
 
             Args:
                 session: The ADK Session that owns this event.
@@ -380,9 +545,19 @@ def create_encrypted_models(
                 session_id=session.id,
                 app_name=session.app_name,
                 user_id=session.user_id,
-                timestamp=datetime.fromtimestamp(event.timestamp),
+                timestamp=_event_timestamp_to_storage(event.timestamp),
                 event_data=event.model_dump(exclude_none=True, mode="json"),
             )
+
+    # Attribute-level association tracks in-place mutation of the three state
+    # dicts without the process-global, never-collected mapper listeners that
+    # MutableDict.as_mutable() would install for every service instance.
+    for state_attr in (
+        EncryptedStorageSession.state,
+        EncryptedStorageAppState.state,
+        EncryptedStorageUserState.state,
+    ):
+        MutableDict.associate_with_attribute(state_attr)
 
     schema = _EncryptedSchemaClasses(
         storage_session=EncryptedStorageSession,

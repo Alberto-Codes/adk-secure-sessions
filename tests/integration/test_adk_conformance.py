@@ -15,6 +15,8 @@ See Also:
 
 from __future__ import annotations
 
+import inspect
+
 import pytest
 from sqlalchemy import JSON
 
@@ -125,6 +127,49 @@ class TestStorageSessionMethodParity:
             f"EncryptedStorageSession is missing public members from "
             f"StorageSession: {sorted(missing)}"
         )
+
+    @pytest.mark.parametrize("model", ["StorageSession", "StorageEvent"])
+    def test_public_method_signatures_accept_upstream_parameters(
+        self, model: str
+    ) -> None:
+        """AC6: Our methods accept every named parameter upstream's accept.
+
+        ``DatabaseSessionService`` calls these methods with keyword
+        arguments (for example ``is_postgresql``, added in google-adk
+        2.4.0). A parameter present upstream but missing here raises
+        ``TypeError`` on every CRUD call. Variadic parameters are ignored on
+        the upstream side, and a ``**kwargs`` on our side accepts anything.
+        """
+        from google.adk.sessions.schemas import v1 as upstream_v1
+
+        upstream_cls = getattr(upstream_v1, model)
+        _, schema = create_encrypted_models(JSON())
+        encrypted_cls = getattr(schema, model)
+
+        upstream_methods = {
+            name
+            for name in dir(upstream_cls)
+            if not name.startswith("_")
+            and callable(getattr(upstream_cls, name))
+            and not isinstance(getattr(upstream_cls, name, None), property)
+            and name not in {"metadata", "registry"}
+        }
+
+        gaps: dict[str, set[str]] = {}
+        for name in upstream_methods:
+            upstream_params = inspect.signature(getattr(upstream_cls, name)).parameters
+            ours_params = inspect.signature(getattr(encrypted_cls, name)).parameters
+            if any(p.kind is p.VAR_KEYWORD for p in ours_params.values()):
+                continue
+            missing = {
+                pname
+                for pname, p in upstream_params.items()
+                if p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+            } - set(ours_params)
+            if missing:
+                gaps[name] = missing
+
+        assert not gaps, f"Encrypted{model} methods missing upstream parameters: {gaps}"
 
     async def test_create_session_roundtrip_sets_storage_update_marker(
         self, encrypted_service: EncryptedSessionService

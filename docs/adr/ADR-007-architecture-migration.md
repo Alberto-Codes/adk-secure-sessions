@@ -33,7 +33,7 @@ User Code
     |
     v
 EncryptedDatabaseSessionService  (subclasses DatabaseSessionService)
-    |  overrides: _get_schema_classes(), _prepare_tables()
+    |  overrides: _get_schema_classes(), prepare_tables()
     |
     v
 DatabaseSessionService  (ADK's implementation)
@@ -57,7 +57,7 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 2. **Override `_get_schema_classes()`** to return custom model classes with `EncryptedJSON` instead of `DynamicJSON`. This is a clean internal override point — the method is called before every DB operation.
 
-3. **Override `_prepare_tables()`** to use our `DeclarativeBase.metadata` for table creation, ensuring the encrypted models are used.
+3. **Override `prepare_tables()`** to use our `DeclarativeBase.metadata` for table creation, ensuring the encrypted models are used. ADK 2.4.0 renamed this hook from `_prepare_tables()` to the public `prepare_tables()`; we define both names so one class serves the whole supported version range.
 
 4. **Sync Fernet in TypeDecorator** — `process_bind_param` and `process_result_value` call `Fernet.encrypt()`/`decrypt()` synchronously. SQLAlchemy's async layer runs these ORM hooks via greenlets in the event-loop thread, so crypto work must stay fast. Session state is typically small (< 10KB), keeping per-row overhead in the microsecond range.
 
@@ -98,14 +98,14 @@ SQLite / PostgreSQL / MySQL / MariaDB
 
 ### What becomes harder
 
-- **Coupled to `DatabaseSessionService` internals** — we depend on `_get_schema_classes()` and `_prepare_tables()`, which are internal methods (underscore-prefixed). While stable across ADK v1.x, they could change in future major versions. Mitigated by sentinel tests that detect signature changes.
+- **Coupled to `DatabaseSessionService` internals** — we depend on `_get_schema_classes()` and `prepare_tables()` (formerly `_prepare_tables()`). One is still underscore-prefixed and could change in future major versions. Mitigated by sentinel tests that detect hook renames and signature drift (ADK 2.4.0 did both: it renamed the hook and added `is_postgresql` to `StorageSession.to_session()`).
 - **Schema ownership shift** — we no longer "own our schema" in the ADR-004 sense. ADK owns the base schema; we own the TypeDecorator and encrypted model classes. This is a narrower but more focused ownership.
 - **Error surface change** — wrong-key decryption in TypeDecorator raises `cryptography.fernet.InvalidToken`, which SQLAlchemy wraps in `StatementError`. The wrapper must catch and re-raise as `DecryptionError` to preserve the library's error contract.
 
 ### Trade-offs
 
 - **Base64 overhead** — 33% storage increase per encrypted field. Acceptable for session state, which is typically small (< 10KB). If problematic, switching to `LargeBinary` column type eliminates the overhead.
-- **Internal method dependency** — `_get_schema_classes` and `_prepare_tables` are not public API. The risk is mitigated by: (a) ADK version pinning (`>=1.22.0`), (b) sentinel tests in CI that fail immediately on signature changes, (c) these methods are stable across v1.x.
+- **Internal method dependency** — `_get_schema_classes` is not public API, and `prepare_tables` only became public in ADK 2.4.0. The risk is mitigated by: (a) ADK version pinning (`>=1.22.0`), (b) sentinel tests in CI that fail immediately on hook renames or signature changes, (c) the `latest` CI matrix variant exercising each new upstream release.
 - **Model class isolation** — custom encrypted models use a separate `DeclarativeBase`. Both ADK's models and ours must never share the same engine to avoid table name conflicts.
 - **Migration path** — existing databases (raw aiosqlite, BLOB columns) are incompatible with the new architecture (SQLAlchemy, TEXT columns). Fresh databases required. Acceptable because we have no existing users with production data (confirmed in Epic 6 retrospective).
 - **Epic 4 Stories 4.1-4.3 superseded** — the direct persistence protocol extraction and PostgreSQL backend stories are no longer needed; multi-database support comes for free via `DatabaseSessionService`.

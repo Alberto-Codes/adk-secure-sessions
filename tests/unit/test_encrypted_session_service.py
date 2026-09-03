@@ -11,6 +11,7 @@ Tests cover:
 from __future__ import annotations
 
 import inspect
+import sqlite3
 
 import pytest
 from cryptography.fernet import Fernet
@@ -271,9 +272,32 @@ class TestADKSentinels:
         """T: DatabaseSessionService has _get_schema_classes method."""
         assert hasattr(DatabaseSessionService, "_get_schema_classes")
 
-    def test_database_session_service_has_prepare_tables(self) -> None:
-        """T: DatabaseSessionService has _prepare_tables method."""
-        assert hasattr(DatabaseSessionService, "_prepare_tables")
+    def test_database_session_service_has_table_preparation_hook(self) -> None:
+        """T: DatabaseSessionService exposes a table-preparation hook.
+
+        google-adk < 2.4.0 names it ``_prepare_tables``; 2.4.0+ renamed it
+        to the public ``prepare_tables``. Either must exist, or our
+        encrypted table creation is never invoked.
+        """
+        hooks = [
+            name
+            for name in ("prepare_tables", "_prepare_tables")
+            if hasattr(DatabaseSessionService, name)
+        ]
+        assert hooks, "No table-preparation hook found on DatabaseSessionService"
+
+    def test_encrypted_service_overrides_every_upstream_table_hook(self) -> None:
+        """T: Every upstream table hook resolves to our override.
+
+        If upstream exposes a hook we do not override, CRUD would create
+        plaintext-typed tables from ADK's own metadata.
+        """
+        for name in ("prepare_tables", "_prepare_tables"):
+            if not hasattr(DatabaseSessionService, name):
+                continue
+            assert getattr(EncryptedSessionService, name) is not getattr(
+                DatabaseSessionService, name
+            ), f"EncryptedSessionService does not override {name}"
 
     def test_database_session_service_init_accepts_db_url(self) -> None:
         """T: DatabaseSessionService.__init__ accepts db_url parameter."""
@@ -293,6 +317,39 @@ class TestADKSentinels:
         """T: EncryptedSessionService instance has _table_creation_lock attribute."""
         service = EncryptedSessionService(db_url=db_url, backend=fernet_backend)
         assert hasattr(service, "_table_creation_lock")
+
+    async def test_prepare_tables_alias_creates_tables_and_is_idempotent(
+        self, encrypted_service: EncryptedSessionService, db_path: str
+    ) -> None:
+        """T: Both hook names create exactly our four tables, once.
+
+        The exact-set assertion distinguishes our DDL from upstream's, which
+        also creates a schema-version metadata table.
+        """
+        await encrypted_service._prepare_tables()
+        await encrypted_service._prepare_tables()
+        await encrypted_service.prepare_tables()
+
+        conn = sqlite3.connect(db_path)
+        tables = {
+            row[0]
+            for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        conn.close()
+        assert tables == {"sessions", "app_states", "user_states", "events"}
+        assert encrypted_service._tables_created is True
+
+    async def test_loaded_row_reports_sqlite_dialect(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """T: A row loaded through the service reports the live engine dialect."""
+        created = await encrypted_service.create_session(app_name="a", user_id="u")
+        schema = encrypted_service._get_schema_classes()
+
+        async with encrypted_service.database_session_factory() as sql_session:
+            row = await sql_session.get(schema.StorageSession, ("a", "u", created.id))
+            assert row is not None
+            assert row._dialect_name == "sqlite"
 
     def test_encrypted_service_zero_crud_overrides(self) -> None:
         """T: EncryptedSessionService does not override any CRUD methods."""
