@@ -81,14 +81,18 @@ This project uses pre-commit hooks to catch issues before they reach CI. Pre-com
 pre-commit install
 ```
 
-Seven hooks run automatically on each commit:
+Every Python tool runs through `uv run`, so the hook line and CI share the version pinned in `uv.lock`. These hooks run automatically on each commit (`uv-lock` and `uv-secure` only when `pyproject.toml` or `uv.lock` is staged):
 
 | Hook | What it checks |
 |------|---------------|
-| yamllint | YAML syntax and formatting |
+| pre-commit-hooks | Trailing whitespace, final newline, merge markers, files over 1 MB |
 | actionlint | GitHub Actions workflow validity |
+| yamllint | YAML syntax and formatting |
 | ruff-check | Python linting |
-| ruff-format | Python code formatting |
+| ruff-format | Python and Markdown code-fence formatting |
+| uv-lock | `uv.lock` is current with `pyproject.toml` |
+| uv-secure | Known vulnerabilities in locked dependencies |
+| import-linter | Layered-architecture contracts hold |
 | ty | Type checking (`src/` only) |
 | pytest | Full test suite |
 | docvet | Docstring quality on staged files |
@@ -233,10 +237,12 @@ Use appropriate markers for your tests:
 ```python
 import pytest
 
+
 @pytest.mark.unit
 async def test_fernet_encrypt_decrypt():
     """Unit test for Fernet round-trip encryption."""
     ...
+
 
 @pytest.mark.integration
 async def test_encrypted_session_persistence():

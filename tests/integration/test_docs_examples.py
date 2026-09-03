@@ -74,5 +74,5 @@ class TestGettingStartedExamples:
         source = re.sub(r"asyncio\.run\(main\(\)\)\s*\n?", "", source)
 
         namespace: dict[str, object] = {}
-        exec(compile(source, f"{doc_path}:full-example", "exec"), namespace)  # noqa: S102
+        exec(compile(source, f"{doc_path}:full-example", "exec"), namespace)
         await namespace["main"]()

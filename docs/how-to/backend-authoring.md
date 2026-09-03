@@ -81,6 +81,7 @@ the simpler of the two official backends. Here are the key patterns to follow.
 ```python
 from adk_secure_sessions.serialization import BACKEND_AES_GCM
 
+
 @property
 def backend_id(self) -> int:
     return BACKEND_AES_GCM  # 0x02
@@ -97,6 +98,7 @@ import os
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 _NONCE_LENGTH = 12
+
 
 def sync_encrypt(self, plaintext: bytes) -> bytes:
     nonce = os.urandom(_NONCE_LENGTH)  # fresh nonce every call
@@ -116,6 +118,7 @@ backend ID.
 from cryptography.exceptions import InvalidTag
 
 from adk_secure_sessions.exceptions import DecryptionError
+
 
 def sync_decrypt(self, ciphertext: bytes) -> bytes:
     nonce = ciphertext[:_NONCE_LENGTH]
@@ -137,8 +140,10 @@ internal details.
 ```python
 import asyncio
 
+
 async def encrypt(self, plaintext: bytes) -> bytes:
     return await asyncio.to_thread(self.sync_encrypt, plaintext)
+
 
 async def decrypt(self, ciphertext: bytes) -> bytes:
     return await asyncio.to_thread(self.sync_decrypt, ciphertext)
@@ -220,9 +225,9 @@ To use your backend with `EncryptedSessionService`, two steps are required:
 ```python
 # In src/adk_secure_sessions/serialization.py
 BACKEND_REGISTRY: dict[int, str] = {
-    BACKEND_FERNET: "Fernet",       # 0x01
-    BACKEND_AES_GCM: "AES-GCM",    # 0x02
-    0x10: "MyBackend",              # add your backend
+    BACKEND_FERNET: "Fernet",  # 0x01
+    BACKEND_AES_GCM: "AES-GCM",  # 0x02
+    0x10: "MyBackend",  # add your backend
 }
 ```
 
@@ -248,7 +253,7 @@ from adk_secure_sessions import EncryptedSessionService, FernetBackend
 
 service = EncryptedSessionService(
     db_url="sqlite+aiosqlite:///sessions.db",
-    backend=MyBackend(key=my_key),               # new writes
+    backend=MyBackend(key=my_key),  # new writes
     additional_backends=[FernetBackend("old-pw")],  # legacy reads
 )
 ```

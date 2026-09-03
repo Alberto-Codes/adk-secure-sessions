@@ -27,6 +27,7 @@ Use **`typing.Protocol`** (PEP 544) for all public interfaces.
 ```python
 from typing import Protocol, runtime_checkable
 
+
 @runtime_checkable
 class EncryptionBackend(Protocol):
     """Contract for all encryption backends."""

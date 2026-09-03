@@ -27,8 +27,26 @@ jobs:
       - run: uv sync --locked --dev
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: uv run uv-secure
+      # Retry once on exit 3 only — uv-secure's advisory-fetch crash class
+      # ("<package> raised exception"), which quantfit also hits. Real
+      # findings exit 1 and still fail immediately.
+      - name: uv-secure
+        run: |
+          code=0
+          uv run uv-secure || code=$?
+          if [ "$code" -eq 3 ]; then
+            echo "uv-secure crashed (exit 3) — one retry"
+            uv run uv-secure
+          else
+            exit "$code"
+          fi
       - run: uv run lint-imports
+      - run: uv run yamllint -c .yamllint.yaml .
+      # Pin the same version .pre-commit-config.yaml names. The action
+      # defaults to `latest`, which drifts from the hook line.
+      - uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7  # v2
+        with:
+          version: 1.7.11
       - run: uv cache prune --ci
         if: always()
         continue-on-error: true
@@ -90,4 +108,4 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: Alberto-Codes/docvet@v1
+      - uses: Alberto-Codes/docvet@257310e5edc8249629d388d879a5afde602f02ca  # v1

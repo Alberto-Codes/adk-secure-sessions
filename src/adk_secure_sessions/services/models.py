@@ -18,7 +18,8 @@ Timestamp storage follows the installed google-adk release. Event timestamps
 are stored as naive UTC from 2.7.0 (``schemas.shared.timestamp_to_utc_datetime``)
 and as naive local time before that, matching the ``after_timestamp`` filter
 upstream builds in ``get_session``. Naive ``update_time`` values are read as
-UTC from 2.4.0 and, for non-SQLite dialects, as local time before that.
+UTC (``datetime.UTC``) from 2.4.0 and, for non-SQLite dialects, as local time
+before that.
 
 This module is an internal implementation detail and is NOT exported
 in the public API.
@@ -41,7 +42,7 @@ from __future__ import annotations
 
 import inspect as _py_inspect
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from google.adk.events.event import Event
@@ -299,8 +300,9 @@ def create_encrypted_models(
                 is_postgresql: Whether the backend is PostgreSQL.
 
             Returns:
-                ADK Session object with ``_storage_update_marker`` set for
-                optimistic concurrency control.
+                ADK Session object with ``_storage_update_marker`` (a
+                ``PrivateAttr`` since google-adk 1.28.0) set for optimistic
+                concurrency control.
             """
             if state is None:
                 state = {}
@@ -317,7 +319,9 @@ def create_encrypted_models(
                     is_sqlite=is_sqlite, is_postgresql=is_postgresql
                 ),
             )
-            session._storage_update_marker = self.get_update_marker()  # type: ignore[attr-defined]  # PrivateAttr added in ADK 1.28.0
+            session._storage_update_marker = (
+                self.get_update_marker()
+            )  # PrivateAttr since google-adk 1.28.0
             return session
 
         def get_update_timestamp(
@@ -327,7 +331,7 @@ def create_encrypted_models(
 
             Timezone-aware values are converted directly. Naive values are
             interpreted the way the installed google-adk wrote them: as UTC
-            when the dialect is SQLite (by flag, or detected from the bound
+            (``datetime.UTC``) when the dialect is SQLite (by flag, or detected from the bound
             engine when no flag is given, as google-adk 1.22.0 through 1.25.x
             did), when ``is_postgresql`` is set, or on google-adk >= 2.4.0
             (which decides on ``tzinfo`` alone); as process-local time
@@ -354,7 +358,7 @@ def create_encrypted_models(
                 or self._dialect_name == "sqlite"
             )
             if naive_is_utc:
-                return update_time.replace(tzinfo=timezone.utc).timestamp()
+                return update_time.replace(tzinfo=UTC).timestamp()
             return update_time.timestamp()
 
         @property
@@ -381,11 +385,12 @@ def create_encrypted_models(
             Returns:
                 ISO 8601 formatted update time (microsecond precision).
                 Naive datetimes pass through as-is (assumed UTC from
-                SQLite); tz-aware datetimes are normalized to UTC.
+                SQLite); tz-aware datetimes are normalized to
+                ``datetime.UTC``.
             """
             update_time = self.update_time
             if update_time.tzinfo is not None:
-                update_time = update_time.astimezone(timezone.utc)
+                update_time = update_time.astimezone(UTC)
             return update_time.isoformat(timespec="microseconds")
 
         def __repr__(self) -> str:

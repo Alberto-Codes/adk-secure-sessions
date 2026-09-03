@@ -47,7 +47,7 @@ new_aes_gcm = AesGcmBackend(key=AESGCM.generate_key(bit_length=256))
 
 service = EncryptedSessionService(
     db_url="sqlite+aiosqlite:///sessions.db",
-    backend=new_aes_gcm,           # new writes use AES-GCM (0x02)
+    backend=new_aes_gcm,  # new writes use AES-GCM (0x02)
     additional_backends=[old_fernet],  # legacy Fernet sessions remain readable
 )
 ```
