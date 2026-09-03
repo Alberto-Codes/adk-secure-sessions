@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.2.0...v1.3.0) (2026-03-29)
+
+
+### Features
+
+* **models:** add get_update_marker() for google-adk 1.28.0 compatibility ([#154](https://github.com/Alberto-Codes/adk-secure-sessions/issues/154)) ([4411319](https://github.com/Alberto-Codes/adk-secure-sessions/commit/4411319a4a854de8658fe26877341c3b9b7def27))
+* **rotation:** add zero-downtime key rotation utility ([#147](https://github.com/Alberto-Codes/adk-secure-sessions/issues/147)) ([cbb6c40](https://github.com/Alberto-Codes/adk-secure-sessions/commit/cbb6c400c3d8cbb616d3ddd9bda2fa638452a72a))
+
+
+### Documentation
+
+* **how-to:** add backend authoring guide ([#155](https://github.com/Alberto-Codes/adk-secure-sessions/issues/155)) ([556d992](https://github.com/Alberto-Codes/adk-secure-sessions/commit/556d992167f4c37e3b104872e47757b1ac218bb8))
+
 ## [1.2.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.1.0...v1.2.0) (2026-03-08)
 
 
