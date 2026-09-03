@@ -11,6 +11,7 @@ Tests cover:
 from __future__ import annotations
 
 import inspect
+import sqlite3
 
 import pytest
 from cryptography.fernet import Fernet
@@ -316,6 +317,39 @@ class TestADKSentinels:
         """T: EncryptedSessionService instance has _table_creation_lock attribute."""
         service = EncryptedSessionService(db_url=db_url, backend=fernet_backend)
         assert hasattr(service, "_table_creation_lock")
+
+    async def test_prepare_tables_alias_creates_tables_and_is_idempotent(
+        self, encrypted_service: EncryptedSessionService, db_path: str
+    ) -> None:
+        """T: Both hook names create exactly our four tables, once.
+
+        The exact-set assertion distinguishes our DDL from upstream's, which
+        also creates a schema-version metadata table.
+        """
+        await encrypted_service._prepare_tables()
+        await encrypted_service._prepare_tables()
+        await encrypted_service.prepare_tables()
+
+        conn = sqlite3.connect(db_path)
+        tables = {
+            row[0]
+            for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        }
+        conn.close()
+        assert tables == {"sessions", "app_states", "user_states", "events"}
+        assert encrypted_service._tables_created is True
+
+    async def test_loaded_row_reports_sqlite_dialect(
+        self, encrypted_service: EncryptedSessionService
+    ) -> None:
+        """T: A row loaded through the service reports the live engine dialect."""
+        created = await encrypted_service.create_session(app_name="a", user_id="u")
+        schema = encrypted_service._get_schema_classes()
+
+        async with encrypted_service.database_session_factory() as sql_session:
+            row = await sql_session.get(schema.StorageSession, ("a", "u", created.id))
+            assert row is not None
+            assert row._dialect_name == "sqlite"
 
     def test_encrypted_service_zero_crud_overrides(self) -> None:
         """T: EncryptedSessionService does not override any CRUD methods."""

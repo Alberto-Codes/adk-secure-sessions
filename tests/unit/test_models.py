@@ -12,12 +12,37 @@ Typical usage::
 from __future__ import annotations
 
 import inspect
+import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import JSON
+from google.adk.events.event import Event
+from google.adk.sessions.session import Session
+from sqlalchemy import JSON, create_engine
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.orm import Mapper
+from sqlalchemy.orm import Session as OrmSession
 
-from adk_secure_sessions.services.models import create_encrypted_models
+from adk_secure_sessions.services.models import (
+    _EVENT_TIMESTAMPS_ARE_UTC,
+    _NAIVE_UPDATE_TIME_IS_UTC,
+    create_encrypted_models,
+)
+
+
+@pytest.fixture
+def new_york_tz(monkeypatch):
+    """Run the test with the process timezone set to America/New_York.
+
+    Makes naive-local and naive-UTC datetimes differ by hours, so any code
+    that confuses the two produces a visibly wrong value instead of passing
+    by coincidence on UTC hosts such as CI runners.
+    """
+    monkeypatch.setenv("TZ", "America/New_York")
+    time.tzset()
+    yield
+    monkeypatch.undo()
+    time.tzset()
 
 
 @pytest.fixture(scope="module")
@@ -136,6 +161,21 @@ class TestUpdateTimestampTz:
             is_sqlite=False
         )
 
+    def test_bound_sqlite_row_uses_sqlite_convention(self, make_session, new_york_tz):
+        """AC7: When attached to a SQLite engine the naive value is read as UTC.
+
+        google-adk 1.22.0 through 1.25.x call only this property and wrote
+        naive UTC for SQLite, so a local-time reading would be hours off.
+        """
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
+        row = make_session(dt)
+        with OrmSession(create_engine("sqlite://")) as orm:
+            orm.add(row)
+            result = row.update_timestamp_tz
+
+        assert result == dt.replace(tzinfo=timezone.utc).timestamp()
+        assert result == row.get_update_timestamp(is_sqlite=True)
+
 
 # =============================================================================
 # get_update_timestamp() — dialect flags are signature parity only
@@ -146,23 +186,46 @@ class TestGetUpdateTimestamp:
     """Unit tests for EncryptedStorageSession.get_update_timestamp()."""
 
     def test_accepts_is_postgresql_keyword(self, make_session):
-        """AC1: is_postgresql (google-adk >= 2.4.0) is accepted, not rejected."""
+        """AC1: is_postgresql (google-adk >= 2.4.0) is accepted and means UTC."""
         dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
         session = make_session(dt)
 
         result = session.get_update_timestamp(is_sqlite=False, is_postgresql=True)
 
-        assert isinstance(result, float)
+        assert result == dt.replace(tzinfo=timezone.utc).timestamp()
 
-    def test_naive_datetime_is_interpreted_as_utc(self, make_session):
-        """AC2: Naive datetime is treated as UTC regardless of dialect flags."""
+    def test_naive_datetime_with_dialect_flag_is_utc(self, make_session, new_york_tz):
+        """AC2: Either dialect flag makes a naive value UTC on every ADK version."""
         dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
         session = make_session(dt)
         expected = dt.replace(tzinfo=timezone.utc).timestamp()
 
-        assert session.get_update_timestamp() == expected
         assert session.get_update_timestamp(is_sqlite=True) == expected
         assert session.get_update_timestamp(is_postgresql=True) == expected
+
+    def test_naive_datetime_without_flags_follows_upstream(
+        self, make_session, new_york_tz
+    ):
+        """AC2: With no flags, naive means whatever the installed ADK wrote.
+
+        google-adk >= 2.4.0 writes and reads naive UTC for every dialect.
+        Earlier releases wrote naive local time for non-SQLite dialects and
+        read it back with ``.timestamp()``; interpreting that as UTC would
+        shift ``last_update_time`` by the host's UTC offset.
+        """
+        dt = datetime(2026, 3, 28, 12, 0, 0, 123456)
+        session = make_session(dt)
+        if _NAIVE_UPDATE_TIME_IS_UTC:
+            expected = dt.replace(tzinfo=timezone.utc).timestamp()
+        else:
+            expected = dt.timestamp()
+
+        assert session.get_update_timestamp() == expected
+        assert expected != (
+            dt.timestamp()
+            if _NAIVE_UPDATE_TIME_IS_UTC
+            else dt.replace(tzinfo=timezone.utc).timestamp()
+        ), "New York offset must make the two conventions distinguishable"
 
     def test_tz_aware_datetime_is_converted_directly(self, make_session):
         """AC2: Timezone-aware datetime keeps its own offset."""
@@ -188,6 +251,23 @@ class TestDialectName:
         session = make_session(datetime(2026, 3, 28, 12, 0, 0))
 
         assert session._dialect_name is None
+
+    def test_bound_instance_reports_engine_dialect(self, make_session):
+        """AC3: Attached to a SQLite engine, the property reports ``sqlite``.
+
+        This is the value google-adk 1.22.0 ``append_event()`` branches on.
+        """
+        row = make_session(datetime(2026, 3, 28, 12, 0, 0))
+        with OrmSession(create_engine("sqlite://")) as orm:
+            orm.add(row)
+            assert row._dialect_name == "sqlite"
+
+    def test_session_without_bind_returns_none(self, make_session):
+        """AC3: An ORM session with no engine bound yields no dialect."""
+        row = make_session(datetime(2026, 3, 28, 12, 0, 0))
+        with OrmSession() as orm:
+            orm.add(row)
+            assert row._dialect_name is None
 
     def test_property_exists_on_class(self, schema):
         """AC3: google-adk 1.22.0 append_event() reads this attribute."""
@@ -231,7 +311,9 @@ class TestToSessionMarker:
 
         assert session.id == "session-1"
         assert session.state == {"key": "value"}
-        assert session.last_update_time == storage_session.get_update_timestamp()
+        assert session.last_update_time == storage_session.get_update_timestamp(
+            is_sqlite=False, is_postgresql=True
+        )
         assert session._storage_update_marker == storage_session.get_update_marker()
 
     def test_marker_matches_iso_format(self, make_session):
@@ -242,3 +324,116 @@ class TestToSessionMarker:
         session = storage_session.to_session()
 
         assert session._storage_update_marker == "2026-03-28T15:30:45.678901"
+
+
+# =============================================================================
+# Mutation tracking — attribute-level, no global listeners
+# =============================================================================
+
+
+def _global_mapper_configured_listener_count() -> int:
+    """Count process-global ``mapper_configured`` listeners on ``Mapper``.
+
+    ``MutableDict.as_mutable`` adds one of these per call and never removes
+    it; ``associate_with_attribute`` adds none.
+    """
+    return len(Mapper.dispatch.mapper_configured._clslevel[Mapper])
+
+
+class TestMutationTracking:
+    """State dicts are change-tracked without leaking global listeners."""
+
+    def test_state_attribute_is_mutable_dict(self, make_session):
+        """AC4: Assigning a dict to ``state`` coerces it to a MutableDict."""
+        session = make_session(datetime(2026, 3, 28, 12, 0, 0))
+
+        assert isinstance(session.state, MutableDict)
+
+    def test_event_data_is_not_mutation_tracked(self, schema):
+        """AC4: ``event_data`` stays a plain dict, matching upstream."""
+        row = schema.StorageEvent(
+            id="e1",
+            app_name="test-app",
+            user_id="user-1",
+            session_id="session-1",
+            invocation_id="inv-1",
+            event_data={"author": "user"},
+        )
+
+        assert type(row.event_data) is dict
+
+    def test_factory_installs_no_global_mapper_listeners(self):
+        """AC4: Repeated factory calls do not grow process-global listeners.
+
+        Global listeners would retain every service's ``EncryptedJSON`` and
+        therefore its key material for the life of the process.
+        """
+        before = _global_mapper_configured_listener_count()
+
+        for _ in range(5):
+            create_encrypted_models(JSON())
+
+        assert _global_mapper_configured_listener_count() == before
+
+
+# =============================================================================
+# Event timestamps — convention follows the installed google-adk
+# =============================================================================
+
+
+class TestEventTimestampRoundTrip:
+    """from_event()/to_event() preserve the exact epoch on non-UTC hosts."""
+
+    EPOCH = 1_700_000_000.123456
+    """A fixed POSIX timestamp (2023-11-14T22:13:20.123456Z)."""
+
+    @pytest.fixture
+    def adk_session(self) -> Session:
+        """An ADK Session shell for from_event()."""
+        return Session(app_name="test-app", user_id="user-1", id="session-1")
+
+    def test_round_trip_preserves_epoch(self, schema, adk_session, new_york_tz):
+        """AC5: to_event(from_event(e)).timestamp == e.timestamp exactly."""
+        event = Event(
+            id="e1", invocation_id="inv-1", author="user", timestamp=self.EPOCH
+        )
+
+        row = schema.StorageEvent.from_event(adk_session, event)
+
+        assert row.to_event().timestamp == self.EPOCH
+
+    def test_stored_column_matches_upstream_convention(
+        self, schema, adk_session, new_york_tz
+    ):
+        """AC5: The ``timestamp`` column uses upstream's storage convention.
+
+        google-adk >= 2.7.0 filters ``after_timestamp`` against naive UTC;
+        earlier releases against naive local time. Storing the other one
+        silently drops or leaks events on non-UTC hosts.
+        """
+        event = Event(
+            id="e1", invocation_id="inv-1", author="user", timestamp=self.EPOCH
+        )
+
+        row = schema.StorageEvent.from_event(adk_session, event)
+
+        if _EVENT_TIMESTAMPS_ARE_UTC:
+            expected = datetime.fromtimestamp(self.EPOCH, tz=timezone.utc).replace(
+                tzinfo=None
+            )
+        else:
+            expected = datetime.fromtimestamp(self.EPOCH)
+        assert row.timestamp == expected
+        assert row.timestamp.tzinfo is None
+
+    def test_to_event_falls_back_to_column_when_payload_lacks_timestamp(
+        self, schema, adk_session, new_york_tz
+    ):
+        """AC5: Rows without a payload timestamp still reconstruct the epoch."""
+        event = Event(
+            id="e1", invocation_id="inv-1", author="user", timestamp=self.EPOCH
+        )
+        row = schema.StorageEvent.from_event(adk_session, event)
+        row.event_data = {k: v for k, v in row.event_data.items() if k != "timestamp"}
+
+        assert row.to_event().timestamp == self.EPOCH
