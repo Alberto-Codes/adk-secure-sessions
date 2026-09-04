@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.3.0...v1.3.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **session:** restore compatibility with google-adk 1.22.0 through 2.8.0 ([cd0a884](https://github.com/Alberto-Codes/adk-secure-sessions/commit/cd0a884b205f030c7b42154d9ee0aa53c7e475ef))
+
 ## [1.3.0](https://github.com/Alberto-Codes/adk-secure-sessions/compare/v1.2.0...v1.3.0) (2026-03-29)
 
 
